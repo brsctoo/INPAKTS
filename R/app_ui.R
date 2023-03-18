@@ -26,12 +26,12 @@ app_ui <- function(request) {
       collapsible = FALSE, # tab panels collapse into menu in small screens
       header = tags$head(),
 
-      # Apresentação ----
+      # Início ----
       tabPanel(
         title = "Início",
         icon = icon("home"),
-        value = "apresentacao",
-        mod_apresentacao_ui("apresentacao_ui_1")
+        value = "inicio",
+        mod_inicio_ui("inicio_ui_1")
       ),
 
 

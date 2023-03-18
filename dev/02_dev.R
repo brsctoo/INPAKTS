@@ -45,7 +45,7 @@ usethis::use_package("stringr")
 
 ## Add modules ----
 ## Create a module infrastructure in R/
-golem::add_module( name = "apresentacao" ) # Name of the module
+golem::add_module( name = "inicio" ) # Name of the module
 golem::add_module( name = "sobre" ) # Name of the module
 golem::add_module( name = "descritiva_sinasc")
 golem::add_module( name = "descritiva_sim_materna")
