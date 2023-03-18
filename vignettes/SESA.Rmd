@@ -1,0 +1,95 @@
+---
+title: "SESA"
+output: 
+ html_document:
+    theme: flatly
+    highlight: kate
+    toc: true
+    toc_float:
+      collapsed: false
+      smooth_scroll: false
+vignette: >
+  %/VignetteIndexEntry{SESA}
+  %/VignetteEngine{knitr::rmarkdown}
+  %/VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(SESA)
+```
+
+# Descrição geral
+Este Dashboard Shiny é estruturado usando o pacote `golem`. O `golem` permite construir um Dashboard com `Shiny` estruturado como um pacote `R`. Além disso, a estrutura do `golem` é baseada em módulos os quais podemos pensar como se fossem pequenos aplicativos `Shiny` que podem ou não  funcionar de forma independente. Nosso app até agora possui 9 módulos cada um referente a uma aba do app.
+
+<!-- , são eles: da aba da intervenção com dados do SINASC (arquivo `R/mod_intervencao_sinasc.R`), da aba da intervenção com dados do SIM MATERNO (arquivo `R/mod_intervencao_sim_materno.R`), da aba da intervenção com dados do SIM NEONATAL (arquivo `R/mod_intervencao_sim_neonatal.R`) -->
+
+
+Para lançar o app use o comando `run_app()` (função para lançar o app). Após realizar modificações nos arquivos  e salvá-los,
+você deve usar o comando `devtools::load_all()` antes de verificar como tais mudanças alteraram o app.
+
+## A estrutura geral do documento
+
+```{r echo = FALSE}
+fs::dir_tree("C:/Users/gdjec/Documents/Projeto de pesquisa/Dasboard mortalidade infantil")
+```
+
+### Pasta `data`
+
+Contém conjunto de dados usados na plataforma.  São arquivos com extensão `.rda` ou `RData`
+
+
+### Pasta `data-raw`
+
+Contém arquivos `.R` com o código para gerar os conjunto de dados  que estão no diretório `data`. Por exemplo, o arquivo
+`dados_sinasc.R` contém o códgio que gera o arquivo `data/dados_sinasc.rda` com os dados do SINASC    
+
+### Arquivo `DESCRIPTION`
+
+Todo pacote R contém este arquivo. É um arquivo que contém informações gerais do pacote (o nome do pacote, os outros pacotes necessários ao seu funcionamento e etc).
+
+
+### Pasta `dev`
+
+Contém arquivos `.R` que tem funções úteis para serem usadas com o pacote golem.
+Principalmente as funções do arquivo `02_dev.R` as quais usaremos de forma um pouco 
+mais frequente.
+
+### Pasta `man`
+
+Contém a documentação do pacote.
+
+### Pasta `www`
+
+Contém arquivos imagem (png, jpeg, ico) utilizados no app além do arquivo `.css`.
+
+### Pasta `R`
+
+Contém arquivos `.R` os quais de acordo com a nomenclatura dada aos arquivos deste diretório teremos uma ideia do que é constituído seu conteúdo: módulo.
+
+
+1. Arquivos cujo título inicia com `mod_` e sem as palavras `utils_` ou `fct_`. Estes são os módulos do app. Ex: `mod_intervencao_sinasc.R`, `mod_sobre.R` etc.
+
+
+2. Arquivos que possuem no nome `fct_` indica que há funções maiores que são mais centrais para o app. Podemos usar tais funções apenas em um módulo específico. Neste caso, o arquivo é nomeado com a seguinte estrutura: `mod_nome.do.modulo_fct_*`. Por exemplo, o arquivo `mod_analise_geografica_fct_mapas.R` contém funções que são apenas utilizadas no módulo `analise_geografica`. Ou arquivos `fct_` sem a palavra `mod_` no nome os quais são formado por funções utilizadas em vários lugares do app. Como o caso das funções do arquivo `fct_graficos_analise_impacto.R`
+
+
+2. Arquivos nomeados com `utils_` contêm pequenas funções que podem ser usadas em várias partes do aplicativo. Por exemplo,
+temos o arquivo `utils_helpers.R` que contém  pequenas funções usadas por quase todo o código. Também  podemos usar os arquivos `utils_*` apenas em módulos específicos. Neste caso, o arquivo é nomeado com a seguinte estrutura `mod_nome.do.modulo_utils_*` que conterá pequenas funções utilizadas apenas em um módulo específico. 
+
+4. Arquivos com mesmo nome do dataset encontrado no pacote (Ex: `dados_sinasc.R`). Tais arquivos contém o código `R` necessário para gerar o respectivo dataset.
+
+5. O arquivo `app_server.R` contém a parte do função do servidor do app shiny global. Neste, estarão contidos todos
+os arquivos `mod_nome.do.modulo_server("....")`, ou seja, a  função servidor de cada módulo criado
+
+5. O arquivo `app_ui.R` contém a parte do função ui do app shiny global. Neste, estão contidos todos
+os arquivos `mod_nome.do.modulo_ui("....")`, ou seja, a  função ui de cada módulo criado. Juntamente
+com o código para gerar a estrutura da interface do usuário global do app.
+
+### Funções importantes do arquivo `02_dev.R`
