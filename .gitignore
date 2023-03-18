@@ -1,0 +1,11 @@
+.Rproj.user
+.Rhistory
+.Rdata
+.httr-oauth
+.DS_Store
+.Renviron
+inst/doc
+/doc/
+/Meta/
+cache
+mod_intervencao_sinasc_teste

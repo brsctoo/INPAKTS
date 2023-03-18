@@ -1,0 +1,42 @@
+---
+output: github_document
+---
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.path = "man/figures/README-",
+  out.width = "100%"
+)
+```
+
+# SESA
+
+<!-- badges: start -->
+<!-- badges: end -->
+
+O objetivo deste repositório é a construção de um Dashboard em `shiny` usando o pacote `golem`
+
+## Instruções iniciais
+
+1. Use a função: `devtools::load_all()`
+
+
+
+2. Verificando a estrutura dos arquivos do R: `fs::dir_tree()`
+
+
+3. Inicie o dashboard com a função: `run_app()`
+
+4. Após serem realizadas alterações no código, você deve usar  `devtools::load_all()`
+e depois `run_app()` para visualizar as alterações feitas no Dashboard.
+
+Você pode instalar a versão em desenvolvimento do SESA da seguinte forma:
+
+``` r
+# FILL THIS IN! HOW CAN PEOPLE INSTALL YOUR DEV PACKAGE?
+```
+
