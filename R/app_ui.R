@@ -164,7 +164,7 @@ golem_add_external_resources <- function() {
     #Criando pagina inicial:
     waiter::useWaiter(),
 
-    cookie_box,
+    #cookie_box,
     #Favicon trata-se da figura bem pequena que aparece na aba do navegador
     favicon(ico = "fig1",ext = "jpeg"),
     # bundle_resources(), links all the CSS and JavaScript files contained in
