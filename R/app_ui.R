@@ -28,7 +28,7 @@ app_ui <- function(request) {
 
       # Apresentação ----
       tabPanel(
-        title = "Apresentação",
+        title = "Início",
         icon = icon("home"),
         value = "apresentacao",
         mod_apresentacao_ui("apresentacao_ui_1")
