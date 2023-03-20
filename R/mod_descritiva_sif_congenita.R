@@ -14,32 +14,14 @@ mod_descritiva_sif_congenita_ui <- function(id){
       ## Opções para o usuário selecionar -------
       fluidRow(
         column(5,
-               #p() codigo html para inserir pequeno espaço
-               p(),
-               #h3("Selecione o nível geográfico:"),
-               ### Botões clicáveis para o user selecionar o nível geográfico:------
-               shinyWidgets::radioGroupButtons(
-                 inputId = ns("radio"),
-                 label = "Selecione o nível geográfico:",
-                 choices = c("Estado do Paraná" = "PR", "Macrorregião" = "macro", "RS" = "micro", "Município" = "municipio"),
-                 selected = "PR",
-                 status = "primary"
-               )),
-        column(5,
                p(),
                ### Campo para selecionar o nível geográfico escolhido -------
-               selectInput(inputId = ns("escolha_usuario"), label = " ", choices = "PR")),
+               selectInput(inputId = ns("data_selecionada"), label = "Selecione uma das datas de intervenção", choices = " ")),
         column(2,
                p(),
                ### Botão gerar gráficos:-------
                actionButton(inputId = ns("gerar_graficos"),label = "Gerar gráficos"),
-               p(),
-               ### Botão com informações:-------
-               actionButton(
-                 inputId = ns("info"),
-                 label = "Informações",
-                 icon = icon("info-circle"),
-               ))),
+        )),
       #hr(),
       fluidRow(column(12,
                       h3(strong(textOutput(ns("caption"))), align = "center"))),
@@ -62,7 +44,7 @@ mod_descritiva_sif_congenita_ui <- function(id){
 #' descritiva_sif_congenita Server Functions
 #'
 #' @noRd
-mod_descritiva_sif_congenita_server <- function(id){
+mod_descritiva_sif_congenita_server <- function(id, opcoes_usuario){
   moduleServer( id, function(input, output, session){
     ns <- session$ns
     ##Configurando botão com as Info: -------
@@ -81,32 +63,46 @@ mod_descritiva_sif_congenita_server <- function(id){
       )
     })
 
-    # Atualizando as opções disponíveis ao user no SelectInput de acordo com sua seleção de nível geográfico -------
-    observeEvent(input$radio, {
-      if(input$radio=="PR"){
-        updateSelectInput(inputId = "escolha_usuario",
-                          label = "Estado do Paraná",
-                          choice = "PR")
-      }else if (input$radio=="macro") {
-        updateSelectInput(inputId = "escolha_usuario",
-                          label = "Macrorregião:",
-                          choice = levels(dados_sif_congenita$macro))
-      }else if (input$radio=="micro") {
-        updateSelectInput(inputId = "escolha_usuario",
-                          label = "Regional de Saúde:",
-                          choice = levels(dados_sif_congenita$micro))
-      }else{
-        updateSelectInput(inputId = "escolha_usuario",
-                          label = "Município:",
-                          choice =levels(dados_sif_congenita$municipio))
+    ## Pop-up surgirá se nenhuma data de intervenção for selecionada e usuario clicar no botao para gerar algum gráfico-------
+    observeEvent( input$gerar_graficos, {
+      if(length( opcoes_usuario$date_intervention[1])==0){
+        shinyalert::shinyalert(
+          title = "Atenção",
+          text = "Você deve selecionar no mínimo uma data de intervenção na página inicial (apresentação).",
+          type = "warning",
+          size = "m")
+      }
+    })
+
+    # Opções disponíveis ao usuário no SelectInput mudam de acordo com a seleção do nível geográfico -------
+    observeEvent(opcoes_usuario$date_intervention, {
+      if(sum(is.na(opcoes_usuario$date_intervention))==2){
+        updateSelectInput(inputId = "data_selecionada",
+                          #label = "data1",
+                          choice = " ")
+      }else if (sum(is.na(opcoes_usuario$date_intervention))==1) {
+        updateSelectInput(inputId = "data_selecionada",
+                          #choice = c(format(opcoes_usuario$date_intervention[1],format = "%b/%Y")))
+                          choice = c(opcoes_usuario$date_intervention[1]))
+      }else if (sum(is.na(opcoes_usuario$date_intervention))==0) {
+        updateSelectInput(inputId = "data_selecionada",
+                          # choice = c(format(opcoes_usuario$date_intervention[1],format = "%b/%Y") = opcoes_usuario$date_intervention[1],
+                          #            format(opcoes_usuario$date_intervention[2],format = "%b/%Y") = opcoes_usuario$date_intervention[2]))
+                          choice = c(opcoes_usuario$date_intervention))
       }
 
     }
     )
 
-    # Dados se alteram de acordo com as opções selecionadas pelo user e após clicar em gerar gráfico
+    #Alterando os dados que serão usados de acordo com as opções do usuário
     data <- eventReactive(input$gerar_graficos, {
-      data_prep(dados = dados_sif_congenita, nivel_geografico = input$radio, local=input$escolha_usuario)})
+      req(opcoes_usuario$date_intervention[1])
+      dados_sif_congenita %>%
+        data_prep_desc(nivel_geografico = opcoes_usuario$nivel_geografico,
+                       local= opcoes_usuario$escolha_usuario,
+                       intervention_date_user = input$data_selecionada,
+                       data_inicio = dados_sinasc_intervencao$data_variable)
+    })
 
     # Se dataset escolhido tiver menos de 30 observações um shinyalert será enviado:
     observeEvent(input$gerar_graficos, {
@@ -119,10 +115,11 @@ mod_descritiva_sif_congenita_server <- function(id){
 
     # Título de cabeçario da página altera-se de acordo com as opções selecionadas pelo user e após clicar em gerar gráfico
     titulo <- eventReactive(input$gerar_graficos, {
-      ifelse(input$radio=="PR","Gráficos do Estado do Paraná",
-             ifelse(input$radio=="macro",paste("Gráficos da Macrorregião",input$escolha_usuario),
-                    ifelse(input$radio=="micro",paste("Gráficos da Regional de Saúde",input$escolha_usuario),
-                           paste("Gráficos do Município de", input$escolha_usuario))))
+      req(opcoes_usuario$date_intervention[1])
+      ifelse(opcoes_usuario$nivel_geografico=="PR","Gráficos do Estado do Paraná",
+             ifelse(opcoes_usuario$nivel_geografico=="macro",paste("Gráficos da Macrorregião",opcoes_usuario$escolha_usuario),
+                    ifelse(opcoes_usuario$nivel_geografico=="micro",paste("Gráficos da Regional de Saúde",opcoes_usuario$escolha_usuario),
+                           paste("Gráficos do Município de", opcoes_usuario$escolha_usuario))))
     })
 
     # Título de cabeçario da página
@@ -131,41 +128,63 @@ mod_descritiva_sif_congenita_server <- function(id){
 
     #Gerando Gráficos -------
     output$idade <- renderPlot({
-      plot.col1(data(),data_categorica,idade1,  legenda = "Idade do recém nascido", titulo = "SIFÍLIS (congenita)")
+      plot.col1_teste(data(),
+                      idade1,
+                      legenda = "Idade do recém nascido",
+                      titulo = "SIFÍLIS (congenita)",
+                      posicao_legenda="top")
     })%>%
-      bindCache(input$radio,input$escolha_usuario) %>%
+      bindCache(opcoes_usuario$nivel_geografico,
+                opcoes_usuario$escolha_usuario,
+                input$data_selecionada) %>%
       bindEvent(input$gerar_graficos)
 
     output$raca <- renderPlot({
-      plot.col1(data(),data_categorica,CS_RACA, legenda = "Raça/cor", titulo = "SIFÍLIS (congenita)")
+      plot.col1_teste(data(),
+                      CS_RACA,
+                      legenda = "Raça/cor",
+                      titulo = "SIFÍLIS (congenita)",
+                      posicao_legenda="top")
     })%>%
-      bindCache(input$radio,input$escolha_usuario) %>%
+      bindCache(opcoes_usuario$nivel_geografico,
+                opcoes_usuario$escolha_usuario,
+                input$data_selecionada) %>%
       bindEvent(input$gerar_graficos)
 
     output$caracteristicas_clinicas<- renderPlot({
-      plot.col1(data(),data_categorica,EVO_DIAG_N, legenda = "Características clínicas", titulo ="SIFÍLIS (congenita)")
+      plot.col1_teste(data(),
+                      EVO_DIAG_N,
+                      legenda = "Características clínicas",
+                      titulo ="SIFÍLIS (congenita)")
     })%>%
-      bindCache(input$radio,input$escolha_usuario) %>%
+      bindCache(opcoes_usuario$nivel_geografico,
+                opcoes_usuario$escolha_usuario,
+                input$data_selecionada) %>%
       bindEvent(input$gerar_graficos)
 
     output$diagnostico <- renderPlot({
-      plot.col1(data(),data_categorica,ANTSIFIL_N, legenda = "Momento de diagnóstico", titulo = "SIFÍLIS (congenita)")
+      plot.col1_teste(data(),
+                      ANTSIFIL_N,
+                      legenda = "Momento de diagnóstico",
+                      titulo = "SIFÍLIS (congenita)")
     })%>%
-      bindCache(input$radio,input$escolha_usuario) %>%
+      bindCache(opcoes_usuario$nivel_geografico,
+                opcoes_usuario$escolha_usuario,
+                input$data_selecionada) %>%
       bindEvent(input$gerar_graficos)
     #
     # output$non_treponemal <- renderPlot({
-    #   plot.col1(data(),data_categorica,TPTESTE1, legenda = "Resultado do teste não treponêmico no pré-natal", titulo = "SIFÍLIS (gestacional)")
+    #   plot.col1_teste(data(),TPTESTE1, legenda = "Resultado do teste não treponêmico no pré-natal", titulo = "SIFÍLIS (gestacional)")
     # })%>%
     #   bindCache(input$radio,input$escolha_usuario) %>%
     #   bindEvent(input$gerar_graficos)
     #
     # output$treponemal <- renderPlot({
-    #   plot.col1(data(),data_categorica,TPCONFIRMA, legenda = "Resultado do teste treponêmico no pré-natal", titulo = "SIFÍLIS (gestacional)")
+    #   plot.col1_teste(data(),TPCONFIRMA, legenda = "Resultado do teste treponêmico no pré-natal", titulo = "SIFÍLIS (gestacional)")
     # })%>%
     #   bindCache(input$radio,input$escolha_usuario) %>%
     #   bindEvent(input$gerar_graficos)
-    })
+  })
 }
 
 ## To be copied in the UI
