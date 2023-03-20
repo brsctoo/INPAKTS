@@ -145,7 +145,7 @@ mod_descritiva_sim_materna_server <- function(id, opcoes_usuario){
 
     # Gerando Gráficos -------
     output$morte_puerperio <- renderPlot({
-      plot.col1_teste(data(),
+      plot.col1(data(),
                       morte_puerperio,
                       legenda="Ocorrência de óbito durante o puerpério",
                       titulo = "SIM (Óbito materno)",
@@ -157,7 +157,7 @@ mod_descritiva_sim_materna_server <- function(id, opcoes_usuario){
       bindEvent(input$gerar_graficos)
 
     output$local_ocorrencia <- renderPlot({
-      plot.col1_teste(data(),
+      plot.col1(data(),
                       local_ocorrencia,
                       legenda = "Local de ocorrência",
                       titulo="SIM (óbito materno)",
@@ -169,7 +169,7 @@ mod_descritiva_sim_materna_server <- function(id, opcoes_usuario){
       bindEvent(input$gerar_graficos)
 
     output$morte_mulher <- renderPlot({
-      plot.col1_teste(data(),
+      plot.col1(data(),
                       morte_mulher,
                       legenda = "Tipo de parto",
                       titulo = "SIM (Óbito materno)")
@@ -180,7 +180,7 @@ mod_descritiva_sim_materna_server <- function(id, opcoes_usuario){
       bindEvent(input$gerar_graficos)
 
     output$momento_obito<- renderPlot({
-      plot.col1_teste(data(),
+      plot.col1(data(),
                       tp_morte_ocorreu,
                       legenda = "Ocorrência de óbito durante gravidez, parto, aborto ou puerpério",
                       titulo="SIM (óbito materno)")
@@ -193,7 +193,7 @@ mod_descritiva_sim_materna_server <- function(id, opcoes_usuario){
 
 
     output$escolaridade <- renderPlot({
-      plot.col1_teste(data(),
+      plot.col1(data(),
                       escolaridade,
                       legenda="Escolaridade",
                       titulo = "SIM (óbito materno)")
@@ -204,7 +204,7 @@ mod_descritiva_sim_materna_server <- function(id, opcoes_usuario){
       bindEvent(input$gerar_graficos)
 
     output$raca_cor <- renderPlot({
-      plot.col1_teste(data(),
+      plot.col1(data(),
                       raca_cor,
                       legenda = "Raça/cor",
                       titulo = "SIM (óbito materno)")
@@ -215,7 +215,7 @@ mod_descritiva_sim_materna_server <- function(id, opcoes_usuario){
       bindEvent(input$gerar_graficos)
 
     output$estado_civil <- renderPlot({
-      plot.col1_teste(data(),
+      plot.col1(data(),
                       estado_civil,
                       legenda = "Estado civil",
                       titulo="SIM (óbito materno)")

@@ -128,7 +128,7 @@ mod_descritiva_sif_congenita_server <- function(id, opcoes_usuario){
 
     #Gerando Gráficos -------
     output$idade <- renderPlot({
-      plot.col1_teste(data(),
+      plot.col1(data(),
                       idade1,
                       legenda = "Idade do recém nascido",
                       titulo = "SIFÍLIS (congenita)",
@@ -140,7 +140,7 @@ mod_descritiva_sif_congenita_server <- function(id, opcoes_usuario){
       bindEvent(input$gerar_graficos)
 
     output$raca <- renderPlot({
-      plot.col1_teste(data(),
+      plot.col1(data(),
                       CS_RACA,
                       legenda = "Raça/cor",
                       titulo = "SIFÍLIS (congenita)",
@@ -152,7 +152,7 @@ mod_descritiva_sif_congenita_server <- function(id, opcoes_usuario){
       bindEvent(input$gerar_graficos)
 
     output$caracteristicas_clinicas<- renderPlot({
-      plot.col1_teste(data(),
+      plot.col1(data(),
                       EVO_DIAG_N,
                       legenda = "Características clínicas",
                       titulo ="SIFÍLIS (congenita)")
@@ -163,7 +163,7 @@ mod_descritiva_sif_congenita_server <- function(id, opcoes_usuario){
       bindEvent(input$gerar_graficos)
 
     output$diagnostico <- renderPlot({
-      plot.col1_teste(data(),
+      plot.col1(data(),
                       ANTSIFIL_N,
                       legenda = "Momento de diagnóstico",
                       titulo = "SIFÍLIS (congenita)")
@@ -174,13 +174,13 @@ mod_descritiva_sif_congenita_server <- function(id, opcoes_usuario){
       bindEvent(input$gerar_graficos)
     #
     # output$non_treponemal <- renderPlot({
-    #   plot.col1_teste(data(),TPTESTE1, legenda = "Resultado do teste não treponêmico no pré-natal", titulo = "SIFÍLIS (gestacional)")
+    #   plot.col1(data(),TPTESTE1, legenda = "Resultado do teste não treponêmico no pré-natal", titulo = "SIFÍLIS (gestacional)")
     # })%>%
     #   bindCache(input$radio,input$escolha_usuario) %>%
     #   bindEvent(input$gerar_graficos)
     #
     # output$treponemal <- renderPlot({
-    #   plot.col1_teste(data(),TPCONFIRMA, legenda = "Resultado do teste treponêmico no pré-natal", titulo = "SIFÍLIS (gestacional)")
+    #   plot.col1(data(),TPCONFIRMA, legenda = "Resultado do teste treponêmico no pré-natal", titulo = "SIFÍLIS (gestacional)")
     # })%>%
     #   bindCache(input$radio,input$escolha_usuario) %>%
     #   bindEvent(input$gerar_graficos)

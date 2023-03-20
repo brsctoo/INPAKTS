@@ -129,7 +129,7 @@ mod_descritiva_sif_gestante_server <- function(id, opcoes_usuario){
 
     # Gerando Gráficos -------
     output$raca <- renderPlot({
-      plot.col1_teste(data(),
+      plot.col1(data(),
                       CS_RACA,
                       legenda = "Raça/cor",
                       titulo = "SIFÍLIS (gestacional)",
@@ -141,7 +141,7 @@ mod_descritiva_sif_gestante_server <- function(id, opcoes_usuario){
       bindEvent(input$gerar_graficos)
 
     output$idade <- renderPlot({
-      plot.col1_teste(data(),
+      plot.col1(data(),
                       idade_mae1,
                       legenda = "Idade materna",
                       titulo = "SIFÍLIS (gestacional)",
@@ -153,7 +153,7 @@ mod_descritiva_sif_gestante_server <- function(id, opcoes_usuario){
       bindEvent(input$gerar_graficos)
 
     output$classificacao_clinica<- renderPlot({
-      plot.col1_teste(data(),TPEVIDENCI, legenda = "Classificação clínica", titulo ="SIFÍLIS (gestacional)")
+      plot.col1(data(),TPEVIDENCI, legenda = "Classificação clínica", titulo ="SIFÍLIS (gestacional)")
     })%>%
       bindCache(opcoes_usuario$nivel_geografico,
                 opcoes_usuario$escolha_usuario,
@@ -161,7 +161,7 @@ mod_descritiva_sif_gestante_server <- function(id, opcoes_usuario){
       bindEvent(input$gerar_graficos)
 
     output$escolaridade <- renderPlot({
-      plot.col1_teste(data(),
+      plot.col1(data(),
                       CS_ESCOL_N,
                       legenda = "Escolaridade da gestante",
                       titulo = "SIFÍLIS (gestacional)")
@@ -172,7 +172,7 @@ mod_descritiva_sif_gestante_server <- function(id, opcoes_usuario){
       bindEvent(input$gerar_graficos)
 
     output$non_treponemal <- renderPlot({
-      plot.col1_teste(data(),
+      plot.col1(data(),
                       TPTESTE1,
                       legenda = "Resultado do teste não treponêmico no pré-natal",
                       titulo = "SIFÍLIS (gestacional)")
@@ -183,7 +183,7 @@ mod_descritiva_sif_gestante_server <- function(id, opcoes_usuario){
       bindEvent(input$gerar_graficos)
 
     output$treponemal <- renderPlot({
-      plot.col1_teste(data(),
+      plot.col1(data(),
                       TPCONFIRMA,
                       legenda = "Resultado do teste treponêmico no pré-natal",
                       titulo = "SIFÍLIS (gestacional)")

@@ -128,7 +128,7 @@ mod_descritiva_sinasc_server <- function(id, opcoes_usuario){
 
     # Gerando Gráficos -------
     output$pre_natal <- renderPlot({
-      plot.col1_teste(data(),
+      plot.col1(data(),
                       consulta_prenatal,
                       legenda = "Número de consultas pré-natais",
                       titulo = "SINASC (Nascidos vivos)", posicao_legenda="top")
@@ -138,7 +138,7 @@ mod_descritiva_sinasc_server <- function(id, opcoes_usuario){
     #bindEvent(input$gerar_graficos)
 
     output$cesarias <- renderPlot({
-      plot.col1_teste(data(),
+      plot.col1(data(),
                       parto_cesarea1,
                       legenda = "Número de cesáreas anteriores",
                       titulo = "SINASC (Nascidos vivos)",
@@ -150,7 +150,7 @@ mod_descritiva_sinasc_server <- function(id, opcoes_usuario){
       bindEvent(input$gerar_graficos)
 
     output$trimestre_gestacao<- renderPlot({
-      plot.col1_teste(data(),
+      plot.col1(data(),
                       mes_gestacao_prenatal1,
                       legenda = "Trimestre de gestação de início do pré-natal",
                       titulo ="SINASC (Nascidos vivos)")
@@ -161,7 +161,7 @@ mod_descritiva_sinasc_server <- function(id, opcoes_usuario){
       bindEvent(input$gerar_graficos)
 
     output$tipo_parto <- renderPlot({
-      plot.col1_teste(data(),
+      plot.col1(data(),
                       tipo_parto,
                       legenda = "Tipo de parto",
                       titulo = "SINASC (Nascidos vivos)")
@@ -172,7 +172,7 @@ mod_descritiva_sinasc_server <- function(id, opcoes_usuario){
       bindEvent(input$gerar_graficos)
 
     output$ocorrencia_cesarea <- renderPlot({
-      plot.col1_teste(data(),
+      plot.col1(data(),
                       cesarea_anterior_parto,
                       legenda = "Ocorrência de cesárea antes do trabalho de parto iniciar",
                       titulo = "SINASC (Nascidos vivos)")
@@ -183,7 +183,7 @@ mod_descritiva_sinasc_server <- function(id, opcoes_usuario){
       bindEvent(input$gerar_graficos)
 
     output$semana_gestacional <- renderPlot({
-      plot.col1_teste(data(),
+      plot.col1(data(),
                       semanas_de_gestacao,
                       legenda = "Número de semanas de gestação no nascimento", "SINASC (Nascidos vivos)")
     })%>%

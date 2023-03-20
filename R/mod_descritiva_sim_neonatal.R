@@ -133,7 +133,7 @@ mod_descritiva_sim_neonatal_server <- function(id, opcoes_usuario){
     # Gerando Gráficos -------
 
     output$duracao_gestacao <- renderPlot({
-      plot.col1_teste(data(),
+      plot.col1(data(),
                       tipo_gestacao,
                       legenda = "Número de semanas de gestação",
                       titulo = "SIM (Óbito neonatal)",
@@ -149,7 +149,7 @@ mod_descritiva_sim_neonatal_server <- function(id, opcoes_usuario){
     # porque a dependência reativa é suprimida por ..Event()
 
     output$tipo_parto <- renderPlot({
-      plot.col1_teste(data(),
+      plot.col1(data(),
                       tipo_parto,
                       legenda = "Tipo de parto",
                       titulo = "SIM (Óbito neonatal)",
@@ -161,7 +161,7 @@ mod_descritiva_sim_neonatal_server <- function(id, opcoes_usuario){
       bindEvent(input$gerar_graficos)
 
     output$durante_parto<- renderPlot({
-      plot.col1_teste(data(),
+      plot.col1(data(),
                       tipo_morte_parto,
                       legenda =  "Ocorrência do óbito em relação ao parto",
                       titulo = "SIM (Óbito neonatal)")
@@ -172,7 +172,7 @@ mod_descritiva_sim_neonatal_server <- function(id, opcoes_usuario){
       bindEvent(input$gerar_graficos)
 
     output$tipo_obito <- renderPlot({
-      plot.col1_teste(data(),
+      plot.col1(data(),
                       tipo_obito,
                       legenda =  "Ocorrência do óbito fetal (aborto) ou não fetal",
                       titulo = "SIM (Óbito neonatal)")
@@ -183,7 +183,7 @@ mod_descritiva_sim_neonatal_server <- function(id, opcoes_usuario){
       bindEvent(input$gerar_graficos)
 
     output$local_ocorrencia <- renderPlot({
-      plot.col1_teste(data(),
+      plot.col1(data(),
                       local_ocorrencia,
                       legenda = "Local de ocorrência",
                       titulo="SIM (Óbito neonatal)")
@@ -194,7 +194,7 @@ mod_descritiva_sim_neonatal_server <- function(id, opcoes_usuario){
       bindEvent(input$gerar_graficos)
 
     output$raca_cor <- renderPlot({
-      plot.col1_teste(data(),
+      plot.col1(data(),
                       raca_cor,
                       legenda = "Raça/cor",
                       titulo = "SIM (Óbito neonatal)")
@@ -206,7 +206,7 @@ mod_descritiva_sim_neonatal_server <- function(id, opcoes_usuario){
 
 
     output$escolaridade_mae <- renderPlot({
-      plot.col1_teste(data(),
+      plot.col1(data(),
                       escolaridade_mae,
                       legenda="Escolaridade da mãe",
                       titulo = "SIM (Óbito neonatal)")
