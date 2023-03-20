@@ -46,7 +46,7 @@ app_server <- function(input, output, session) {
   # Your application server logic
 
   opcoes_usuario <- reactiveValues()
-  mod_apresentacao_server("apresentacao_ui_1",opcoes_usuario)
+  mod_inicio_server("inicio_ui_1",opcoes_usuario)
 
  # mod_testando_server("testando_1",opcoes_usuario)
   mod_analise_geografica_server("analise_geografica_1")
@@ -57,7 +57,7 @@ app_server <- function(input, output, session) {
   mod_descritiva_sinasc_server("descritiva_sinasc_1",opcoes_usuario)
   mod_descritiva_sim_neonatal_server("descritiva_sim_neonatal_1", opcoes_usuario)
   mod_descritiva_sim_materna_server("descritiva_sim_materna_1", opcoes_usuario)
-  mod_descritiva_sif_gestante_server("descritiva_sif_gestante_1")
-  mod_descritiva_sif_congenita_server("descritiva_sif_congenita_1")
+  mod_descritiva_sif_gestante_server("descritiva_sif_gestante_1", opcoes_usuario)
+  mod_descritiva_sif_congenita_server("descritiva_sif_congenita_1", opcoes_usuario)
   mod_intervencao_sif_gestante_server("intervencao_sif_gestante_1",opcoes_usuario)
 }
