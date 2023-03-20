@@ -14,10 +14,7 @@ app_ui <- function(request) {
     # Your application UI logic
     navbarPage(
       id = "intabset", # needed for landing page
-      title = div(tags$a(img(src = "www/Logo2.png", height = 70, width = 130)
-      ),
-      style = "position: relative; top: 4px;"
-      ), # Navigation bar
+      title = "InpakTS", # Navigation bar
 
       windowTitle = "SESA", # title for browser tab
       # Usando bottstrap versão 4
