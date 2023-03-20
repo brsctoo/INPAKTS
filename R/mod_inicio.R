@@ -15,7 +15,7 @@ mod_inicio_ui <- function(id) {
                     style  = "margin-right: 0px;",
                     fluid = FALSE,
                     width = 3,
-                    p(HTML('<center><img src="www/My project-3.jpeg" height="80" width="75%"></center>')),
+                    p(HTML('<center><img src="www/My project-3.png" height="80" width="75%"></center>')),
 
                     # fluidRow(
                     #   bs4Dash::infoBox(title = "Número de casos na semana", 36, color = "danger", icon = icon("credit-card")),
