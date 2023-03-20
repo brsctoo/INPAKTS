@@ -48,41 +48,43 @@ plot.col <-  function(data_prep,x,y,titulo) {
 }
 
 
-plot.col1 <- function(data_prep,x,y,titulo, legenda, posicao_legenda="none"){
+# plot.col1 <- function(data_prep,x,y,titulo, legenda, posicao_legenda="none"){
+#
+#   colors1 <- c("#6BAED6","#fc9272")
+#
+#   g <- data_prep %>%
+#     dplyr::select({{ x }},{{ y }}) %>%
+#     dplyr::group_by({{ x }},{{ y }}) %>%
+#     dplyr::summarize(n = dplyr::n()) %>%
+#     dplyr::mutate(freq = n ) %>%
+#     dplyr::mutate(porcent = (n /sum(n))*100) %>%
+#     ggplot2::ggplot(ggplot2::aes(x={{ y }}, y = freq, fill={{ x }})) +
+#     ggplot2::geom_col(position = "dodge") +
+#     ggplot2::labs(x = legenda ,
+#                   y = "Frequência",
+#                   title = titulo,
+#                   fill= "Período")+
+#     ggplot2::scale_fill_manual(values = colors1,na.value="white")+
+#     ggplot2::theme_light()+
+#     ggplot2::theme(axis.text = ggplot2::element_text(size = 15),axis.title = ggplot2::element_text(size = 15)) +
+#     ggplot2::theme(legend.position=posicao_legenda)+
+#     geom_text(aes(label =  paste ( round(porcent, 2), "%", sep="")), vjust=-1, position = position_dodge(0.9))+
+#     ggplot2::scale_y_continuous(labels = function(x) format(x, scientific = FALSE))
+#
+#   #Se o banco de dados selecionado pelo user n < 30 então
+#   if(nrow(data_prep)<30){
+#     #o gráfico não é printado
+#     return(invisible(g))
+#   }else{
+#     return(g)
+#   }
+# }
 
-  colors1 <- c("#6BAED6","#fc9272")
 
-  g <- data_prep %>%
-    dplyr::select({{ x }},{{ y }}) %>%
-    dplyr::group_by({{ x }},{{ y }}) %>%
-    dplyr::summarize(n = dplyr::n()) %>%
-    dplyr::mutate(freq = n ) %>%
-    dplyr::mutate(porcent = (n /sum(n))*100) %>%
-    ggplot2::ggplot(ggplot2::aes(x={{ y }}, y = freq, fill={{ x }})) +
-    ggplot2::geom_col(position = "dodge") +
-    ggplot2::labs(x = legenda ,
-                  y = "Frequência",
-                  title = titulo,
-                  fill= "Período")+
-    ggplot2::scale_fill_manual(values = colors1,na.value="white")+
-    ggplot2::theme_light()+
-    ggplot2::theme(axis.text = ggplot2::element_text(size = 15),axis.title = ggplot2::element_text(size = 15)) +
-    ggplot2::theme(legend.position=posicao_legenda)+
-    geom_text(aes(label =  paste ( round(porcent, 2), "%", sep="")), vjust=-1, position = position_dodge(0.9))+
-    ggplot2::scale_y_continuous(labels = function(x) format(x, scientific = FALSE))
+plot.col1 <- function(data_prep_desc,y,titulo, legenda, posicao_legenda="none"){
 
-  #Se o banco de dados selecionado pelo user n < 30 então
-  if(nrow(data_prep)<30){
-    #o gráfico não é printado
-    return(invisible(g))
-  }else{
-    return(g)
-  }
-}
-
-
-plot.col1_teste <- function(data_prep_desc,y,titulo, legenda, posicao_legenda="none"){
-
+  #Argumentos
+  # y =
   colors1 <- c("#6BAED6","#fc9272")
 
   g <- data_prep_desc %>%
@@ -112,37 +114,6 @@ plot.col1_teste <- function(data_prep_desc,y,titulo, legenda, posicao_legenda="n
     return(g)
   }
 }
-
-# plot.col1_teste <- function(data_prep,y,titulo, legenda, posicao_legenda="none"){
-#
-#   colors1 <- c("#6BAED6","#fc9272")
-#
-#   g <- data_prep %>%
-#     dplyr::select(intervation_date,{{ y }}) %>%
-#     dplyr::group_by(intervation_date,{{ y }}) %>%
-#     dplyr::summarize(n = dplyr::n()) %>%
-#     dplyr::mutate(freq = n ) %>%
-#     dplyr::mutate(porcent = (n /sum(n))*100) %>%
-#     ggplot2::ggplot(ggplot2::aes(x={{ y }}, y = freq, fill=intervation_date)) +
-#     ggplot2::geom_col(position = "dodge") +
-#     ggplot2::labs(x = legenda ,
-#                   y = "Frequência",
-#                   title = titulo,
-#                   fill= "Período")+
-#     ggplot2::scale_fill_manual(values = colors1,na.value="white")+
-#     ggplot2::theme_light()+
-#     ggplot2::theme(axis.text = ggplot2::element_text(size = 15),axis.title = ggplot2::element_text(size = 15)) +
-#     ggplot2::theme(legend.position=posicao_legenda)+
-#     geom_text(aes(label =  paste ( round(porcent, 2), "%", sep="")), vjust=-1, position = position_dodge(0.9))
-#
-#   #Se o banco de dados selecionado pelo user n < 30 então
-#   if(nrow(data_prep)<30){
-#     #o gráfico não é printado
-#     return(invisible(g))
-#   }else{
-#     return(g)
-#   }
-# }
 
 
 #Função para selecionar subamostra do conjunto de dados de acordo com as opões selecionadas pelo usuário ----------------------
