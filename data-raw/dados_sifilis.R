@@ -18,8 +18,9 @@ dados_sif_gestante <- sif_gestante %>% tidyr::drop_na(ID_MUNICIP) %>%
   #Mantendo apenas cidades do estado do PR (iniciando com 41:
   dplyr::filter(substr(ID_MUNICIP,1,2) == "41") %>%
   dplyr::rename(ibge_estabelecimento="ID_MUNICIP") %>%
-  dplyr::filter(DT_NOTIFIC >= "2017-01-01") %>%
-  dplyr::mutate(data_categorica = ifelse(DT_NOTIFIC > "2020-03-20",'Depois','Antes')) %>%
+  #dplyr::filter(DT_NOTIFIC >= "2017-01-01") %>%
+  dplyr::mutate(data_categorica = ifelse(DT_NOTIFIC > "2020-03-20",'Depois','Antes'),
+                data_variable = DT_NOTIFIC) %>%
   dplyr::left_join(munic,by = "ibge_estabelecimento") %>%
   dplyr::mutate_at(c("municipio","micro","macro","municipio_semacento","populacao"), as.factor) %>%
   #dplyr::mutate_at(c("CS_RACA"),as.factor) %>%
@@ -31,11 +32,11 @@ dados_sif_gestante <- sif_gestante %>% tidyr::drop_na(ID_MUNICIP) %>%
                                         ifelse(CS_RACA>1 & CS_RACA<6, "Não-branca",ifelse(CS_RACA==9, "Ignorado",NA)))),
                 idade_mae = as.numeric(round(difftime(as.Date(DT_NOTIFIC),as.Date(DT_NASC), units = "days")/365,0)),
                 idade_mae1 = ifelse(is.na(idade_mae), "Ignorado",
-                                 ifelse(idade_mae>=10 & idade_mae<=14,"10-14",
-                                        ifelse(idade_mae>=15 & idade_mae<=19, "15-19",
-                                               ifelse(idade_mae>=20 & idade_mae<=39, "20-39",
-                                                      ifelse(idade_mae>=40 & idade_mae<=59,"40-59",
-                                                             ifelse(idade_mae>=60|idade_mae<=9, "Ignorado", NA)))))),
+                                    ifelse(idade_mae>=10 & idade_mae<=14,"10-14",
+                                           ifelse(idade_mae>=15 & idade_mae<=19, "15-19",
+                                                  ifelse(idade_mae>=20 & idade_mae<=39, "20-39",
+                                                         ifelse(idade_mae>=40 & idade_mae<=59,"40-59",
+                                                                ifelse(idade_mae>=60|idade_mae<=9, "Ignorado", NA)))))),
                 TPEVIDENCI = ifelse(is.na(TPEVIDENCI), "Ignorado",
                                     ifelse(TPEVIDENCI==1, "Primária",
                                            ifelse(TPEVIDENCI==2, "Secundária",
@@ -64,7 +65,7 @@ dados_sif_gestante <- sif_gestante %>% tidyr::drop_na(ID_MUNICIP) %>%
 
 #levels(dados_sif_gestante$TPCONFIRMA)
 
-                  #(length(seq(from = DT_NASC, to = DT_NOTIFIC, by = 'year'))-1))
+#(length(seq(from = DT_NASC, to = DT_NOTIFIC, by = 'year'))-1))
 
 #forcats::fct_count(dados_sif_gestante$TPCONFIRMA, prop = T)
 #summary(sifilis1$ID_MUNICIP)
