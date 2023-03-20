@@ -19,8 +19,9 @@ dados_sif_congenita <- sif_congenita %>% tidyr::drop_na(ID_MUNICIP) %>%
   #Mantendo apenas cidades do estado do PR (iniciando com 41:
   dplyr::filter(substr(ID_MUNICIP,1,2) == "41") %>%
   dplyr::rename(ibge_estabelecimento="ID_MUNICIP") %>%
-  dplyr::filter(DT_NOTIFIC >= "2017-01-01") %>%
-  dplyr::mutate(data_categorica = ifelse(DT_NOTIFIC > "2020-03-20",'Depois','Antes')) %>%
+  #dplyr::filter(DT_NOTIFIC >= "2017-01-01") %>%
+  dplyr::mutate(data_categorica = ifelse(DT_NOTIFIC > "2020-03-20",'Depois','Antes'),
+                data_variable = DT_NOTIFIC) %>%
   dplyr::left_join(munic,by = "ibge_estabelecimento") %>%
   dplyr::mutate_at(c("municipio","micro","macro","municipio_semacento","populacao"), as.factor) %>%
   dplyr::mutate_at(c("CS_RACA", "EVO_DIAG_N"), as.character) %>%
