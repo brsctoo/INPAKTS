@@ -107,7 +107,7 @@ mod_sobre_ui <- function(id) {
           tags$li(
             "SESA-PR: Acácia Maria Lourenço Francisco Nasr; Maria Goretti David Lopes"
           ),
-          tags$li("DES/UEM: Adrian Strieder Philippsen; Diogo Rossoni"),
+          tags$li("DES/UEM: Adriana Strieder Philippsen; Diogo Rossoni"),
           tags$li("DEM/UEM: Fernanda Nishida, Luciano Andrade"),
           tags$li("DEF/UEM Raissa Bocchi Pedroso, Rosana Rosseto Oliveira"),
           tags$li("UNINGÁ:  Sandra Marisa Pelloso"),
