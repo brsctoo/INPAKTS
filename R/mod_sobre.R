@@ -4,47 +4,125 @@
 #'
 #' @param id,input,output,session Internal parameters for {shiny}.
 #'
-#' @noRd 
+#' @noRd
 #'
-#' @importFrom shiny NS tagList 
-mod_sobre_ui <- function(id){
+#' @importFrom shiny NS tagList
+mod_sobre_ui <- function(id) {
   ns <- NS(id)
-  tagList(
-    mainPanel(width=9,
-              h4("Sobre", style = "color:black;"), #opcoes de color: black, white
-              p("ScotPHO's profiles tool allows users to explore the various different profiles produced by the ", 
-                tags$a(href="http://www.scotpho.org.uk/about-us/about-scotpho/", "ScotPHO collaboration.", class="externallink")),
-              p("The profiles are intended to increase understanding of local health issues and to prompt further 
-                                    investigation, rather than to be used as a performance  management tool. The information needs to be 
-                                    interpreted within a local framework; an indicator may be higher or lower in one area compared to another,  but
-                                    local knowledge is needed to understand and interpret differences."),
-              p("The Scottish Public Health Observatory (ScotPHO) collaboration is led  by Public Health Scotland, and includes
-                                    Glasgow Centre for Population Health, National Records of Scotland,  the MRC/CSO Social and Public Health Sciences 
-                                      Unit and the Scottish Learning Disabilities Observatory."),
-              p("We aim to provide a clear picture of the health of the Scottish population and the factors that affect it. We
-                                    contribute to improved collection and use of routine data on health, risk factors, behaviours and wider health 
-                                    determinants. We take a lead in determining Scotland's future public health information needs, develop innovations 
-                                    in public health  information and provide a focus for new routine public health information development where 
-                                      gaps exist."),
-              p("If you have any trouble accessing any information on this site or have any further questions or feedback relating
-                                      to the data or the tool, then please contact us at: ", tags$b(tags$a(href="mailto:phs.scotpho@phs.scot", "phs.scotpho@phs.scot", class="externallink")),
-                "and we will be happy to help."))
- 
-  )
+  tagList(fluidPage(
+    sidebarLayout(
+      position = "right",
+      sidebarPanel(
+        style = "background-color: #ffffff;",
+        align = "center",
+        width = 5,
+        #Seção de parceiros
+        shinydashboard::infoBox(width = 12, icon=icon(""),
+          tags$h2("Parceria"),
+          tags$img(
+            src = "www/Slide2.png",
+            width = 155,
+            height = 60
+          )
+        ),
+        br(),
+        # Seção Financiamento
+        shinydashboard::infoBox(width = 12, icon = icon(""),
+          tags$h2("Financiamento"),
+          tags$ul(
+            tags$img(
+              src = "www/Slide3.png",
+              width = 450,
+              height = 80
+            ),
+            br(),
+            br(),
+            tags$img(
+              src = "www/Slide4.png",
+              width = 200,
+              height = 80
+            ),
+            br(),
+            br(),
+            tags$img(
+              src = "www/Slide5.png",
+              width = 150,
+              height = 80
+            ),
+            br(),
+            br(),
+            tags$img(
+              src = "www/Slide6.png",
+              width = 150,
+              height = 80
+            ),
+            br(),
+            br(),
+            tags$img(
+              src = "www/Slide7.png",
+              width = 150,
+              height = 80
+            )
+          )
+        )
+      ),
+      mainPanel(
+        width = 7,
+        #logo superior
+        tags$img(
+          src = "www/Slide1.png",
+          width = "100%",
+          height = 125,
+          align = "center"
+        ),
+        br(),
+        br(),
+        # Seção Equipe de Desenvolvimento
+        shinydashboard::infoBox(icon = icon("people-group"),
+          width = 12,
+          tags$h2("Equipe de Desenvolvimento"),
+          tags$p("Conheça nossa equipe de desenvolvimento:"),
+          tags$ul(
+            tags$li("Nome do Bolsista 1"),
+            tags$li("Nome do Bolsista 2"),
+            tags$li("Nome do Bolsista 3"),
+            tags$li("Coordenadora: Eniuce Menezes")
+          )
+        ),
+        # Seção Equipe de Colaboradores
+        shinydashboard::infoBox(icon = icon("people-group"),
+          width = 12,
+          tags$h2("Equipe de Colaboradores"),
+          tags$p("Conheça nossos colaboradores: "),
+          tags$ul(
+            tags$li(
+              "SESA-PR: Acácia Maria Lourenço Francisco Nasr; Maria Goretti David Lopes"
+            ),
+            tags$li("DES/UEM: Adrian Strieder Philippsen; Diogo Rossoni"),
+            tags$li("DEM/UEM: Fernanda Nishida, Luciano Andrade"),
+            tags$li("DEF/UEM Raissa Bocchi Pedroso, Rosana Rosseto Oliveira"),
+            tags$li("UNINGÁ:  Sandra Marisa Pelloso"),
+            tags$li("15ª Regional de Saúde-PR: Greicy Cesar do Amaral"),
+            tags$li("Duke University: João Ricardo Nickenig Vissoci")
+          )
+        )
+      )
+    )
+  ))
 }
-    
+
 #' sobre Server Functions
 #'
-#' @noRd 
+#' @noRd
 mod_sobre_server <- function(id){
   moduleServer( id, function(input, output, session){
     ns <- session$ns
- 
+
   })
 }
-    
+
 ## To be copied in the UI
 # mod_sobre_ui("sobre_ui_1")
-    
+
 ## To be copied in the server
 # mod_sobre_server("sobre_ui_1")
