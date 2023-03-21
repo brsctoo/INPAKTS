@@ -16,7 +16,7 @@ mod_sobre_ui <- function(id) {
       align = "center",
       width = 5,
       #Seção de parceiros
-      shinydashboard::infoBox(
+      bs4Dash::infoBox(
         width = 12,
         icon = icon(""),
         tags$h2("Parceria"),
@@ -29,7 +29,7 @@ mod_sobre_ui <- function(id) {
       ),
       br(),
       # Seção Financiamento
-      shinydashboard::infoBox(
+      bs4Dash::infoBox(
         width = 12,
         icon = icon(""),
         tags$h2("Financiamento"),
@@ -85,7 +85,7 @@ mod_sobre_ui <- function(id) {
       br(),
       br(),
       # Seção Equipe de Desenvolvimento
-      shinydashboard::infoBox(
+      bs4Dash::infoBox(
         icon = icon("people-group"),
         width = 12,
         tags$h2("Equipe de Desenvolvimento"),
@@ -98,7 +98,7 @@ mod_sobre_ui <- function(id) {
         )
       ),
       # Seção Equipe de Colaboradores
-      shinydashboard::infoBox(
+      bs4Dash::infoBox(
         icon = icon("people-group"),
         width = 12,
         tags$h2("Equipe de Colaboradores"),
