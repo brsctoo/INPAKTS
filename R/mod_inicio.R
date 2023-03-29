@@ -5,103 +5,157 @@
 #' @param id,input,output,session Internal parameters for {shiny}.
 #'
 #' @noRd
-#'
+
+
 #' @importFrom shiny NS tagList
 mod_inicio_ui <- function(id) {
   ns <- NS(id)
   tagList(
-    sidebarLayout(fluid = FALSE,
-                  sidebarPanel(
-                    style  = "margin-right: 0px;",
-                    fluid = FALSE,
-                    width = 3,
-                    p(HTML('<center><img src="www/My project-3.png" height="80" width="75%"></center>')),
+    sidebarLayout(
+      fluid = FALSE,
+      sidebarPanel(
+        style  = "margin-right: 0px;",
+        fluid = FALSE,
+        width = 3,
+        p(
+          HTML(
+            '<center><img src="www/My project-3.png" height="80" width="75%"></center>'
+          )
+        ),
 
-                    # fluidRow(
-                    #   bs4Dash::infoBox(title = "Número de casos na semana", 36, color = "danger", icon = icon("credit-card")),
-                    #   bs4Dash::infoBox(title = "Número de casos no mês", 2, color = "warning", icon = icon("credit-card")),
-                    #   bs4Dash::infoBox(title = "Número de casos no ano", 2, color = "maroon", icon = icon("fas fa-chart-bar"))
-                    # )
-                    shinyWidgets::useBs4Dash(),
-                    br(),
-                    br(),
-                    br(),
+        # fluidRow(
+        #   bs4Dash::infoBox(title = "Número de casos na semana", 36, color = "danger", icon = icon("credit-card")),
+        #   bs4Dash::infoBox(title = "Número de casos no mês", 2, color = "warning", icon = icon("credit-card")),
+        #   bs4Dash::infoBox(title = "Número de casos no ano", 2, color = "maroon", icon = icon("fas fa-chart-bar"))
+        # )
+        shinyWidgets::useBs4Dash(),
+        br(),
+        br(),
+        br(),
 
-                    # Opções para o usuário selecionar -------
-                    p("DEFINIÇÕES para todas as análises nesta plataforma:", style = "font-size: 18px"),
-                    br(),
-                    p("1)	Selecione:", style = "font-size: 18px"),
-                    selectInput(
-                      inputId = ns("radio"),
-                      label = "",
-                      choices = c("Estado do Paraná" = "PR",
-                                  "Macrorregião"     = "macro",
-                                  "RS"               = "micro",
-                                  "Município"        = "municipio"),
-                      selected = "PR"
-                    ),
-                    br(),
-                    br(),
-                    ## Campo para selecionar o nível geográfico escolhido -------
-                    selectInput(inputId = ns("escolha_usuario"),
-                                label = " ", choices = "PR"),
-                    br(),
-                    br(),
-                    ## Campo para selecionar a data da intervenção 1 -------
-                    shinyWidgets::airDatepickerInput(inputId = ns("date_intervention"),
-                                                     label = "",
-                                                     language = 'pt-BR',
-                                                     # value = c("2019-02-01","2020-10-01"),
-                                                     width = "250px",
-                                                     maxDate = as.Date(max(dados_sinasc_intervencao$data_variable))-months(5),
-                                                     minDate = min(as.Date(dados_sinasc_intervencao$data_variable)),
-                                                     view = "months", #editing what the popup calendar shows when it opens
-                                                     minView = "months", #making it not possible to go down to a "days" view and pick the wrong date
-                                                     dateFormat = "MM/yyyy",
-                                                     clearButton=T,
-                                                     range = T),
-                    br(),
-                    br(),
-                    br(),
-                    p("2)	Para cada uma das abas do MENU no topo da página, escolha um dos BANCOS DE DADOS para o qual objetiva gerar as análises.", style = "font-size: 18px")
+        # Opções para o usuário selecionar -------
+        p("DEFINIÇÕES para todas as análises nesta plataforma:", style = "font-size: 18px"),
+        br(),
+        p("1)	Selecione:", style = "font-size: 18px"),
+        selectInput(
+          inputId = ns("radio"),
+          label = "Nível Geográfico:",
+          choices = c(
+            "Estado do Paraná" = "PR",
+            "Macrorregião"     = "macro",
+            "RS"               = "micro",
+            "Município"        = "municipio"
+          ),
+          selected = "PR"
+        ),
+        br(),
+        br(),
+        ## Campo para selecionar o nível geográfico escolhido -------
+        selectInput(
+          inputId = ns("escolha_usuario"),
+          label = "Localidade:",
+          choices = "PR"
+        ),
+        br(),
+        br(),
+        ## Campo para selecionar a data da intervenção 1 -------
+        shinyWidgets::airDatepickerInput(
+          inputId = ns("date_intervention"),
+          label = "Até 2 datas de intervenção: ",
+          language = 'pt-BR',
+          # value = c("2019-02-01","2020-10-01"),
+          width = "250px",
+          maxDate = as.Date(max(
+            dados_sinasc_intervencao$data_variable
+          )) - months(5),
+          minDate = min(as.Date(
+            dados_sinasc_intervencao$data_variable
+          )),
+          view = "months",
+          #editing what the popup calendar shows when it opens
+          minView = "months",
+          #making it not possible to go down to a "days" view and pick the wrong date
+          dateFormat = "MM/yyyy",
+          clearButton = T,
+          range = T
+        ),
+        br(),
+        br(),
+        br(),
+        p(
+          "2)	Para cada uma das abas do MENU no topo da página, escolha um dos BANCOS DE DADOS para o qual objetiva gerar as análises.",
+          style = "font-size: 18px"
+        ),
+        br()
 
-                  ),
-                  sidebarPanel(
-                    style = "background-color: #6baed630;",
-                    height = 15,
+        # bs4Dash::infoBox(
+        #   title = strong("Dados disponíveis:"),
+        #   width = 12,
+        #   icon = icon("database"),
+        #   value = paste0(
+        #     format(as.Date(min(dados_sinasc_intervencao$data_variable)), "%B de %Y"), " até ",
+        #     format(as.Date(max(dados_sinasc_intervencao$data_variable)), "%B de %Y")
+        #   )
+        # )
 
-                    width = 9,
-                    fluid = FALSE,
+      ),
+      sidebarPanel(
+        style = "background-color: #6baed630;",
+        height = 15,
 
-                    #tags$b("...") torna o texto em negrito
-                    #p(...) delimita um parágrafo
-                    br(),
-                    p(tags$b("Plataforma de gestão e monitoramento do impacto de intervenções e eventos externos em Séries Temporais na saúde materno-infantil, da mulher e da criança"),
-                      align = "center",
-                      style = "font-size: 30px"
-                    ),
-                    br(),
-                    h5("Quer visualizar e monitorar o impacto de eventos externos tais como políticas públicas (ex Programa Rede Mãe Paranaense) e ocorrências de agravos (ex COVID-19) na saúde materno-infantil considerando fatores de risco associados, tais como idade, raça e gênero? Você está no lugar certo!"),
-                    br(),
-                    h5("O que você precisa ter em mãos antes de iniciar:"),
-                    p("Uma ou duas datas (mês/ano) da(s) intervenção(ões) que deseja analisar."),
-                    br(),
-                    h5("O que a INPAKTS disponibiliza?"),
-                    p("Modelos estatísticos adaptativos para os dados e localidade escolhida de modo que você poderá saber qual a mudança em tendência ocorrida após cada intervenção. E melhor, essa tendência está em porcentagem de mudança mensal. Você também poderá visualizar no mapa do estado do Paraná, quais municípios apresentaram tendência de aumento ou redução após a intervenção analisada."),
-                    br(),
-                    h5("Por exemplo, no que se refere à pandemia, o impacto da COVID-19 pode ser estimado no risco de vulnerabilidade para:"),
-                    tags$ul(
-                      tags$li("mortalidade neonatal (geral, precoce e tardia);"),
-                      tags$li("mortalidade materna;"),
-                      tags$li("Sífilis (gestacional)"),
-                      tags$li("na transmissão vertical ou perinatal da Sífilis (congênita)")
-                    ),
-                    br(),
-                    h5("como também para:"),
-                    tags$ul(
-                      tags$li("acesso aos cuidados durante o pré-natal e após o parto, na saúde gestacional, nas taxas relacionadas ao parto, nascimento prematuro e outros fatores que podem impactar desfechos da gravidez e do desenvolvimento infantil.")
-                    )
-                  )
+        width = 9,
+        fluid = FALSE,
+
+        #tags$b("...") torna o texto em negrito
+        #p(...) delimita um parágrafo
+        br(),
+        p(
+          tags$b(
+            "Plataforma de gestão e monitoramento do impacto de intervenções e eventos externos em Séries Temporais na saúde materno-infantil, da mulher e da criança"
+          ),
+          align = "center",
+          style = "font-size: 30px"
+        ),
+        br(),
+        h5(
+          "Você gostaria de visualizar e monitorar o impacto de eventos externos, como políticas públicas (por exemplo, o Programa Rede Mãe Paranaense) e ocorrências de agravos (como a COVID-19), na saúde materno-infantil, levando em conta fatores de risco associados, como idade, raça e gênero? Aqui, você pode realizar análises de séries temporais de forma adequada!"
+        ),
+        br(),
+        h5("O que você precisa ter em mãos antes de iniciar:"),
+        p(
+          "Uma ou duas datas (mês/ano) da(s) intervenção(ões) que deseja analisar."
+        ),
+        br(),
+        h5("O que a INPAKTS disponibiliza?"),
+        p(
+          "Modelos estatísticos adaptativos para os dados e localidade escolhida de modo que você poderá saber qual a mudança em tendência ocorrida após cada intervenção. E melhor, essa tendência está em porcentagem de mudança mensal. Você também poderá visualizar no mapa do estado do Paraná, quais municípios apresentaram tendência de aumento ou redução após a intervenção analisada."
+        ),
+        br(),
+        h5(
+          "Por exemplo, no que se refere à pandemia, o impacto da COVID-19 pode ser estimado no risco de vulnerabilidade para:"
+        ),
+        tags$ul(
+          tags$li("mortalidade neonatal (geral, precoce e tardia);"),
+          tags$li("mortalidade materna;"),
+          tags$li("Sífilis (gestacional)"),
+          tags$li("na transmissão vertical ou perinatal da Sífilis (congênita)")
+        ),
+        br(),
+        h5("como também para:"),
+        tags$ul(
+          tags$li(
+            "acesso aos cuidados durante o pré-natal e após o parto, na saúde gestacional, nas taxas relacionadas ao parto, nascimento prematuro e outros fatores que podem impactar desfechos da gravidez e do desenvolvimento infantil."
+          )
+        ),
+        br(),
+        br(),
+        br(),
+        br(),
+        p(tags$a(img(src = "www/database-solid.png", height = 30,width = 25, style= "margin-right: 5px;")), " ", strong("A base de dados contém informações de ",paste0(
+          format(as.Date(min(dados_sinasc_intervencao$data_variable)), "%B de %Y"), " até ",
+          format(as.Date(max(dados_sinasc_intervencao$data_variable)), "%B de %Y"))
+        ))
+      )
     )
   )
 }
@@ -184,10 +238,31 @@ mod_inicio_server <- function(id, opcoes_usuario) {
 
     ## input$escolha_usuario armazenará opção escolhida pelo usuario para um dado nivel geográfico (regional de saude 1, leste, maringa etc..)-----
 
-    observeEvent( input$escolha_usuario , {
+
+    observeEvent(input$escolha_usuario , {
       opcoes_usuario$escolha_usuario <- input$escolha_usuario
     })
+
+    #datas de inicio e fim do banco de dados (dados_sinasc)
+
+    inicio_fim = reactive({
+      fim = dados_sinasc %>% arrange(desc(data_variable)) %>% select(data_variable) %>% mutate(data_variable = as.Date(data_variable))
+      fim = max(fim$data_variable)
+
+      inicio = dados_sinasc %>% arrange(desc(data_variable)) %>% select(data_variable) %>% mutate(data_variable = as.Date(data_variable))
+      inicio = min(inicio$data_variable)
+
+      paste0("A base de dados contém informações de ", format(inicio, "%b de %Y"), " até ", format(fim, "%b de %Y"))
+      })
+
+    output$info_text <- renderText({
+      inicio_fim()
+    })
+
   })
+
+
+
 
 }
 
