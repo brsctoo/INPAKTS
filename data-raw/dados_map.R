@@ -29,10 +29,44 @@ return_map <- function(data_prep, var_date) {
 }
 
 
-dados_map_sinasc <- return_map(dados_sinasc_intervencao, data_variable)
-dados_map_sim_materno <- return_map(dados_sim_materno_intervention, data_variable)
-dados_map_sim_neonatal <- return_map(dados_sim_neonatal_intervention, data_variable)
-dados_map_sif_gestante <- return_map(dados_sif_gestante_intervention, data_variable)
+data_prep_geo <- function(data_prep,var_date,
+                           intervention_date_user="2015-01-01"){
+  #Formato Mes/ano
+  intervention_date_user_Ano <- as.numeric(format(as.Date(intervention_date_user),format = "%Y"))
+  intervention_date_user_Mes <- as.numeric(format(as.Date(intervention_date_user),format = "%m"))
+  municipio <- c()
+  trendAntes <- c()
+  trendChange <- c()
+  trendChangeCat <- c()
+  for (i in 1:399) {
+    municipio[i] <- levels(data_prep$municipio)[i]
+    dados <- data_prep[data_prep$municipio == municipio[i], ]
+    serie <- return_ts(dados, {{var_date}}, inicio = c(intervention_date_user_Ano, intervention_date_user_Mes))
+    trendAntes[i] = sinasc_modelo.ajustado(serie)$ResultingTrends[1, 1]
+    trendChange[i] = sinasc_modelo.ajustado(serie)$fit_lm$coefficients[3]
+    trendChangeCat[i] = c(ifelse(summary(sinasc_modelo.ajustado(serie)$fit_lm)$coefficients[3,4]<0.05,
+                                 ifelse(trendChange[i]>0, "Aumentou", "Diminuiu"), "Estável"))
+  }
+  dados_map <- data.frame(municipio = municipio,
+                          trendAntes = trendAntes,
+                          trendChange = trendChange,
+                          trendChangeCat = as.factor(trendChangeCat))
+
+  munic <- munic %>% dplyr::rename(municipio = "MUNICIPIO")
+  dados_map <-
+    dados_map %>% dplyr::left_join(munic, by = "municipio") %>%
+    dplyr::rename(micro = RS, macro = MACRO)
+
+  return(dados_map)
+}
+
+
+
+
+dados_map_sinasc <- data_prep_geo(dados_sinasc_intervencao, data_variable)
+dados_map_sim_materno <- data_prep_geo(dados_sim_materno_intervention, data_variable)
+dados_map_sim_neonatal <- data_prep_geo(dados_sim_neonatal_intervention, data_variable)
+dados_map_sif_gestante <- data_prep_geo(dados_sif_gestante_intervention, data_variable)
 
 
 usethis::use_data(dados_map_sinasc, overwrite = TRUE)
