@@ -54,7 +54,7 @@ golem::add_module( name = "intervencao_sinasc")
 golem::add_module( name = "intervencao_sim_neonatal")
 golem::add_module( name = "intervencao_sim_materno")
 golem::add_module( name = "analise_geografica")
-
+golem::add_module( name ="intervencao_sif_congenita")
 
 ## Add helper functions ----
 
