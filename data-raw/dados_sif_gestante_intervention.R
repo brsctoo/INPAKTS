@@ -29,12 +29,6 @@ dados_sif_gestante_intervention <- sif_gestante %>% tidyr::drop_na(ID_MUNICIP) %
                                  ifelse(CS_RACA==1,"Branca",
                                         ifelse(CS_RACA>1 & CS_RACA<6, "Não-branca",ifelse(CS_RACA==9, "Ignorado",NA)))),
                 idade_mae = as.numeric(round(difftime(as.Date(DT_NOTIFIC),as.Date(DT_NASC), units = "days")/365,0)),
-                idade_mae1 = ifelse(is.na(idade_mae), "Ignorado",
-                                    ifelse(idade_mae>=10 & idade_mae<=14,"10-14",
-                                           ifelse(idade_mae>=15 & idade_mae<=19, "15-19",
-                                                  ifelse(idade_mae>=20 & idade_mae<=39, "20-39",
-                                                         ifelse(idade_mae>=40 & idade_mae<=59,"40-59",
-                                                                ifelse(idade_mae>=60|idade_mae<=9, "Ignorado", NA)))))),
                 TPEVIDENCI = ifelse(is.na(TPEVIDENCI), "Ignorado",
                                     ifelse(TPEVIDENCI==1, "Primária",
                                            ifelse(TPEVIDENCI==2, "Secundária",
@@ -54,11 +48,20 @@ dados_sif_gestante_intervention <- sif_gestante %>% tidyr::drop_na(ID_MUNICIP) %
                                     ifelse(TPCONFIRMA==1, "Reagente",
                                            ifelse(TPCONFIRMA==2, "Não reagente",
                                                   ifelse(TPCONFIRMA==3, "Não realizado",
-                                                         ifelse(TPCONFIRMA==9, "Ignorado", NA)))))) %>%
+                                                         ifelse(TPCONFIRMA==9, "Ignorado", NA))))),
+                idade = ifelse(idade_mae>=10 & idade_mae<19, "Jovens: 10 a 18 anos",
+                               ifelse(idade_mae>=19 & idade_mae < 31, "Adultos Jovens: 19 a 30 anos",
+                                      ifelse(idade_mae>=31 & idade_mae<=60,"Adultos: 31 a 59 anos",
+                                             ifelse(idade_mae > 60 & idade_mae<90, "Idosos: acima de 60", NA)))),
+                raca_cor = forcats::fct_recode(CS_RACA,
+                                               "Branca" = "Branca",
+                                               "Não branca" = "Não-branca",
+                                               "Não informado" = "Ignorado")
+                ) %>%
   dplyr::mutate_at(c("TPCONFIRMA"), as.factor)%>%
   dplyr::relocate(municipio,micro,macro,municipio_semacento) %>%
   dplyr::rename(data_variable = DT_NOTIFIC) %>%
-  dplyr::select(municipio,micro,macro,populacao,data_variable,data_categorica)
+  dplyr::select(municipio,micro,macro,populacao,data_variable,data_categorica,idade,raca_cor)
 
 
 

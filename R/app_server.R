@@ -49,10 +49,10 @@ app_server <- function(input, output, session) {
   mod_inicio_server("inicio_ui_1",opcoes_usuario)
 
  # mod_testando_server("testando_1",opcoes_usuario)
-  mod_analise_geografica_server("analise_geografica_1")
-  mod_intervencao_sinasc_server("intervencao_sinasc_1",opcoes_usuario)
-  mod_intervencao_sim_neonatal_server("intervencao_sim_neonatal_1",opcoes_usuario)
-  mod_intervencao_sim_materno_server("intervencao_sim_materno_1",opcoes_usuario)
+  mod_analise_geografica_server("analise_geografica_1", opcoes_usuario)
+  mod_intervencao_sinasc_server("intervencao_sinasc_1", opcoes_usuario)
+  mod_intervencao_sim_neonatal_server("intervencao_sim_neonatal_1", opcoes_usuario)
+  mod_intervencao_sim_materno_server("intervencao_sim_materno_1", opcoes_usuario)
   mod_sobre_server("sobre_ui_1")
   mod_descritiva_sinasc_server("descritiva_sinasc_1",opcoes_usuario)
   mod_descritiva_sim_neonatal_server("descritiva_sim_neonatal_1", opcoes_usuario)
@@ -60,4 +60,5 @@ app_server <- function(input, output, session) {
   mod_descritiva_sif_gestante_server("descritiva_sif_gestante_1", opcoes_usuario)
   mod_descritiva_sif_congenita_server("descritiva_sif_congenita_1", opcoes_usuario)
   mod_intervencao_sif_gestante_server("intervencao_sif_gestante_1",opcoes_usuario)
+  mod_intervencao_sif_congenita_server("intervencao_sif_congenita_1",opcoes_usuario)
 }

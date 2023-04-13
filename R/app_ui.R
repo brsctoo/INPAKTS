@@ -62,9 +62,16 @@ app_ui <- function(request) {
 
         ## SIF GESTANTE ----
         tabPanel(
-          title = "SIFÍLIS GESTANTE",
+          title = "SÍFILIS GESTANTE",
           value = "interv_sif_gestante",
           mod_intervencao_sif_gestante_ui("intervencao_sif_gestante_1")
+        ),
+
+        ## SIF CONGENITA ----
+        tabPanel(
+          title = "SÍFILIS CONGÊNITA",
+          value = "interv_sif_congenita",
+          mod_intervencao_sif_congenita_ui("intervencao_sif_congenita_1")
         ),
       ),
 
