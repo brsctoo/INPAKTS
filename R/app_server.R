@@ -49,17 +49,14 @@ app_server <- function(input, output, session) {
   mod_inicio_server("inicio_ui_1",opcoes_usuario)
 
  # mod_testando_server("testando_1",opcoes_usuario)
-<<<<<<< HEAD
   mod_analise_geografica_server("analise_geografica_1",opcoes_usuario)
   mod_intervencao_sinasc_server("intervencao_sinasc_1",opcoes_usuario)
   mod_intervencao_sim_neonatal_server("intervencao_sim_neonatal_1",opcoes_usuario)
   mod_intervencao_sim_materno_server("intervencao_sim_materno_1",opcoes_usuario)
-=======
   mod_analise_geografica_server("analise_geografica_1", opcoes_usuario)
   mod_intervencao_sinasc_server("intervencao_sinasc_1", opcoes_usuario)
   mod_intervencao_sim_neonatal_server("intervencao_sim_neonatal_1", opcoes_usuario)
   mod_intervencao_sim_materno_server("intervencao_sim_materno_1", opcoes_usuario)
->>>>>>> 0bf9c65835271890f13273a268bd40acaf477f4c
   mod_sobre_server("sobre_ui_1")
   mod_descritiva_sinasc_server("descritiva_sinasc_1",opcoes_usuario)
   mod_descritiva_sim_neonatal_server("descritiva_sim_neonatal_1", opcoes_usuario)
