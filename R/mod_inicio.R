@@ -68,9 +68,10 @@ mod_inicio_ui <- function(id) {
           maxDate = as.Date(max(
             dados_sinasc_intervencao$data_variable
           )) - months(5),
-          minDate = min(as.Date(
-            dados_sinasc_intervencao$data_variable
-          )),
+          minDate = "2015-05-01",
+          #minDate = min(as.Date(
+          #  dados_sinasc_intervencao$data_variable
+         # )),
           view = "months",
           #editing what the popup calendar shows when it opens
           minView = "months",
