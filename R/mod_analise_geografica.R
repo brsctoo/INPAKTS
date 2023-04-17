@@ -91,7 +91,6 @@ mod_analise_geografica_ui <- function(id) {
                       plotOutput(
                         ns("mapa_sim_materno"), height = 500
                       ))),
-
       fluidRow(column(12,
                       h3(
                         strong(textOutput(ns(
@@ -101,6 +100,16 @@ mod_analise_geografica_ui <- function(id) {
       fluidRow(column(12,
                       plotOutput(
                         ns("mapa_sif_gestante"), height = 500
+                      ))),
+      fluidRow(column(12,
+                      h3(
+                        strong(
+                          textOutput(ns("titulo_sif_congenita"))),
+                        align = "center"
+                      ))),
+      fluidRow(column(12,
+                      plotOutput(
+                        ns("mapa_sif_congenita"), height = 500
                       ))),
     )
   )
@@ -368,11 +377,22 @@ mod_analise_geografica_server <- function(id, opcoes_usuario) {
 
   })
 
-  # Mapa sif congenita--------------------------------------------------------
+  ## Mapa sif congenita--------------------------------------------------------
 
+  titulo_sif_congenita <- eventReactive(input$gerar_graficos, {
+    ifelse(
+      input$radio == "PR",
+      "Casos de sífilis gestacional do Estado do Paraná",
+      paste0(
+        "Casos de sífilis gestacional da ",
+        input$escolha_usuario,
+        "ª Regional de Saúde"
+      )
+    )
+  })
 
-  # output$titulo_sif_congenita <- renderText(titulo_sif_congenita())
-  #
+  #output$titulo_sif_congenita <- renderText(titulo_sif_congenita())
+
   # mapa_sif_congenita <- eventReactive(input$gerar_graficos, {
   #   ifelse(
   #     input$radio == "RS",
