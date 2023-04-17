@@ -159,19 +159,19 @@ grafico_analise_impacto <- function(dados,
         inherit = FALSE,
         showlegend = TRUE) %>%
       #Adiconando a reta horizontal na data a partir da previsão:
-      add_lines(
-        #Legenda para a data da intervenção:
-        name = ~"Início da predição",
-        #A reta permanece fixa em relação ao eixo y:
-        y = range(dados),
-        #Data da intervenção
-        x = as.Date(max(dados_sinasc_intervencao$data_variable)-months(1)),
-        type = "scatter",
-        line = list(
-          color = "black"
-        ),
-        inherit = FALSE,
-        showlegend = TRUE) %>%
+      # add_lines(
+      #   #Legenda para a data da intervenção:
+      #   name = ~"Início da predição",
+      #   #A reta permanece fixa em relação ao eixo y:
+      #   y = range(dados),
+      #   #Data da intervenção
+      #   x = as.Date(max(dados_sinasc_intervencao$data_variable)-months(1)),
+      #   type = "scatter",
+      #   line = list(
+      #     color = "black"
+      #   ),
+      #   inherit = FALSE,
+      #   showlegend = TRUE) %>%
       #Configurações de layout do gráfico:
       layout(
         #Posição da legenda:
@@ -306,19 +306,19 @@ grafico_analise_impacto <- function(dados,
         inherit = FALSE,
         showlegend = TRUE) %>%
       #Adiconando a reta vertical na data a partir da previsão:
-      add_lines(
-        #Legenda para a data da intervenção:
-        name = ~"Início da predição",
-        #A reta permanece fixa em relação ao eixo y:
-        y = range(dados),
-        #Data da intervenção
-        x = as.Date(max(dados_sinasc_intervencao$data_variable)-months(1)),
-        type = "scatter",
-        line = list(
-          color = "black"
-        ),
-        inherit = FALSE,
-        showlegend = TRUE) %>%
+      # add_lines(
+      #   #Legenda para a data da intervenção:
+      #   name = ~"Início da predição",
+      #   #A reta permanece fixa em relação ao eixo y:
+      #   y = range(dados),
+      #   #Data da intervenção
+      #   x = as.Date(max(dados_sinasc_intervencao$data_variable)-months(1)),
+      #   type = "scatter",
+      #   line = list(
+      #     color = "black"
+      #   ),
+      #   inherit = FALSE,
+      #   showlegend = TRUE) %>%
       #Configurações de layout do gráfico:
       layout(
         #Posição da legenda:
@@ -2114,6 +2114,402 @@ grafico_analise_impacto_tipo_mortalidade <- function(dados,
   return(fig)
 
 }
+
+grafico_analise_impacto_idade_sif_c <- function(dados,
+                                          titulo = "(SINASC) Análise de impacto com tendência por idade",
+                                          #tipo = "lines",
+                                          ylabel = "Nascidos vivos",
+                                          intervention1 = "2017-03-01",
+                                          intervention2 = "2021-03-01"){
+
+  #stopifnot(is.numeric(dados),is.character(titulo),is.character(intervention1),is.character(intervention2))
+  # Argumentos da função:
+  #dados (inteiro) = inteiros com valores observados da serie temporal de acordo com o filtro criado pelo usuário
+  #titulo (char)   = título do gráfico gerado
+  #intervention1 (char)   =  data da primeira intervenção
+  #intervention2 (char)   =  data da segunda intervenção
+
+
+  jovem_st <- dados %>%
+    dplyr::filter(idade == "Menos de 7 dias") %>%
+    return_ts(data_variable,inicio = c(2015,1), tipo = "mensal")
+
+  adulto_jovem_st <- dados %>%
+    dplyr::filter(idade  == "7 a 27 dias") %>%
+    return_ts(data_variable,inicio = c(2015,1), tipo = "mensal")
+
+  adulto_st <- dados %>%
+    dplyr::filter(idade  == "28 dias a 1 ano") %>%
+    return_ts(data_variable,inicio = c(2015,1), tipo = "mensal")
+
+  st <- data.frame(DATA=seq.Date(from = as.Date(min(dados_sinasc_intervencao$data_variable)),
+                                 to = as.Date(max(dados_sinasc_intervencao$data_variable))-months(1),
+                                 by = "1 month"))
+  n <- nrow(st)
+
+  # Ajuste para obter o log mesmo no caso de a série temporal conter zero
+  if(any(jovem_st==0)){
+    jovem_st <- (jovem_st + min(jovem_st[jovem_st > 0])/2)
+  }
+  if(any(adulto_jovem_st==0)){
+    adulto_jovem_st <- (adulto_jovem_st + min(adulto_jovem_st[adulto_jovem_st > 0])/2)
+  }
+  if(any(adulto_st==0)){
+    adulto_st <- (adulto_st + min(adulto_st[adulto_st > 0])/2)
+  }
+
+
+  if(is.na(intervention2)){
+    #Data das intervenções
+    intervention1_date = as.Date(intervention1)
+
+    tIntervention1     <- seq.Date(from = as.Date(min(dados_sinasc_intervencao$data_variable)),to = intervention1_date,
+                                   by = "1 month") %>% length()
+
+
+    x <- interventionModelMatrix(typeInterventions=c("polynomialTrend",
+                                                     "polynomialTrend"),
+                                 tInterventions=c(1,tIntervention1),
+                                 n=n,
+                                 degree=c(1,1))
+
+    # Ajustando o modelo
+    jovem_st1 <- log(jovem_st)
+    adulto_jovem_st1 <- log(adulto_jovem_st)
+    adulto_st1 <- log(adulto_st)
+    fit_lm_j <- lm(jovem_st1~x)
+    fit_lm_aj <- lm(adulto_jovem_st1~x)
+    fit_lm_a <- lm(adulto_st1~x)
+
+    data <- seq.Date(from = as.Date(min(dados_sinasc_intervencao$data_variable)),to = as.Date(max(dados_sinasc_intervencao$data_variable))-months(1),
+                     by = "1 month")
+
+    dados1 <- data.frame(data= data, dados_j = jovem_st, dados_aj = adulto_jovem_st,
+                         dados_a = adulto_st)
+
+    # Gerando a reta de tendência
+    tendencia_j <- exp(fitted(fit_lm_j))
+    tendencia_aj <- exp(fitted(fit_lm_aj))
+    tendencia_a <- exp(fitted(fit_lm_a))
+
+    dados2 <- data.frame(dados1, tendencia_j, tendencia_aj, tendencia_a)
+
+
+    fig <- plotly::plot_ly(
+      data= dados1, x  = ~ data ,
+      y  = ~ dados_j,
+      color = I('#33CC66'),
+      name = "Menos de 7 dias",
+      #colors = c("#fc9272","#6BAED6"), ##2171B5 #6BAED6 #BDD7E7
+      type = "scatter",
+      # Gráficos de dispersão:
+      #mode = "markers",
+      # Gráficos de linhas:
+      mode = "lines",
+      #Mudando a legenda:
+      #name = ifelse(dados$intervencao == "Observações Pós-covid", "Observações Pré-internvenção", "Observações Pós-internvenção"),
+      #Mudar o texto  quando clicamos nos pontos do gráfico:
+      hoverinfo = 'text',
+      text = ~paste(
+        "<br>", ylabel,":", round(dados_j,3), "<br>",
+        "Data: ", data, "<br>"
+      )) %>%
+      config(displayModeBar = FALSE) %>%
+      #Adiconando a reta de Menos de 7 dias:
+      add_trace(data = dados2,
+                y = ~ tendencia_j,
+                x = ~ data,
+                name = 'Tendência Menos de 7 dias',
+                mode = 'lines',
+                #text = ~paste('Species: '),
+                type = "scatter",
+                line = list(
+                  color = "#33CC66",
+                  dash= 'dash'
+                ),
+                inherit = FALSE,
+                showlegend = TRUE)%>%
+      #Adiconando a serie de 7 a 27 dias:
+      add_lines(data= dados1, x  = ~ data ,
+                y  = ~ dados_aj,
+                color = I("#6BAED6"),
+                name = "7 a 27 dias",
+                #colors = c("#fc9272","#6BAED6"), ##2171B5 #6BAED6 #BDD7E7
+                type = "scatter",
+                # Gráficos de dispersão:
+                #mode = "markers",
+                # Gráficos de linhas:
+                mode = "lines",
+                #Mudando a legenda:
+                #name = ifelse(dados$intervencao == "Observações Pós-covid", "Observações Pré-internvenção", "Observações Pós-internvenção"),
+                #Mudar o texto  quando clicamos nos pontos do gráfico:
+                hoverinfo = 'text',
+                text = ~paste(
+                  "<br>", ylabel,":", round(dados_aj,3), "<br>",
+                  "Data: ", data, "<br>"
+                )) %>%
+      #Adiconando a reta de tendência 7 a 27 dias:
+      add_trace(data = dados2,
+                y = ~ tendencia_aj,
+                x = ~ data,
+                name = 'Tendência 7 a 27 dias',
+                mode = 'lines',
+                #text = ~paste('Species: '),
+                type = "scatter",
+                line = list(
+                  color = "#6BAED6",
+                  dash= 'dash'
+                ),
+                inherit = FALSE,
+                showlegend = TRUE)%>%
+      #Adiconando a serie Adultos:
+      add_lines(data= dados1, x  = ~ data ,
+                y  = ~ dados_a,
+                color = I("#fc9272"),
+                name = "28 dias a 1 ano",
+                #colors = c("#fc9272","#6BAED6"), ##2171B5 #6BAED6 #BDD7E7
+                type = "scatter",
+                # Gráficos de dispersão:
+                #mode = "markers",
+                # Gráficos de linhas:
+                mode = "lines",
+                #Mudando a legenda:
+                #name = ifelse(dados$intervencao == "Observações Pós-covid", "Observações Pré-internvenção", "Observações Pós-internvenção"),
+                #Mudar o texto  quando clicamos nos pontos do gráfico:
+                hoverinfo = 'text',
+                text = ~paste(
+                  "<br>", ylabel,":", round(dados_a,3), "<br>",
+                  "Data: ", data, "<br>"
+                )) %>%
+      #Adiconando a reta de tendência 28 dias a 1 ano
+      add_trace(data = dados2,
+                y = ~ tendencia_a,
+                x = ~ data,
+                name = 'Tendência 28 dias a 1 ano',
+                mode = 'lines',
+                #text = ~paste('Species: '),
+                type = "scatter",
+                line = list(
+                  color = "#fc9272",
+                  dash= 'dash'
+                ),
+                inherit = FALSE,
+                showlegend = TRUE)%>%
+      # Adiconando a reta vertical na data da intervention 1:
+      add_lines(
+        #Legenda para a data da intervenção:
+        name = ~"Intervenção 1",
+        #A reta permanece fixa em relação ao eixo y:
+        y = range(min(dados1$dados_j,dados1$dados_aj,dados1$dados_a),max(dados1$dados_j,dados1$dados_aj,dados1$dados_a)),
+        #Data da intervenção
+        x = intervention1_date,
+        type = "scatter",
+        line = list(
+          color = "black"
+        ),
+        inherit = FALSE,
+        showlegend = TRUE) %>%
+      layout(
+        #Posição da legenda:
+        #legend = list(x = 0.1, y = 0.9),
+        #Título do gráfico:
+        title = paste('<b>',titulo,'</b>'),
+        #Cor de fundo do gráfico:
+        plot_bgcolor = "white",
+        #Título do eixo x:
+        xaxis = list(title = 'Ano'),
+        #Título do eixo y:
+        yaxis = list(title = ylabel))
+
+  }else{
+
+    #Data das intervenções
+    intervention1_date = as.Date(intervention1)
+    intervention2_date = as.Date(intervention2)
+
+    tIntervention1     <- seq.Date(from = as.Date(min(dados_sinasc_intervencao$data_variable)),to = intervention1_date,
+                                   by = "1 month") %>% length()
+    tIntervention2     <- seq.Date(from = as.Date(min(dados_sinasc_intervencao$data_variable)),to = intervention2_date,
+                                   by = "1 month") %>% length()
+
+    x <- interventionModelMatrix(typeInterventions=c("polynomialTrend",
+                                                     "polynomialTrend",
+                                                     "polynomialTrend"),
+                                 tInterventions=c(1,tIntervention1,tIntervention2),
+                                 n=n,
+                                 degree=c(1,1,1))
+
+    # Ajustando o modelo
+    jovem_st1 <- log(jovem_st)
+    adulto_jovem_st1 <- log(adulto_jovem_st)
+    adulto_st1 <- log(adulto_st)
+    fit_lm_j <- lm(jovem_st1~x)
+    fit_lm_aj <- lm(adulto_jovem_st1~x)
+    fit_lm_a <- lm(adulto_st1~x)
+
+    data <- seq.Date(from = as.Date(min(dados_sinasc_intervencao$data_variable)),to = as.Date(max(dados_sinasc_intervencao$data_variable))-months(1),
+                     by = "1 month")
+
+    dados1 <- data.frame(data= data, dados_j = jovem_st, dados_aj = adulto_jovem_st,
+                         dados_a = adulto_st)
+
+    # Gerando a reta de tendência
+    tendencia_j <- exp(fitted(fit_lm_j))
+    tendencia_aj <- exp(fitted(fit_lm_aj))
+    tendencia_a <- exp(fitted(fit_lm_a))
+
+
+
+    dados2 <- data.frame(dados1, tendencia_j, tendencia_aj, tendencia_a)
+
+
+    fig <- plotly::plot_ly(
+      data= dados1, x  = ~ data ,
+      y  = ~ dados_j,
+      color = I('#33CC66'),
+      name = "Menos de 7 dias",
+      #colors = c("#fc9272","#6BAED6"), ##2171B5 #6BAED6 #BDD7E7
+      type = "scatter",
+      # Gráficos de dispersão:
+      #mode = "markers",
+      # Gráficos de linhas:
+      mode = "lines",
+      #Mudando a legenda:
+      #name = ifelse(dados$intervencao == "Observações Pós-covid", "Observações Pré-internvenção", "Observações Pós-internvenção"),
+      #Mudar o texto  quando clicamos nos pontos do gráfico:
+      hoverinfo = 'text',
+      text = ~paste(
+        "<br>", ylabel,":", round(dados_j,3), "<br>",
+        "Data: ", data, "<br>"
+      )) %>%
+      config(displayModeBar = FALSE) %>%
+      #Adiconando a reta de Menos de 7 dias:
+      add_trace(data = dados2,
+                y = ~ tendencia_j,
+                x = ~ data,
+                name = 'Tendência Menos de 7 dias',
+                mode = 'lines',
+                #text = ~paste('Species: '),
+                type = "scatter",
+                line = list(
+                  color = "#33CC66",
+                  dash= 'dash'
+                ),
+                inherit = FALSE,
+                showlegend = TRUE)%>%
+      #Adiconando a serie de 7 a 27 dias:
+      add_lines(data= dados1, x  = ~ data ,
+                y  = ~ dados_aj,
+                color = I("#6BAED6"),
+                name = "7 a 27 dias",
+                #colors = c("#fc9272","#6BAED6"), ##2171B5 #6BAED6 #BDD7E7
+                type = "scatter",
+                # Gráficos de dispersão:
+                #mode = "markers",
+                # Gráficos de linhas:
+                mode = "lines",
+                #Mudando a legenda:
+                #name = ifelse(dados$intervencao == "Observações Pós-covid", "Observações Pré-internvenção", "Observações Pós-internvenção"),
+                #Mudar o texto  quando clicamos nos pontos do gráfico:
+                hoverinfo = 'text',
+                text = ~paste(
+                  "<br>", ylabel,":", round(dados_aj,3), "<br>",
+                  "Data: ", data, "<br>"
+                )) %>%
+      #Adiconando a reta de tendência 7 a 27 dias:
+      add_trace(data = dados2,
+                y = ~ tendencia_aj,
+                x = ~ data,
+                name = 'Tendência 7 a 27 dias',
+                mode = 'lines',
+                #text = ~paste('Species: '),
+                type = "scatter",
+                line = list(
+                  color = "#6BAED6",
+                  dash= 'dash'
+                ),
+                inherit = FALSE,
+                showlegend = TRUE)%>%
+      #Adiconando a serie Adultos:
+      add_lines(data= dados1, x  = ~ data ,
+                y  = ~ dados_a,
+                color = I("#fc9272"),
+                name = "28 dias a 1 ano",
+                #colors = c("#fc9272","#6BAED6"), ##2171B5 #6BAED6 #BDD7E7
+                type = "scatter",
+                # Gráficos de dispersão:
+                #mode = "markers",
+                # Gráficos de linhas:
+                mode = "lines",
+                #Mudando a legenda:
+                #name = ifelse(dados$intervencao == "Observações Pós-covid", "Observações Pré-internvenção", "Observações Pós-internvenção"),
+                #Mudar o texto  quando clicamos nos pontos do gráfico:
+                hoverinfo = 'text',
+                text = ~paste(
+                  "<br>", ylabel,":", round(dados_a,3), "<br>",
+                  "Data: ", data, "<br>"
+                )) %>%
+      #Adiconando a reta de tendência 28 dias a 1 ano
+      add_trace(data = dados2,
+                y = ~ tendencia_a,
+                x = ~ data,
+                name = 'Tendência 28 dias a 1 ano',
+                mode = 'lines',
+                #text = ~paste('Species: '),
+                type = "scatter",
+                line = list(
+                  color = "#fc9272",
+                  dash= 'dash'
+                ),
+                inherit = FALSE,
+                showlegend = TRUE)%>%
+      #Adiconando a reta vertical na data da intervention 1:
+      add_lines(
+        #Legenda para a data da intervenção:
+        name = ~"Intervenção 1",
+        #A reta permanece fixa em relação ao eixo y:
+        y = range(min(dados1$dados_j,dados1$dados_aj,dados1$dados_a),max(dados1$dados_j,dados1$dados_aj,dados1$dados_a)),
+        #Data da intervenção
+        x = intervention1_date,
+        type = "scatter",
+        line = list(
+          color = "black"
+        ),
+        inherit = FALSE,
+        showlegend = TRUE) %>%
+      #Adiconando a reta vertical na data do início da intervention2:
+      add_lines(
+        #Legenda para a data da intervenção:
+        name = ~"Intervenção 2",
+        #A reta permanece fixa em relação ao eixo y:
+        y = range(min(dados1$dados_j,dados1$dados_aj,dados1$dados_a),max(dados1$dados_j,dados1$dados_aj,dados1$dados_a)),
+        #Data da intervenção
+        x = intervention2_date,
+        type = "scatter",
+        line = list(
+          color = "black"
+        ),
+        inherit = FALSE,
+        showlegend = TRUE) %>%
+      #Configurações de layout do gráfico:
+      layout(
+        #Posição da legenda:
+        #legend = list(x = 0.1, y = 0.9),
+        #Título do gráfico:
+        title = paste('<b>',titulo,'</b>'),
+        #Cor de fundo do gráfico:
+        plot_bgcolor = "white",
+        #Título do eixo x:
+        xaxis = list(title = 'Ano'),
+        #Título do eixo y:
+        yaxis = list(title = ylabel))
+  }
+
+  return(fig)
+
+}
+
+
 
 # Função para gerar os resultados estatísticas do modelo
 tabela_intervencao <- function(dados,date_intervention1,date_intervention2,na=NULL){

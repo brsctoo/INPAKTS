@@ -115,15 +115,6 @@ mod_intervencao_sif_gestante_server <- function(id, opcoes_usuario){
       }
     })
 
-    observeEvent( input$gerar_resultado_sexo, {
-      if(length( opcoes_usuario$date_intervention[1])==0){
-        shinyalert::shinyalert(
-          title = "Atenção",
-          text = "Você deve selecionar no mínimo uma data de intervenção na página inicial (apresentação).",
-          type = "warning",
-          size = "m")
-      }
-    })
 
     observeEvent( input$gerar_resultado_raca, {
       if(length( opcoes_usuario$date_intervention[1])==0){
@@ -144,15 +135,6 @@ mod_intervencao_sif_gestante_server <- function(id, opcoes_usuario){
                  nivel_geografico_nome = opcoes_usuario$nivel_geografico_nome,
                  escolha_usuario = opcoes_usuario$escolha_usuario,
                  texto = "Resultados Gerais:")
-
-    })
-
-    output$info_user_sexo <- renderText({
-      titulo_box(data1 = opcoes_usuario$date_intervention[1],
-                 data2 = opcoes_usuario$date_intervention[2],
-                 nivel_geografico_nome = opcoes_usuario$nivel_geografico_nome,
-                 escolha_usuario = opcoes_usuario$escolha_usuario,
-                 texto = "Resultados por sexo:")
 
     })
 
@@ -198,26 +180,19 @@ mod_intervencao_sif_gestante_server <- function(id, opcoes_usuario){
                            paste("(SÍFILIS GESTACIONAL) Análise de impacto na tendência no Município de", opcoes_usuario$escolha_usuario))))
     })
 
-    # titulo_sexo <- eventReactive(input$gerar_graficos, {
-    #   ifelse(opcoes_usuario$nivel_geografico=="PR","(SINASC) Análise de impacto na tendência por sexo no Paraná",
-    #          ifelse(opcoes_usuario$nivel_geografico=="macro",paste("(SINASC) Análise de impacto na tendência por sexo na Macrorregião",opcoes_usuario$escolha_usuario),
-    #                 ifelse(opcoes_usuario$nivel_geografico=="micro",paste("(SINASC) Análise de impacto na tendência por sexo na Regional de Saúde",opcoes_usuario$escolha_usuario),
-    #                        paste("(SINASC) Análise de impacto na tendência por sexo no Município de", opcoes_usuario$escolha_usuario))))
-    # })
-    #
-    # titulo_idade <- eventReactive(input$gerar_graficos, {
-    #   ifelse(opcoes_usuario$nivel_geografico=="PR","(SINASC) Análise de impacto na tendência por idade materna no Paraná",
-    #          ifelse(opcoes_usuario$nivel_geografico=="macro",paste("(SINASC) Análise de impacto na tendência por idade materna  na Macrorregião",opcoes_usuario$escolha_usuario),
-    #                 ifelse(opcoes_usuario$nivel_geografico=="micro",paste("(SINASC) Análise de impacto na tendência por idade materna  na Regional de Saúde",opcoes_usuario$escolha_usuario),
-    #                        paste("(SINASC) Análise de impacto na tendência por idade materna  no Município de", opcoes_usuario$escolha_usuario))))
-    # })
-    #
-    # titulo_raca <- eventReactive(input$gerar_graficos, {
-    #   ifelse(opcoes_usuario$nivel_geografico=="PR","(SINASC) Análise de impacto na tendência por raça do recém-nascido no Paraná",
-    #          ifelse(opcoes_usuario$nivel_geografico=="macro",paste("(SINASC) Análise de impacto na tendência por raça do recém-nascido na Macrorregião",opcoes_usuario$escolha_usuario),
-    #                 ifelse(opcoes_usuario$nivel_geografico=="micro",paste("(SINASC) Análise de impacto na tendência por raça do recém-nascido  na Regional de Saúde",opcoes_usuario$escolha_usuario),
-    #                        paste("(SINASC) Análise de impacto na tendência por raça do recém-nascido no Município de", opcoes_usuario$escolha_usuario))))
-    # })
+    titulo_idade <- eventReactive(input$gerar_graficos, {
+      ifelse(opcoes_usuario$nivel_geografico=="PR","(SÍFILIS GESTACIONAL) Análise de impacto na tendência por idade materna no Paraná",
+             ifelse(opcoes_usuario$nivel_geografico=="macro",paste("(SÍFILIS GESTACIONAL) Análise de impacto na tendência por idade materna  na Macrorregião",opcoes_usuario$escolha_usuario),
+                    ifelse(opcoes_usuario$nivel_geografico=="micro",paste("(SÍFILIS GESTACIONAL) Análise de impacto na tendência por idade materna  na Regional de Saúde",opcoes_usuario$escolha_usuario),
+                           paste("(SÍFILIS GESTACIONAL) Análise de impacto na tendência por idade materna  no Município de", opcoes_usuario$escolha_usuario))))
+    })
+
+    titulo_raca <- eventReactive(input$gerar_graficos, {
+      ifelse(opcoes_usuario$nivel_geografico=="PR","(SÍFILIS GESTACIONAL) Análise de impacto na tendência por raça no Paraná",
+             ifelse(opcoes_usuario$nivel_geografico=="macro",paste("(SÍFILIS GESTACIONAL) Análise de impacto na tendência por raça na Macrorregião",opcoes_usuario$escolha_usuario),
+                    ifelse(opcoes_usuario$nivel_geografico=="micro",paste("(SÍFILIS GESTACIONAL) Análise de impacto na tendência por raça na Regional de Saúde",opcoes_usuario$escolha_usuario),
+                           paste("(SÍFILIS GESTACIONAL) Análise de impacto na tendência por raça no Município de", opcoes_usuario$escolha_usuario))))
+    })
 
 
     # Gráficos -------
@@ -237,44 +212,33 @@ mod_intervencao_sif_gestante_server <- function(id, opcoes_usuario){
                 input$interv_sif_gestante) %>%
       bindEvent(input$gerar_graficos)
 
-    # ## Sexo -------
-    # observeEvent(input$gerar_resultado_sexo, {
-    #   output$plot_sexo <- plotly::renderPlotly({
-    #     req(opcoes_usuario$date_intervention[1])
-    #     grafico_analise_impacto_sexo(dados = dataCategorica(),
-    #                                  titulo = titulo_sexo(),
-    #                                  ylabel = "Nascidos vivos",
-    #                                  intervention1 = opcoes_usuario$date_intervention[1],
-    #                                  intervention2 = opcoes_usuario$date_intervention[2])
-    #   }) %>%
-    #     bindCache(opcoes_usuario$escolha_usuario, opcoes_usuario$date_intervention[1], opcoes_usuario$date_intervention[2], input$interv_sif_gestante) %>%
-    #     bindEvent(input$gerar_resultado_sexo)})
-    #
-    # ## Idade -------
-    # observeEvent(input$gerar_resultado_idade, {
-    #   output$plot_idade <- plotly::renderPlotly({
-    #     req(opcoes_usuario$date_intervention[1])
-    #     grafico_analise_impacto_idade(dados = dataCategorica(),
-    #                                   titulo = titulo_idade(),
-    #                                   ylabel = "Nascidos vivos",
-    #                                   intervention1 = opcoes_usuario$date_intervention[1],
-    #                                   intervention2 = opcoes_usuario$date_intervention[2])
-    #   }) %>%
-    #     bindCache(opcoes_usuario$escolha_usuario, opcoes_usuario$date_intervention[1],opcoes_usuario$date_intervention[2], input$interv_sif_gestante) %>%
-    #     bindEvent(input$gerar_resultado_idade)})
-    #
-    # ## Raça -------
-    # observeEvent(input$gerar_resultado_raca, {
-    #   output$plot_raca <- plotly::renderPlotly({
-    #     req(opcoes_usuario$date_intervention[1])
-    #     grafico_analise_impacto_raca(dados = dataCategorica(),
-    #                                  titulo = titulo_raca(),
-    #                                  ylabel = "Nascidos vivos",
-    #                                  intervention1 = opcoes_usuario$date_intervention[1],
-    #                                  intervention2 = opcoes_usuario$date_intervention[2])
-    #   }) %>%
-    #     bindCache(opcoes_usuario$escolha_usuario, opcoes_usuario$date_intervention[1],opcoes_usuario$date_intervention[2], input$interv_sif_gestante) %>%
-    #     bindEvent(input$gerar_resultado_raca)})
+    ## Idade -------
+    observeEvent(input$gerar_resultado_idade, {
+      output$plot_idade <- plotly::renderPlotly({
+        req( opcoes_usuario$date_intervention[1])
+        grafico_analise_impacto_idade(dados = dataCategorica(),
+                                      titulo = titulo_idade(),
+                                      ylabel = "Novos casos",
+                                      intervention1 =  opcoes_usuario$date_intervention[1],
+                                      intervention2 =  opcoes_usuario$date_intervention[2])
+      }) %>%
+        bindCache(opcoes_usuario$escolha_usuario,  opcoes_usuario$date_intervention[1],
+                  opcoes_usuario$date_intervention[2], input$interv_sif_gestante) %>%
+        bindEvent(input$gerar_resultado_idade)})
+
+    ## Raça -------
+    observeEvent(input$gerar_resultado_raca, {
+      output$plot_raca <- plotly::renderPlotly({
+        req( opcoes_usuario$date_intervention[1])
+        grafico_analise_impacto_raca(dados = dataCategorica(),
+                                     titulo = titulo_raca(),
+                                     ylabel = "Novos casos",
+                                     intervention1 =  opcoes_usuario$date_intervention[1],
+                                     intervention2 =  opcoes_usuario$date_intervention[2])
+      }) %>%
+        bindCache(opcoes_usuario$escolha_usuario,  opcoes_usuario$date_intervention[1],
+                  opcoes_usuario$date_intervention[2], input$interv_sif_gestante) %>%
+        bindEvent(input$gerar_resultado_raca)})
 
     # # Tabelas ------
 
@@ -295,55 +259,43 @@ mod_intervencao_sif_gestante_server <- function(id, opcoes_usuario){
                 opcoes_usuario$date_intervention[2]) %>%
       bindEvent(input$gerar_graficos)
 
-    # ## Com resultados  por sexo------
-    # # toListen <- reactive({
-    # #   list(input$sexo,input$gerar_resultado_sexo)
-    # # })
-    #
-    # output$info_modelo_ajustado_sexo <- renderText({
-    #   req(input$gerar_resultado_sexo,opcoes_usuario$date_intervention[1])
-    #   dataCategorica() %>%
-    #     dplyr::filter(sexo==input$sexo) %>%
-    #     return_ts(data_variable,inicio = c(2015,1), tipo = "mensal") %>%
-    #     tabela_intervencao(opcoes_usuario$date_intervention[1],opcoes_usuario$date_intervention[2])})
-    #
-    #
-    # ## Com resultados  por idade------
-    #
-    # output$info_modelo_ajustado_idade <- renderText({
-    #   req(input$gerar_resultado_idade,opcoes_usuario$date_intervention[1])
-    #   dataCategorica() %>%
-    #     dplyr::filter(idade==input$idade) %>%
-    #     return_ts(data_variable,inicio = c(2015,1), tipo = "mensal") %>%
-    #     tabela_intervencao(opcoes_usuario$date_intervention[1],opcoes_usuario$date_intervention[2])})
-    #
-    #
-    # ## Com resultados  por raça/cor-------
-    #
-    # # Quantidade de não informado por raca de  acordo com opcoes selecionadas por usuário
-    # na_raca <- eventReactive(input$gerar_resultado_raca, {
-    #
-    #   denominador = dataCategorica() %>%
-    #     nrow()
-    #
-    #   numerador = dataCategorica() %>%
-    #     dplyr::filter(raca_cor == "Não informado") %>%
-    #     nrow()
-    #
-    #   round((numerador / denominador)*100,2)
-    #
-    # })
-    #
-    # output$info_modelo_ajustado_raca <- renderText({
-    #   req(input$gerar_resultado_raca,opcoes_usuario$date_intervention[1])
-    #   dataCategorica() %>%
-    #     dplyr::filter(raca_cor == input$raca) %>%
-    #     return_ts(data_variable, inicio = c(2015,1), tipo = "mensal") %>%
-    #     tabela_intervencao(opcoes_usuario$date_intervention[1],opcoes_usuario$date_intervention[2],na = na_raca())})
-    #
+    ## Com resultados  por idade------
+
+    output$info_modelo_ajustado_idade <- renderText({
+      req(input$gerar_resultado_idade, opcoes_usuario$date_intervention[1])
+      dataCategorica() %>%
+        dplyr::filter(idade==input$idade) %>%
+        return_ts(data_variable,inicio = c(2015,1), tipo = "mensal") %>%
+        tabela_intervencao( opcoes_usuario$date_intervention[1], opcoes_usuario$date_intervention[2])})
 
 
-  })
+    ## Com resultados  por raça/cor-------
+
+    # Quantidade de não informado por raca de  acordo com opcoes selecionadas por usuário
+    na_raca <- eventReactive(input$gerar_resultado_raca, {
+
+      denominador = dataCategorica() %>%
+        nrow()
+
+      numerador = dataCategorica() %>%
+        dplyr::filter(raca_cor == "Não informado") %>%
+        nrow()
+
+      round((numerador / denominador)*100,2)
+
+    })
+
+    output$info_modelo_ajustado_raca <- renderText({
+      req(input$gerar_resultado_raca, opcoes_usuario$date_intervention[1])
+      dataCategorica() %>%
+        dplyr::filter(raca_cor == input$raca) %>%
+        return_ts(data_variable, inicio = c(2015,1), tipo = "mensal") %>%
+        tabela_intervencao( opcoes_usuario$date_intervention[1],
+                            opcoes_usuario$date_intervention[2],
+                            na = na_raca())})
+
+  }
+  )
 }
 
 ## To be copied in the UI
