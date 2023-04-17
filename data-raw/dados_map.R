@@ -71,3 +71,4 @@ usethis::use_data(dados_map_sim_neonatal, overwrite = TRUE)
 
 usethis::use_data(dados_map_sif_gestante, overwrite = TRUE)
 
+usethis::use_data(dados_map_sif_congenita, overwrite = TRUE)
