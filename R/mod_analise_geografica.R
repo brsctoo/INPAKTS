@@ -14,32 +14,42 @@ mod_analise_geografica_ui <- function(id) {
       ## Opções para o usuário selecionar -------
       fluidRow(
         column(
-          5,
+          3,
           #p() codigo html para inserir pequeno espaço
           p(),
 
-          ### Botões clicáveis para o user selecionar o nível geográfico:------
+          ### Botões clicáveis para o usuário selecionar o nível geográfico:------
           shinyWidgets::radioGroupButtons(
             inputId = ns("radio"),
             label = "Selecione o nível geográfico:",
-            choices = c("Estado do Paraná" = "PR", "RS" = "RS"),
+            choices = c("Estado do Paraná" = "PR",
+                        "RS" = "RS"),
             selected = "PR",
             status = "primary"
           )
         ),
-        column(4,
+        column(2,
                p(),
-               ### Campo para selecionar o nível geográfico escolhido -------
+               ### Campo para o usuário selecionar o estado ou uma das Regionais de saúde -------
                selectInput(
                  inputId = ns("escolha_usuario"),
                  label = " ",
                  choices = "PR"
                )),
+
+        column(4,
+               p(),
+               ### Campo para o usuário selecionar umas das datas de intervenção da pag. inicial -------
+               selectInput(inputId = ns("data_selecionada"),
+                           label = "Selecione uma das datas de intervenção",
+                           choices = " ")),
+
         column(
           3,
           p(),
           ### Botão gerar gráficos:-------
-          actionButton(inputId = ns("gerar_graficos"), label = "Gerar Mapas"),
+          actionButton(inputId = ns("gerar_graficos"),
+                       label = "Gerar Mapas"),
           p(),
           ### Botão com informações:-------
           actionButton(
@@ -50,7 +60,7 @@ mod_analise_geografica_ui <- function(id) {
         )
       ),
       hr(),
-      ## Criando layout onde o título os dois gráficos serão exibidos na ui -------
+      ## Criando layout onde o título e os gráficos serão exibidos na ui -------
       fluidRow(column(12,
                       h3(
                         strong(textOutput(ns("titulo_sinasc"))),  align = "center"
@@ -99,7 +109,7 @@ mod_analise_geografica_ui <- function(id) {
 #' analise_geografica Server Functions
 #'
 #' @noRd
-mod_analise_geografica_server <- function(id) {
+mod_analise_geografica_server <- function(id, opcoes_usuario) {
   moduleServer(id, function(input, output, session) {
     ns <- session$ns
     ##Configurando botão com as Info: -------
@@ -130,8 +140,40 @@ mod_analise_geografica_server <- function(id) {
       )
     })
 
+    # Pop-ups -------
 
-    # Opções disponíveis ao usuário no SelectInput mudam de acordo com a seleção do nível geográfico -------
+    ## Pop-up surgirá se nenhuma data de intervenção for selecionada e usuario clicar no botao Gerar mapa-------
+    observeEvent( input$gerar_graficos, {
+      if(length( opcoes_usuario$date_intervention[1])==0){
+        shinyalert::shinyalert(
+          title = "Atenção",
+          text = "Você deve selecionar no mínimo uma data de intervenção na página inicial (apresentação).",
+          type = "warning",
+          size = "m")
+      }
+    })
+
+    # Opções disponíveis ao usuário no SelectInput mudam de acordo com as datas de intervnção escolhidas na pág. iniciail -------
+    observeEvent(opcoes_usuario$date_intervention, {
+      if(sum(is.na(opcoes_usuario$date_intervention))==2){
+        updateSelectInput(inputId = "data_selecionada",
+                          #label = "data1",
+                          choice = " ")
+      }else if (sum(is.na(opcoes_usuario$date_intervention))==1) {
+        updateSelectInput(inputId = "data_selecionada",
+                          #choice = c(format(opcoes_usuario$date_intervention[1],format = "%b/%Y")))
+                          choice = c(opcoes_usuario$date_intervention[1]))
+      }else if (sum(is.na(opcoes_usuario$date_intervention))==0) {
+        updateSelectInput(inputId = "data_selecionada",
+                          # choice = c(format(opcoes_usuario$date_intervention[1],format = "%b/%Y") = opcoes_usuario$date_intervention[1],
+                          #            format(opcoes_usuario$date_intervention[2],format = "%b/%Y") = opcoes_usuario$date_intervention[2]))
+                          choice = c(opcoes_usuario$date_intervention))
+      }
+
+    }
+    )
+
+
     observeEvent(input$radio, {
       ## Se nível geográfico todo PR (input$radio=="PR"):
       if (input$radio == "PR") {
@@ -151,9 +193,7 @@ mod_analise_geografica_server <- function(id) {
       }
     })
 
-
-
-    #Mapa sinasc
+    # Mapa sinasc --------------------------------------------------------------
 
     titulo_sinasc <- eventReactive(input$gerar_graficos, {
       ifelse(
@@ -173,17 +213,17 @@ mod_analise_geografica_server <- function(id) {
       ifelse(
         input$radio == "RS",
         RSmapOrd(
-          varToPlot = dados_map_sinasc$trendChangeCat,
+          varToPlot =  dados_map_sinasc[,as.character(input$data_selecionada)],
           legeName = "Mudança na tendência",
           mun = dados_map_sinasc$municipio,
           RS =  input$escolha_usuario,
-          legeLabels = levels(dados_map_sinasc$trendChangeCat)
+          legeLabels = levels(dados_map_sinasc[,as.character(input$data_selecionada)])
         ),
         UFmapOrd(
-          varToPlot = dados_map_sinasc$trendChangeCat,
+          varToPlot = dados_map_sinasc[,as.character(input$data_selecionada)],
           mun = dados_map_sinasc$municipio,
           legeName = "Mudança na tendência",
-          legeLabels = levels(dados_map_sinasc$trendChangeCat)
+          legeLabels = levels(dados_map_sinasc[,as.character(input$data_selecionada)])
         )
       )
     })
@@ -191,10 +231,12 @@ mod_analise_geografica_server <- function(id) {
     output$mapa_sinasc <- renderPlot({
       mapa_sinasc()
     })%>%
-      bindCache(input$escolha_usuario) %>%
+      bindCache(input$data_selecionada,
+                input$radio,
+                input$escolha_usuario) %>%
       bindEvent(input$gerar_graficos)
 
-    #Mapa sim neonatal
+    # Mapa sim neonatal--------------------------------------------------------
 
     titulo_sim_neonatal <- eventReactive(input$gerar_graficos, {
       ifelse(
@@ -214,17 +256,17 @@ mod_analise_geografica_server <- function(id) {
       ifelse(
         input$radio == "RS",
         RSmapOrd(
-          varToPlot = dados_map_sim_neonatal$trendChangeCat,
+          varToPlot = dados_map_sim_neonatal[,as.character(input$data_selecionada)],
           legeName = "Mudança na tendência",
           mun = dados_map_sim_neonatal$municipio,
           RS =  input$escolha_usuario,
-          legeLabels = levels(dados_map_sim_neonatal$trendChangeCat)
+          legeLabels = levels(dados_map_sim_neonatal[,as.character(input$data_selecionada)])
         ),
         UFmapOrd(
-          varToPlot = dados_map_sim_neonatal$trendChangeCat,
+          varToPlot = dados_map_sim_neonatal[,as.character(input$data_selecionada)],
           mun = dados_map_sim_neonatal$municipio,
           legeName = "Mudança na tendência",
-          legeLabels = levels(dados_map_sim_neonatal$trendChangeCat)
+          legeLabels = levels(dados_map_sim_neonatal[,as.character(input$data_selecionada)])
         )
       )
     })
@@ -232,10 +274,12 @@ mod_analise_geografica_server <- function(id) {
     output$mapa_sim_neonatal <- renderPlot({
       mapa_sim_neonatal()
     })%>%
-      bindCache(input$escolha_usuario) %>%
+      bindCache(input$data_selecionada,
+                input$radio,
+                input$escolha_usuario) %>%
       bindEvent(input$gerar_graficos)
-
-    #Mapa sim materno
+    #
+    # #Mapa sim materno
 
     titulo_sim_materno <- eventReactive(input$gerar_graficos, {
       ifelse(
@@ -255,17 +299,17 @@ mod_analise_geografica_server <- function(id) {
       ifelse(
         input$radio == "RS",
         RSmapOrd(
-          varToPlot = dados_map_sim_materno$trendChangeCat,
+          varToPlot = dados_map_sim_materno[,as.character(input$data_selecionada)],
           legeName = "Mudança na tendência",
           mun = dados_map_sim_materno$municipio,
           RS =  input$escolha_usuario,
-          legeLabels = levels(dados_map_sim_materno$trendChangeCat)
+          legeLabels = levels(dados_map_sim_materno[,as.character(input$data_selecionada)])
         ),
         UFmapOrd(
-          varToPlot = dados_map_sim_materno$trendChangeCat,
+          varToPlot = dados_map_sim_materno[,as.character(input$data_selecionada)],
           mun = dados_map_sim_materno$municipio,
           legeName = "Mudança na tendência",
-          legeLabels = levels(dados_map_sim_materno$trendChangeCat)
+          legeLabels = levels(dados_map_sim_materno[,as.character(input$data_selecionada)])
         )
       )
     })
@@ -273,10 +317,12 @@ mod_analise_geografica_server <- function(id) {
     output$mapa_sim_materno <- renderPlot({
       mapa_sim_materno()
     })%>%
-      bindCache(input$escolha_usuario) %>%
+      bindCache(input$data_selecionada,
+                input$radio,
+                input$escolha_usuario) %>%
       bindEvent(input$gerar_graficos)
 
-    #Mapa sif gestante
+    # Mapa sif gestante--------------------------------------------------------
 
     titulo_sif_gestante <- eventReactive(input$gerar_graficos, {
       ifelse(
@@ -296,17 +342,17 @@ mod_analise_geografica_server <- function(id) {
       ifelse(
         input$radio == "RS",
         RSmapOrd(
-          varToPlot = dados_map_sif_gestante$trendChangeCat,
+          varToPlot = dados_map_sif_gestante[,as.character(input$data_selecionada)],
           legeName = "Mudança na tendência",
           mun = dados_map_sif_gestante$municipio,
           RS =  input$escolha_usuario,
-          legeLabels = levels(dados_map_sif_gestante$trendChangeCat)
+          legeLabels = levels(dados_map_sif_gestante[,as.character(input$data_selecionada)])
         ),
         UFmapOrd(
-          varToPlot = dados_map_sif_gestante$trendChangeCat,
+          varToPlot = dados_map_sif_gestante[,as.character(input$data_selecionada)],
           mun = dados_map_sif_gestante$municipio,
           legeName = "Mudança na tendência",
-          legeLabels = levels(dados_map_sif_gestante$trendChangeCat)
+          legeLabels = levels(dados_map_sif_gestante[,as.character(input$data_selecionada)])
         )
       )
     })
@@ -314,11 +360,43 @@ mod_analise_geografica_server <- function(id) {
     output$mapa_sif_gestante <- renderPlot({
       mapa_sif_gestante()
     })%>%
-      bindCache(input$escolha_usuario) %>%
+      bindCache(input$data_selecionada,
+                input$radio,
+                input$escolha_usuario) %>%
       bindEvent(input$gerar_graficos)
 
 
   })
+
+  output$titulo_sif_congenita <- renderText(titulo_sif_congenita())
+
+  mapa_sif_congenita <- eventReactive(input$gerar_graficos, {
+    ifelse(
+      input$radio == "RS",
+      RSmapOrd(
+        varToPlot = dados_map_sif_congenita[,as.character(input$data_selecionada)],
+        legeName = "Mudança na tendência",
+        mun = dados_map_sif_congenita$municipio,
+        RS =  input$escolha_usuario,
+        legeLabels = levels(dados_map_sif_congenita[,as.character(input$data_selecionada)])
+      ),
+      UFmapOrd(
+        varToPlot = dados_map_sif_congenita[,as.character(input$data_selecionada)],
+        mun = dados_map_sif_congenita$municipio,
+        legeName = "Mudança na tendência",
+        legeLabels = levels(dados_map_sif_congenita[,as.character(input$data_selecionada)])
+      )
+    )
+  })
+
+  output$mapa_sif_congenita <- renderPlot({
+    mapa_sif_congenita()
+  })%>%
+    bindCache(input$data_selecionada,
+              input$radio,
+              input$escolha_usuario) %>%
+    bindEvent(input$gerar_graficos)
+
 }
 
 ## To be copied in the UI

@@ -49,7 +49,7 @@ app_server <- function(input, output, session) {
   mod_inicio_server("inicio_ui_1",opcoes_usuario)
 
  # mod_testando_server("testando_1",opcoes_usuario)
-  mod_analise_geografica_server("analise_geografica_1")
+  mod_analise_geografica_server("analise_geografica_1",opcoes_usuario)
   mod_intervencao_sinasc_server("intervencao_sinasc_1",opcoes_usuario)
   mod_intervencao_sim_neonatal_server("intervencao_sim_neonatal_1",opcoes_usuario)
   mod_intervencao_sim_materno_server("intervencao_sim_materno_1",opcoes_usuario)

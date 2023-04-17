@@ -16,7 +16,8 @@ mod_descritiva_sinasc_ui <- function(id){
         column(5,
                p(),
                ### Campo para selecionar o nível geográfico escolhido -------
-               selectInput(inputId = ns("data_selecionada"), label = "Selecione uma das datas de intervenção", choices = " ")),
+               selectInput(inputId = ns("data_selecionada"),
+                           label = "Selecione uma das datas de intervenção", choices = " ")),
         column(2,
                p(),
                ### Botão gerar gráficos:-------
