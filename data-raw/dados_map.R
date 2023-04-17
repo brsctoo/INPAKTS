@@ -22,7 +22,7 @@ data_prep_geo <- function(data_prep,
 
   df <- data.frame(municipio = levels(data_prep$municipio))
 
-  for (j in 1:4){
+  for (j in 1:8){
     #i in 1:399
     for (i in 1:length(levels(data_prep$municipio))) {
 
