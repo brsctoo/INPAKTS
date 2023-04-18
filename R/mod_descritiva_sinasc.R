@@ -131,7 +131,7 @@ mod_descritiva_sinasc_server <- function(id, opcoes_usuario){
     output$pre_natal <- renderPlot({
       plot.col1(data(),
                       consulta_prenatal,
-                      legenda = "Número de consultas pré-natais",
+                      legenda = "Número de consultas de pré-natal",
                       titulo = "SINASC (Nascidos vivos)", posicao_legenda="top")
     })#%>%
     #bindCache(opcoes_usuario$nivel_geografico,
