@@ -374,52 +374,50 @@ mod_analise_geografica_server <- function(id, opcoes_usuario) {
                 input$escolha_usuario) %>%
       bindEvent(input$gerar_graficos)
 
+    # Mapa sif congenita--------------------------------------------------------
 
-  })
-
-  ## Mapa sif congenita--------------------------------------------------------
-
-  titulo_sif_congenita <- eventReactive(input$gerar_graficos, {
-    ifelse(
-      input$radio == "PR",
-      "Casos de sífilis gestacional do Estado do Paraná",
-      paste0(
-        "Casos de sífilis gestacional da ",
-        input$escolha_usuario,
-        "ª Regional de Saúde"
+    titulo_sif_congenita <- eventReactive(input$gerar_graficos, {
+      ifelse(
+        input$radio == "PR",
+        "Casos de sífilis congenita do Estado do Paraná",
+        paste0(
+          "Casos de sífilis congenita da ",
+          input$escolha_usuario,
+          "ª Regional de Saúde"
+        )
       )
-    )
+    })
+
+    output$titulo_sif_congenita <- renderText(titulo_sif_congenita())
+
+    mapa_sif_congenita <- eventReactive(input$gerar_graficos, {
+      ifelse(
+        input$radio == "RS",
+        RSmapOrd(
+          varToPlot = dados_map_sif_congenita[,as.character(input$data_selecionada)],
+          legeName = "Mudança na tendência",
+          mun = dados_map_sif_congenita$municipio,
+          RS =  input$escolha_usuario,
+          legeLabels = levels(dados_map_sif_congenita[,as.character(input$data_selecionada)])
+        ),
+        UFmapOrd(
+          varToPlot = dados_map_sif_congenita[,as.character(input$data_selecionada)],
+          mun = dados_map_sif_congenita$municipio,
+          legeName = "Mudança na tendência",
+          legeLabels = levels(dados_map_sif_congenita[,as.character(input$data_selecionada)])
+        )
+      )
+    })
+
+    output$mapa_sif_congenita <- renderPlot({
+      mapa_sif_congenita()
+    })%>%
+      bindCache(input$data_selecionada,
+                input$radio,
+                input$escolha_usuario) %>%
+      bindEvent(input$gerar_graficos)
+
   })
-
-  #output$titulo_sif_congenita <- renderText(titulo_sif_congenita())
-
-  # mapa_sif_congenita <- eventReactive(input$gerar_graficos, {
-  #   ifelse(
-  #     input$radio == "RS",
-  #     RSmapOrd(
-  #       varToPlot = dados_map_sif_congenita[,as.character(input$data_selecionada)],
-  #       legeName = "Mudança na tendência",
-  #       mun = dados_map_sif_congenita$municipio,
-  #       RS =  input$escolha_usuario,
-  #       legeLabels = levels(dados_map_sif_congenita[,as.character(input$data_selecionada)])
-  #     ),
-  #     UFmapOrd(
-  #       varToPlot = dados_map_sif_congenita[,as.character(input$data_selecionada)],
-  #       mun = dados_map_sif_congenita$municipio,
-  #       legeName = "Mudança na tendência",
-  #       legeLabels = levels(dados_map_sif_congenita[,as.character(input$data_selecionada)])
-  #     )
-  #   )
-  # })
-  #
-  # output$mapa_sif_congenita <- renderPlot({
-  #   mapa_sif_congenita()
-  # })%>%
-  #   bindCache(input$data_selecionada,
-  #             input$radio,
-  #             input$escolha_usuario) %>%
-  #   bindEvent(input$gerar_graficos)
-
 }
 
 ## To be copied in the UI
