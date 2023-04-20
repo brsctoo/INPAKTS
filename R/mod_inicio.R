@@ -19,7 +19,7 @@ mod_inicio_ui <- function(id) {
         width = 3,
         p(
           HTML(
-            '<center><img src="www/My project-3.png" height="80" width="75%"></center>'
+            '<center><img src="www/logo_i.png" height="90" width="75%"></center>'
           )
         ),
 
