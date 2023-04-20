@@ -1,0 +1,58 @@
+---
+title: "`r params$titulo`"
+output: html_document
+params:
+  titulo: NA
+  intervencao1: NA
+  intervencao2: NA
+  data_set: NA
+---
+
+```{r, setup,echo = FALSE}
+knitr::opts_chunk$set(include=T, echo = FALSE, warning = FALSE)
+```
+
+As datas de intervenção selecionadas foram `r params$intervencao1` e `r params$intervencao2`
+
+```{r, results='hide'}
+#dados <- data_set %>%
+#  return_ts(data_variable,inicio = c(2015,1), tipo = "mensal")
+modelo <- sinasc_modelo.ajustado(params$data_set,params$intervencao1,params$intervencao2)$fit_lm
+residuos <- residuals(modelo)
+```
+
+# Função de autocorrelação dos resíduos (FAC)
+
+```{r}
+forecast::ggAcf(residuos, lag.max = 12, plot = TRUE)
+```
+
+# Função de autocorrelação parcial dos resíduos (FACP)
+```{r}
+forecast::ggPacf(residuos, lag.max = 12, plot = TRUE)
+```
+
+# Um histograma com curva normal superposta
+
+```{r}
+hist(residuos,freq=F, ylab = "Densidade", xlab = "Resíduos", main = "")
+curve(dnorm(x,0,sd(residuos)),add=T)
+```
+
+
+# Grafico de probabilidades normais (QQPlot)
+```{r}
+qqnorm(residuos)
+qqline(residuos)
+```
+
+# Teste Shapiro-Wilk de normalidade
+
+```{r}
+shapiro.test(residuos)
+```
+
+# Teste Durbin-Watson de erros autocorrelacionados 
+```{r}
+car::durbinWatsonTest(modelo)
+```
