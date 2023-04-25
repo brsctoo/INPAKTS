@@ -125,23 +125,28 @@ mod_analise_geografica_server <- function(id, opcoes_usuario) {
     observeEvent(input$info, {
       shinyWidgets::show_alert(
         type = "info",
-        width = 900,
+        width = 1000,
         title = NULL,
         text = tags$span(
           tags$h3("Instruções:", style = "color: steelblue;"),
-          tags$h3(
+          tags$h2(
             tags$b("Primeiro:"),
             "Clique para selecionar se você quer informações para todo estado do PR ou apenas para uma RS",
             align = "left"
           ),
-          tags$h3(
+          tags$h2(
             tags$b("Segundo:"),
             "Caso selecione RS, no campo ao lado estarão listadas as opções para as Regionais de Saúde existentes.",
             align = "left"
           ),
-          tags$h3(
+          tags$h2(
             tags$b("Quarto:"),
             "Clique no botão Gerar Mapas para que os mapas sejam exibidos.",
+            align = "left"
+          ),
+          tags$h2(
+            tags$b("OBS:"),
+            "as cores de cada região no mapa, de acordo com a legenda à direita da figura, indicam se houve uma mudança estatisticamente significante na tendência observada",
             align = "left"
           )
         ),
