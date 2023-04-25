@@ -18,7 +18,7 @@ mod_intervencao_sinasc_ui <- function(id){
 
       shinyWidgets::useBs4Dash(),
 
-
+      shinyjs::useShinyjs(),
       # Opções para o usuário selecionar -------
       # fluidRow(
       #   column(2,
@@ -49,8 +49,8 @@ mod_intervencao_sinasc_ui <- function(id){
                               label = "Gerar resultados",
                               width = "140px")),
           column(2,
-                 downloadButton(ns("relatorio"),
-                                label = "Análise de resíduos"))),
+                 shinyjs::hidden(downloadButton(ns("relatorio"),
+                                label = "Análise de resíduos")))),
         fluidRow(
           column(2,
                  tableOutput((ns("info_modelo_ajustado")))),
@@ -72,7 +72,8 @@ mod_intervencao_sinasc_ui <- function(id){
                               label = "Gerar resultados"))),
         fluidRow(
           column(2,
-                 selectInput(inputId = ns("sexo"), label = "Escolha o sexo",
+                 selectInput(inputId = ns("sexo"),
+                             label = "Escolha o sexo",
                              choices = c("Feminino","Masculino")),
                  tableOutput((ns("info_modelo_ajustado_sexo")))),
           column(10,
@@ -135,7 +136,7 @@ mod_intervencao_sinasc_server <- function(id, opcoes_usuario){
 
     ## Pop-up surgirá se nenhuma data de intervenção for selecionada e usuario clicar no botao para gerar algum gráfico-------
     observeEvent( input$gerar_graficos, {
-      if(length( opcoes_usuario$date_intervention[1])==0){
+      if(length(opcoes_usuario$date_intervention[1])==0){
         shinyalert::shinyalert(
           title = "Atenção",
           text = "Você deve selecionar no mínimo uma data de intervenção na página inicial (apresentação).",
@@ -155,7 +156,7 @@ mod_intervencao_sinasc_server <- function(id, opcoes_usuario){
     })
 
     observeEvent( input$gerar_resultado_sexo, {
-      if(length( opcoes_usuario$date_intervention[1])==0){
+      if(length(opcoes_usuario$date_intervention[1])==0){
         shinyalert::shinyalert(
           title = "Atenção",
           text = "Você deve selecionar no mínimo uma data de intervenção na página inicial (apresentação).",
@@ -173,7 +174,6 @@ mod_intervencao_sinasc_server <- function(id, opcoes_usuario){
           size = "m")
       }
     })
-
 
 
     # Atualizando o título dos cabeçalhos dos box com os gráficos de acordo com as opções do usuário na apresentação ----------
@@ -388,54 +388,56 @@ mod_intervencao_sinasc_server <- function(id, opcoes_usuario){
                             opcoes_usuario$date_intervention[2],
                             na = na_raca())})
 
-    # Relatório com análise dos resíduos----------------------------------------
-    # output$relatorio <- downloadHandler(
-    #   filename = paste0("Relatório da análise de intervenção na data", opcoes_usuario$date_intervention[1],".html"),
-    #   content = function(file) {
-    #     # Copy the report file to a temporary directory before processing it, in
-    #     # case we don't have write permissions to the current working dir (which
-    #     # can happen when deployed).
-    #     tempReport <- file.path(tempdir(), "relatorio.Rmd")
-    #     file.copy("relatorio.Rmd", tempReport, overwrite = TRUE)
-    #
-    #     # Set up parameters to pass to Rmd document
-    #     params <- list(intervencao1 = opcoes_usuario$date_intervention[1],
-    #                    intervencao2 = opcoes_usuario$date_intervention[2],
-    #                    #Título no cabeçalho do Relatório:
-    #                    titulo = ifelse(length(opcoes_usuario$date_intervention)==1,
-    #                                    paste("Análise de resíduos com data de intervenção", opcoes_usuario$date_intervention[1]),
-    #                                    paste("Análise de resíduos com as datas de intervenção", opcoes_usuario$date_intervention[1], "e",
-    #                                          opcoes_usuario$date_intervention[1])))
-    #
-    #     # Knit the document, passing in the `params` list, and eval it in a
-    #     # child of the global environment (this isolates the code in the document
-    #     # from the code in this app).
-    #     rmarkdown::render(tempReport,
-    #                       output_file = file,
-    #                       params = params,
-    #                       envir = new.env(parent = globalenv())
-    #     )
-    #   }
-    # )
+    # Após clicar em gerar gráfico o bottom do relatório aparecerá apenas se o usuário selecionar no
+    # mínimo uma data de intervenção
+    observeEvent(input$gerar_graficos, {
+      if (length(opcoes_usuario$date_intervention[1])==0)
+        # Botão gerar análise de resíduos fica oculto
+        shinyjs::hide("relatorio")
+      else
+        # Botão gerar análise de resíduos surge para o usuário
+        shinyjs::show("relatorio")
+    })
+
+    # Relatório com análise dos resíduos ----------------------------------------
 
     output$relatorio <- downloadHandler(
-      filename = paste0("Relatório da análise de intervenção na data", opcoes_usuario$date_intervention[1],".html"),
+
+      #Nome do arquivo no html
+      filename <-  "Análise de resíduos (SINASC).html",
+
       content = function(file) {
         # Copy the report file to a temporary directory before processing it, in
         # case we don't have write permissions to the current working dir (which
         # can happen when deployed).
         tempReport <- file.path(tempdir(), "relatorio.Rmd")
-        file.copy("relatorio.Rmd", tempReport, overwrite = TRUE)
+        file.copy("relatorio.Rmd",
+                  tempReport,
+                  overwrite = TRUE)
+
+
+        titulo_relatorio = ifelse(is.na(opcoes_usuario$date_intervention[2]),
+                                  paste("Análise de resíduos, dados do SINASC e data de intervenção:",
+                                        opcoes_usuario$date_intervention[1]),
+                                  paste("Análise de resíduos, dados do SINASC e datas de intervenção:",
+                                        opcoes_usuario$date_intervention[1], "e",
+                                        opcoes_usuario$date_intervention[2]))
 
         # Set up parameters to pass to Rmd document
         params <- list(intervencao1 = opcoes_usuario$date_intervention[1],
                        intervencao2 = opcoes_usuario$date_intervention[2],
                        #Título no cabeçalho do Relatório:
-                       titulo = ifelse(length(opcoes_usuario$date_intervention)==1,
-                                       paste("Análise de resíduos com data de intervenção", opcoes_usuario$date_intervention[1]),
-                                       paste("Análise de resíduos com as datas de intervenção", opcoes_usuario$date_intervention[1], "e",
-                                             opcoes_usuario$date_intervention[1])),
+                       titulo = titulo_relatorio,
                        data_set = data())
+
+        # Notificação para o usuário
+        id <- showNotification(
+          "Gerando análise dos resíduos..",
+          duration = NULL,
+          closeButton = FALSE
+        )
+        on.exit(removeNotification(id), add = TRUE)
+
 
         # Knit the document, passing in the `params` list, and eval it in a
         # child of the global environment (this isolates the code in the document
