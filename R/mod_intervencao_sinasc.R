@@ -388,6 +388,8 @@ mod_intervencao_sinasc_server <- function(id, opcoes_usuario){
                             opcoes_usuario$date_intervention[2],
                             na = na_raca())})
 
+    # Relatório com análise dos resíduos ----------------------------------------
+
     # Após clicar em gerar gráfico o bottom do relatório aparecerá apenas se o usuário selecionar no
     # mínimo uma data de intervenção
     observeEvent(input$gerar_graficos, {
@@ -398,8 +400,6 @@ mod_intervencao_sinasc_server <- function(id, opcoes_usuario){
         # Botão gerar análise de resíduos surge para o usuário
         shinyjs::show("relatorio")
     })
-
-    # Relatório com análise dos resíduos ----------------------------------------
 
     output$relatorio <- downloadHandler(
 
