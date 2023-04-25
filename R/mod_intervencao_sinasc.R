@@ -18,7 +18,8 @@ mod_intervencao_sinasc_ui <- function(id){
 
       shinyWidgets::useBs4Dash(),
 
-      shinyjs::useShinyjs(),
+      #shinyjs::useShinyjs(),
+
       # Opções para o usuário selecionar -------
       # fluidRow(
       #   column(2,
