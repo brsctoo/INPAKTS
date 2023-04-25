@@ -12,7 +12,6 @@ params:
 knitr::opts_chunk$set(include=T, echo = FALSE, warning = FALSE)
 ```
 
-As datas de intervenção selecionadas foram `r params$intervencao1` e `r params$intervencao2`
 
 ```{r, results='hide'}
 #dados <- data_set %>%
