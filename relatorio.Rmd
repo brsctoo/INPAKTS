@@ -2,11 +2,15 @@
 title: "`r params$titulo`"
 output: html_document
 params:
-  titulo: NA
-  intervencao1: NA
-  intervencao2: NA
+  titulo: " "
+  intervencao1: " "
+  intervencao2: " " 
   data_set: NA
+  local: " "
 ---
+
+<font size="5"> Local de análise: `r params$local`</font> 
+
 
 ```{r, setup,echo = FALSE}
 knitr::opts_chunk$set(include=T, echo = FALSE, warning = FALSE)
