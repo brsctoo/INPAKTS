@@ -29,11 +29,14 @@ mod_intervencao_sif_gestante_ui <- function(id){
         solidHeader = FALSE,
         collapsible = FALSE,
         fluidRow(
-          column(10),
+          column(8),
           column(2,
                  actionButton(inputId = ns("gerar_graficos"),
                               label = "Gerar resultados",
-                              width = "140px"))),
+                              width = "140px")),
+          column(2,
+                 shinyjs::hidden(downloadButton(ns("relatorio"),
+                                                label = "Análise de resíduos")))),
         fluidRow(
           column(2,
                  tableOutput((ns("info_modelo_ajustado")))),
@@ -293,6 +296,81 @@ mod_intervencao_sif_gestante_server <- function(id, opcoes_usuario){
         tabela_intervencao( opcoes_usuario$date_intervention[1],
                             opcoes_usuario$date_intervention[2],
                             na = na_raca())})
+
+    # Relatório com análise dos resíduos ----------------------------------------
+
+    # Após clicar em gerar gráfico o bottom do relatório aparecerá apenas se o usuário selecionar no
+    # mínimo uma data de intervenção
+    observeEvent(input$gerar_graficos, {
+      if (length(opcoes_usuario$date_intervention[1])==0)
+        # Botão gerar análise de resíduos fica oculto
+        shinyjs::hide("relatorio")
+      else
+        # Botão gerar análise de resíduos surge para o usuário
+        shinyjs::show("relatorio")
+    })
+
+    output$relatorio <- downloadHandler(
+
+      #Nome do arquivo no html
+      filename <-  "Análise de resíduos (Sífilis-Gestante).html",
+
+      content = function(file) {
+        # Copy the report file to a temporary directory before processing it, in
+        # case we don't have write permissions to the current working dir (which
+        # can happen when deployed).
+
+        tempReport <- file.path(tempdir(), "relatorio.Rmd")
+        file.copy("relatorio.Rmd",
+                  tempReport,
+                  overwrite = TRUE)
+
+
+        titulo_relatorio <- eventReactive(input$gerar_graficos, {
+          ifelse(is.na(opcoes_usuario$date_intervention[2]),
+                 paste("Análise de resíduos, dados do Sífilis-Gestante e data de intervenção:",
+                       opcoes_usuario$date_intervention[1]),
+                 paste("Análise de resíduos, dados do Sífilis-Gestante e datas de intervenção:",
+                       opcoes_usuario$date_intervention[1], "e",
+                       opcoes_usuario$date_intervention[2]))
+        })
+
+        local <-  eventReactive(input$gerar_graficos, {
+          ifelse(opcoes_usuario$nivel_geografico=="PR","Estado do Paraná",
+                 ifelse(opcoes_usuario$nivel_geografico=="macro",paste("Macrorregião",opcoes_usuario$escolha_usuario),
+                        ifelse(opcoes_usuario$nivel_geografico=="micro",paste("Regional de Saúde",opcoes_usuario$escolha_usuario),
+                               paste("Município de", opcoes_usuario$escolha_usuario))))
+        })
+
+        # Set up parameters to pass to Rmd document
+        params <- list(intervencao1 = opcoes_usuario$date_intervention[1],
+                       intervencao2 = opcoes_usuario$date_intervention[2],
+                       #Título no cabeçalho do Relatório:
+                       titulo = titulo_relatorio(),
+                       data_set = data(),
+                       local = local() )
+
+        # Notificação para o usuário
+        id <- showNotification(
+          "Gerando análise dos resíduos..",
+          duration = NULL,
+          closeButton = FALSE
+        )
+        on.exit(removeNotification(id), add = TRUE)
+
+
+        # Knit the document, passing in the `params` list, and eval it in a
+        # child of the global environment (this isolates the code in the document
+        # from the code in this app).
+
+        rmarkdown::render(tempReport,
+                          output_file = file,
+                          params = params,
+                          envir = new.env(parent = globalenv())
+        )
+
+      }
+    )
 
   }
   )
