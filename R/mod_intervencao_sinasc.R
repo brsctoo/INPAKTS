@@ -50,7 +50,7 @@ mod_intervencao_sinasc_ui <- function(id){
                               width = "140px")),
           column(2,
                  shinyjs::hidden(downloadButton(ns("relatorio"),
-                                label = "Análise de resíduos")))),
+                                                label = "Análise de resíduos")))),
         fluidRow(
           column(2,
                  tableOutput((ns("info_modelo_ajustado")))),
@@ -410,25 +410,36 @@ mod_intervencao_sinasc_server <- function(id, opcoes_usuario){
         # Copy the report file to a temporary directory before processing it, in
         # case we don't have write permissions to the current working dir (which
         # can happen when deployed).
+
         tempReport <- file.path(tempdir(), "relatorio.Rmd")
         file.copy("relatorio.Rmd",
                   tempReport,
                   overwrite = TRUE)
 
 
-        titulo_relatorio = ifelse(is.na(opcoes_usuario$date_intervention[2]),
-                                  paste("Análise de resíduos, dados do SINASC e data de intervenção:",
-                                        opcoes_usuario$date_intervention[1]),
-                                  paste("Análise de resíduos, dados do SINASC e datas de intervenção:",
-                                        opcoes_usuario$date_intervention[1], "e",
-                                        opcoes_usuario$date_intervention[2]))
+        titulo_relatorio <- eventReactive(input$gerar_graficos, {
+          ifelse(is.na(opcoes_usuario$date_intervention[2]),
+                 paste("Análise de resíduos, dados do SINASC e data de intervenção:",
+                       opcoes_usuario$date_intervention[1]),
+                 paste("Análise de resíduos, dados do SINASC e datas de intervenção:",
+                       opcoes_usuario$date_intervention[1], "e",
+                       opcoes_usuario$date_intervention[2]))
+        })
+
+        local <-  eventReactive(input$gerar_graficos, {
+          ifelse(opcoes_usuario$nivel_geografico=="PR","Estado do Paraná",
+                 ifelse(opcoes_usuario$nivel_geografico=="macro",paste("Macrorregião",opcoes_usuario$escolha_usuario),
+                        ifelse(opcoes_usuario$nivel_geografico=="micro",paste("Regional de Saúde",opcoes_usuario$escolha_usuario),
+                               paste("Município de", opcoes_usuario$escolha_usuario))))
+        })
 
         # Set up parameters to pass to Rmd document
         params <- list(intervencao1 = opcoes_usuario$date_intervention[1],
                        intervencao2 = opcoes_usuario$date_intervention[2],
                        #Título no cabeçalho do Relatório:
-                       titulo = titulo_relatorio,
-                       data_set = data())
+                       titulo = titulo_relatorio(),
+                       data_set = data(),
+                       local = local() )
 
         # Notificação para o usuário
         id <- showNotification(
@@ -442,11 +453,13 @@ mod_intervencao_sinasc_server <- function(id, opcoes_usuario){
         # Knit the document, passing in the `params` list, and eval it in a
         # child of the global environment (this isolates the code in the document
         # from the code in this app).
+
         rmarkdown::render(tempReport,
                           output_file = file,
                           params = params,
                           envir = new.env(parent = globalenv())
         )
+
       }
     )
 
