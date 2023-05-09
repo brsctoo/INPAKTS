@@ -1,6 +1,14 @@
 ---
 title: "`r params$titulo`"
-output: html_document
+output:
+  html_document:
+    theme:
+      bootswatch: "lumen"
+      color-contrast-warnings: false
+      base_font:
+        google: Prompt
+      heading_font:
+        google: Proza Libre
 params:
   titulo: " "
   intervencao1: " "
@@ -24,18 +32,19 @@ modelo <- sinasc_modelo.ajustado(params$data_set,params$intervencao1,params$inte
 residuos <- residuals(modelo)
 ```
 
-# Função de autocorrelação dos resíduos (FAC)
+# {.tabset .tabset-pills}
+## Função de autocorrelação dos resíduos (FAC)
 
 ```{r}
 forecast::ggAcf(residuos, lag.max = 12, plot = TRUE)
 ```
 
-# Função de autocorrelação parcial dos resíduos (FACP)
+## Função de autocorrelação parcial dos resíduos (FACP)
 ```{r}
 forecast::ggPacf(residuos, lag.max = 12, plot = TRUE)
 ```
 
-# Um histograma com curva normal superposta
+## Histograma com curva normal superposta
 
 ```{r}
 hist(residuos,freq=F, ylab = "Densidade", xlab = "Resíduos", main = "")
@@ -43,19 +52,19 @@ curve(dnorm(x,0,sd(residuos)),add=T)
 ```
 
 
-# Grafico de probabilidades normais (QQPlot)
+## Grafico de probabilidades normais (QQPlot)
 ```{r}
 qqnorm(residuos)
 qqline(residuos)
 ```
 
-# Teste Shapiro-Wilk de normalidade
+## Teste Shapiro-Wilk de normalidade
 
 ```{r}
 shapiro.test(residuos)
 ```
 
-# Teste Durbin-Watson de erros autocorrelacionados 
+## Teste Durbin-Watson de erros autocorrelacionados 
 ```{r}
 car::durbinWatsonTest(modelo)
 ```
