@@ -21,8 +21,8 @@ data_prep_geo <- function(data_prep,
   macro <- c()
 
   df <- data.frame(municipio = levels(data_prep$municipio))
-
-  for (j in 1:8){
+ #87
+  for (j in 1:87){
     #i in 1:399
     for (i in 1:length(levels(data_prep$municipio))) {
 
@@ -72,3 +72,4 @@ usethis::use_data(dados_map_sim_neonatal, overwrite = TRUE)
 usethis::use_data(dados_map_sif_gestante, overwrite = TRUE)
 
 usethis::use_data(dados_map_sif_congenita, overwrite = TRUE)
+
