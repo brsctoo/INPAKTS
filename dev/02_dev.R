@@ -42,6 +42,7 @@ usethis::use_package("readxl")
 usethis::use_package("stringr")
 usethis::use_package("astsa")
 usethis::use_package("stringr")
+usethis::use_package("dplyr")
 
 ## Add modules ----
 ## Create a module infrastructure in R/
