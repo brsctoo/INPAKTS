@@ -282,7 +282,7 @@ mod_intervencao_sim_materno_server <- function(id, opcoes_usuario){
         nrow()
 
       numerador = dataCategorica() %>%
-        dplyr::filter(raca_cor == "Não informado") %>%
+        dplyr::filter(raca_cor == "N.I.") %>%
         nrow()
 
       round((numerador / denominador)*100,2)
