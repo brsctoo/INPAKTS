@@ -340,16 +340,26 @@ mod_intervencao_sim_neonatal_server <- function(id, opcoes_usuario){
     })
     ## Com resultados  por sexo------
 
-    # toListen <- reactive({
-    #   list(input$sexo,input$gerar_resultado_sexo)
-    # })
+    # Quantidade de não informado por sexo de  acordo com opcoes selecionadas por usuário
+    na_sexo <- eventReactive(input$gerar_resultado_sexo, {
+
+      denominador = dataCategorica() %>%
+        nrow()
+
+      numerador = dataCategorica() %>%
+        dplyr::filter(sexo == "N.I.") %>%
+        nrow()
+
+      round((numerador / denominador)*100,2)
+
+    })
 
     output$info_modelo_ajustado_sexo <- renderText({
       req(input$gerar_resultado_sexo,opcoes_usuario$date_intervention[1])
       dataCategorica() %>%
         dplyr::filter(sexo==input$sexo) %>%
         return_ts(data_variable,inicio = c(2015,1), tipo = "mensal") %>%
-        tabela_intervencao(opcoes_usuario$date_intervention[1],opcoes_usuario$date_intervention[2])})
+        tabela_intervencao(opcoes_usuario$date_intervention[1],opcoes_usuario$date_intervention[2], na = na_sexo())})
 
 
     ## Com resultados  por tipo_mortalidade------
