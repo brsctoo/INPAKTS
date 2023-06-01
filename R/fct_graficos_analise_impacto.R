@@ -169,21 +169,21 @@ grafico_analise_impacto <- function(dados,
       #   type = "scatter",
       #   line = list(
       #     color = "black"
-      #   ),
-      #   inherit = FALSE,
-      #   showlegend = TRUE) %>%
-      #Configurações de layout do gráfico:
-      layout(
-        #Posição da legenda:
-        #legend = list(x = 0.1, y = 0.9),
-        #Título do gráfico:
-        title = paste('<b>',titulo,'</b>'),
-        #Cor de fundo do gráfico:
-        plot_bgcolor = "white",
-        #Título do eixo x:
-        xaxis = list(title = 'Ano'),
-        #Título do eixo y:
-        yaxis = list(title = ylabel))
+    #   ),
+    #   inherit = FALSE,
+    #   showlegend = TRUE) %>%
+    #Configurações de layout do gráfico:
+    layout(
+      #Posição da legenda:
+      #legend = list(x = 0.1, y = 0.9),
+      #Título do gráfico:
+      title = paste('<b>',titulo,'</b>'),
+      #Cor de fundo do gráfico:
+      plot_bgcolor = "white",
+      #Título do eixo x:
+      xaxis = list(title = 'Ano'),
+      #Título do eixo y:
+      yaxis = list(title = ylabel))
 
   }else{
     #Data das intervenções
@@ -316,21 +316,21 @@ grafico_analise_impacto <- function(dados,
       #   type = "scatter",
       #   line = list(
       #     color = "black"
-      #   ),
-      #   inherit = FALSE,
-      #   showlegend = TRUE) %>%
-      #Configurações de layout do gráfico:
-      layout(
-        #Posição da legenda:
-        #legend = list(x = 0.1, y = 0.9),
-        #Título do gráfico:
-        title = paste('<b>',titulo,'</b>'),
-        #Cor de fundo do gráfico:
-        plot_bgcolor = "white",
-        #Título do eixo x:
-        xaxis = list(title = 'Ano'),
-        #Título do eixo y:
-        yaxis = list(title = ylabel))
+    #   ),
+    #   inherit = FALSE,
+    #   showlegend = TRUE) %>%
+    #Configurações de layout do gráfico:
+    layout(
+      #Posição da legenda:
+      #legend = list(x = 0.1, y = 0.9),
+      #Título do gráfico:
+      title = paste('<b>',titulo,'</b>'),
+      #Cor de fundo do gráfico:
+      plot_bgcolor = "white",
+      #Título do eixo x:
+      xaxis = list(title = 'Ano'),
+      #Título do eixo y:
+      yaxis = list(title = ylabel))
   }
 
   return(fig)
@@ -1016,7 +1016,8 @@ grafico_analise_impacto_idade <- function(dados,
                                           #tipo = "lines",
                                           ylabel = "Nascidos vivos",
                                           intervention1 = "2017-03-01",
-                                          intervention2 = "2021-03-01"){
+                                          intervention2 = "2021-03-01",
+                                          dados_sinasc = 100000){
 
   #stopifnot(is.numeric(dados),is.character(titulo),is.character(intervention1),is.character(intervention2))
   # Argumentos da função:
@@ -1030,13 +1031,20 @@ grafico_analise_impacto_idade <- function(dados,
     dplyr::filter(idade == "Jovens: 10 a 18 anos") %>%
     return_ts(data_variable,inicio = c(2015,1), tipo = "mensal")
 
+  jovem_st <-   (jovem_st / dados_sinasc) * 100000
+
   adulto_jovem_st <- dados %>%
     dplyr::filter(idade  == "Adultos Jovens: 19 a 30 anos") %>%
     return_ts(data_variable,inicio = c(2015,1), tipo = "mensal")
 
+  adulto_jovem_st <-   (adulto_jovem_st / dados_sinasc) * 100000
+
   adulto_st <- dados %>%
     dplyr::filter(idade  == "Adultos: 31 a 59 anos") %>%
     return_ts(data_variable,inicio = c(2015,1), tipo = "mensal")
+
+  adulto_st <-   (adulto_st / dados_sinasc) * 100000
+
 
   st <- data.frame(DATA=seq.Date(from = as.Date(min(dados_sinasc_intervencao$data_variable)),
                                  to = as.Date(max(dados_sinasc_intervencao$data_variable))-months(1),
@@ -1411,7 +1419,8 @@ grafico_analise_impacto_raca <- function(dados,
                                          #tipo = "lines",
                                          ylabel = "Nascidos vivos",
                                          intervention1 = "2017-03-01",
-                                         intervention2 = "2021-03-01"){
+                                         intervention2 = "2021-03-01",
+                                         dados_sinasc = 100000){
 
   #stopifnot(is.numeric(dados),is.character(titulo),is.character(intervention1),is.character(intervention2))
   # Argumentos da função:
@@ -1425,9 +1434,14 @@ grafico_analise_impacto_raca <- function(dados,
     dplyr::filter(raca_cor == "Branca") %>%
     return_ts(data_variable,inicio = c(2015,1), tipo = "mensal")
 
+
+  branca_st <-   (branca_st / dados_sinasc) * 100000
+
   nao_branca_st <- dados %>%
     dplyr::filter(raca_cor == "Não branca") %>%
     return_ts(data_variable,inicio = c(2015,1), tipo = "mensal")
+
+  nao_branca_st <- (nao_branca_st / dados_sinasc) * 100000
 
   st <- data.frame(DATA=seq.Date(from = as.Date(min(dados_sinasc_intervencao$data_variable)),
                                  to = as.Date(max(dados_sinasc_intervencao$data_variable))-months(1),
@@ -2116,11 +2130,11 @@ grafico_analise_impacto_tipo_mortalidade <- function(dados,
 }
 
 grafico_analise_impacto_idade_sif_c <- function(dados,
-                                          titulo = "(SINASC) Análise de impacto com tendência por idade",
-                                          #tipo = "lines",
-                                          ylabel = "Nascidos vivos",
-                                          intervention1 = "2017-03-01",
-                                          intervention2 = "2021-03-01"){
+                                                titulo = "(SINASC) Análise de impacto com tendência por idade",
+                                                #tipo = "lines",
+                                                ylabel = "Nascidos vivos",
+                                                intervention1 = "2017-03-01",
+                                                intervention2 = "2021-03-01"){
 
   #stopifnot(is.numeric(dados),is.character(titulo),is.character(intervention1),is.character(intervention2))
   # Argumentos da função:
@@ -2512,7 +2526,13 @@ grafico_analise_impacto_idade_sif_c <- function(dados,
 
 
 # Função para gerar os resultados estatísticas do modelo
-tabela_intervencao <- function(dados,date_intervention1,date_intervention2,na=NULL){
+tabela_intervencao <- function(dados,
+                               date_intervention1,
+                               date_intervention2,
+                               na=NULL,
+                               dados_sinasc = 100000){
+
+  dados <- (dados / dados_sinasc) * 100000
 
   if(any(dados==0)){
     dados <- (dados + min(dados[dados > 0])/2)
