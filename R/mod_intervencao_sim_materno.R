@@ -92,6 +92,19 @@ mod_intervencao_sim_materno_server <- function(id, opcoes_usuario){
     # Pop-ups -------
 
     ## Pop-up surgirá se nenhuma data de intervenção for selecionada e usuario clicar no botao para gerar algum gráfico-------
+
+    #nrow(dataCategorica()) == 0
+
+    observeEvent( input$gerar_graficos, {
+      if( nrow(dataCategorica()) == 0){
+        shinyalert::shinyalert(
+          title = "Atenção",
+          text = "Dados com zero informações",
+          type = "warning",
+          size = "m")
+      }
+    })
+
     observeEvent( input$gerar_graficos, {
       if(length( opcoes_usuario$date_intervention[1])==0){
         shinyalert::shinyalert(
@@ -171,10 +184,50 @@ mod_intervencao_sim_materno_server <- function(id, opcoes_usuario){
     })
 
     # Série temporal altera-se de acordo com as opções selecionadas pelo user e após clicar em gerar gráfico
-    data <- eventReactive(input$gerar_graficos, {
+    data_sim_materno <- eventReactive(input$gerar_graficos, {
       dataCategorica() %>%
         return_ts(data_variable,inicio = c(2015,1), tipo = "mensal")
     })
+
+    # filtrando os dados de acordo com as opções do usuário
+    dataCategorica_sinasc <- eventReactive(input$gerar_graficos, {
+      dados_sinasc_intervencao %>%
+        data_prep(nivel_geografico = opcoes_usuario$nivel_geografico,
+                  local=opcoes_usuario$escolha_usuario)
+    })
+
+    # Série temporal com dados do SINASC (nascidos vivos)
+    data_sinasc <- eventReactive(input$gerar_graficos, {
+      dataCategorica_sinasc() %>%
+        return_ts(data_variable,inicio = c(2015,1), tipo = "mensal")
+    })
+
+
+    # data <- eventReactive(input$gerar_graficos, {
+    #   (data_sim_materno() /  data_sinasc()) * 100000
+    # })
+
+
+
+    data <- eventReactive(input$gerar_graficos, {
+
+      #media = mean(data_sinasc())
+
+      ifelse(data_sinasc()== 0, (data_sim_materno() / mean(data_sinasc()))* 100000,
+             (data_sim_materno() / data_sinasc()) * 100000)
+
+      #dados <- ifelse(data_sinasc()== 0, mean(data_sinasc()), data_sinasc())
+      # dados <- c(1:length(data_sinasc()))
+
+      # for(i in 1:length(data_sinasc())){
+      #   if(data_sinasc()[i] == 0){ dados[i] = media
+      #   }else{
+      #     dados[i] = data_sinasc()[i]
+      #   }
+      # }
+      #(data_sim_materno() /  dados) * 100000
+    })
+
 
     #Título da série altera-se de acordo com as opções selecionadas pelo user e após clicar em gerar gráfico
     titulo <- eventReactive(input$gerar_graficos, {
@@ -206,7 +259,7 @@ mod_intervencao_sim_materno_server <- function(id, opcoes_usuario){
       req(opcoes_usuario$date_intervention[1])
       grafico_analise_impacto(dados = data() ,
                               titulo = titulo(),
-                              ylabel = "Óbitos Maternos",
+                              ylabel = "Óbitos Maternos por 100 mil nascidos vivos",
                               intervention1 = opcoes_usuario$date_intervention[1],
                               intervention2 = opcoes_usuario$date_intervention[2])
     }) %>%
@@ -223,9 +276,10 @@ mod_intervencao_sim_materno_server <- function(id, opcoes_usuario){
         req(opcoes_usuario$date_intervention[1])
         grafico_analise_impacto_idade(dados = dataCategorica(),
                                       titulo = titulo_idade(),
-                                      ylabel = "Óbitos Maternos",
+                                      ylabel = "Óbitos Maternos por 100 mil nascidos vivos",
                                       intervention1 = opcoes_usuario$date_intervention[1],
-                                      intervention2 = opcoes_usuario$date_intervention[2])
+                                      intervention2 = opcoes_usuario$date_intervention[2],
+                                      dados_sinasc = data_sinasc())
       }) %>%
         bindCache(opcoes_usuario$escolha_usuario,
                   opcoes_usuario$date_intervention[1],
@@ -239,9 +293,10 @@ mod_intervencao_sim_materno_server <- function(id, opcoes_usuario){
         req(opcoes_usuario$date_intervention[1])
         grafico_analise_impacto_raca(dados = dataCategorica(),
                                      titulo = titulo_raca(),
-                                     ylabel = "Óbitos Maternos",
+                                     ylabel = "Óbitos Maternos por 100 mil nascidos vivos",
                                      intervention1 = opcoes_usuario$date_intervention[1],
-                                     intervention2 = opcoes_usuario$date_intervention[2])
+                                     intervention2 = opcoes_usuario$date_intervention[2],
+                                     dados_sinasc = data_sinasc())
       }) %>%
         bindCache(opcoes_usuario$escolha_usuario, opcoes_usuario$date_intervention[1],
                   opcoes_usuario$date_intervention[2], input$interv_sim_materno) %>%
@@ -270,7 +325,9 @@ mod_intervencao_sim_materno_server <- function(id, opcoes_usuario){
       dataCategorica() %>%
         dplyr::filter(idade==input$idade) %>%
         return_ts(data_variable,inicio = c(2015,1), tipo = "mensal") %>%
-        tabela_intervencao(opcoes_usuario$date_intervention[1],opcoes_usuario$date_intervention[2])})
+        tabela_intervencao(opcoes_usuario$date_intervention[1],
+                           opcoes_usuario$date_intervention[2],
+                           dados_sinasc = data_sinasc())})
 
 
     ## Com resultados  por raça/cor-------
@@ -294,7 +351,10 @@ mod_intervencao_sim_materno_server <- function(id, opcoes_usuario){
       dataCategorica() %>%
         dplyr::filter(raca_cor == input$raca) %>%
         return_ts(data_variable, inicio = c(2015,1), tipo = "mensal") %>%
-        tabela_intervencao(opcoes_usuario$date_intervention[1],opcoes_usuario$date_intervention[2],na = na_raca())})
+        tabela_intervencao(opcoes_usuario$date_intervention[1],
+                           opcoes_usuario$date_intervention[2],
+                           na = na_raca(),
+                           dados_sinasc = data_sinasc())})
 
     # Relatório com análise dos resíduos ----------------------------------------
 
