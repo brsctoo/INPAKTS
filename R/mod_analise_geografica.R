@@ -65,6 +65,7 @@ mod_analise_geografica_ui <- function(id) {
                       h3(
                         strong(textOutput(ns("titulo_sinasc"))),  align = "center"
                       ))),
+
       fluidRow(column(12,
                       plotOutput(
                         ns("mapa_sinasc"), height = 500
@@ -207,6 +208,7 @@ mod_analise_geografica_server <- function(id, opcoes_usuario) {
       }
     })
 
+
     # Mapa sinasc --------------------------------------------------------------
 
     titulo_sinasc <- eventReactive(input$gerar_graficos, {
@@ -223,23 +225,32 @@ mod_analise_geografica_server <- function(id, opcoes_usuario) {
 
     output$titulo_sinasc <- renderText(titulo_sinasc())
 
+
     mapa_sinasc <- eventReactive(input$gerar_graficos, {
-      ifelse(
-        input$radio == "RS",
+      if(input$radio == "RS"){
         RSmapOrd(
           varToPlot =  dados_map_sinasc[,as.character(input$data_selecionada)],
           legeName = "Mudança na tendência",
           mun = dados_map_sinasc$municipio,
           RS =  input$escolha_usuario,
           legeLabels = levels(dados_map_sinasc[,as.character(input$data_selecionada)])
-        ),
-        UFmapOrd(
-          varToPlot = dados_map_sinasc[,as.character(input$data_selecionada)],
-          mun = dados_map_sinasc$municipio,
-          legeName = "Mudança na tendência",
-          legeLabels = levels(dados_map_sinasc[,as.character(input$data_selecionada)])
-        )
-      )
+        )}
+      else{
+        ggpubr::ggarrange(
+          UFmapOrd(
+            varToPlot = dados_map_sinasc[,as.character(input$data_selecionada)],
+            mun = dados_map_sinasc$municipio,
+            legeName = "Mudança na tendência por munípio no PR",
+            legeLabels = levels(dados_map_sinasc[,as.character(input$data_selecionada)])
+          )$map,
+          UFmapOrd(
+            varToPlot = dados_map_sinasc_rs[,as.character(input$data_selecionada)],
+            mun = dados_map_sinasc_rs$municipio,
+            legeName = "Mudança na tendência no PR por RS",
+            legeLabels = levels(dados_map_sinasc_rs[,as.character(input$data_selecionada)])
+          )$map)
+          #common.legend = T)
+      }
     })
 
     output$mapa_sinasc <- renderPlot({
@@ -249,6 +260,7 @@ mod_analise_geografica_server <- function(id, opcoes_usuario) {
                 input$radio,
                 input$escolha_usuario) %>%
       bindEvent(input$gerar_graficos)
+
 
     # Mapa sim neonatal--------------------------------------------------------
 
@@ -266,23 +278,33 @@ mod_analise_geografica_server <- function(id, opcoes_usuario) {
 
     output$titulo_sim_neonatal <- renderText(titulo_sim_neonatal())
 
+
     mapa_sim_neonatal <- eventReactive(input$gerar_graficos, {
-      ifelse(
-        input$radio == "RS",
+      if(input$radio == "RS"){
+        #Plota o mapa da Regional de Saúde
         RSmapOrd(
           varToPlot = dados_map_sim_neonatal[,as.character(input$data_selecionada)],
           legeName = "Mudança na tendência",
           mun = dados_map_sim_neonatal$municipio,
           RS =  input$escolha_usuario,
           legeLabels = levels(dados_map_sim_neonatal[,as.character(input$data_selecionada)])
-        ),
-        UFmapOrd(
-          varToPlot = dados_map_sim_neonatal[,as.character(input$data_selecionada)],
-          mun = dados_map_sim_neonatal$municipio,
-          legeName = "Mudança na tendência",
-          legeLabels = levels(dados_map_sim_neonatal[,as.character(input$data_selecionada)])
-        )
-      )
+        )}
+      else{
+        #Plota o mapa do estado do PR por município ao lado do mapa do PR por RS
+        ggpubr::ggarrange(
+          UFmapOrd(
+            varToPlot = dados_map_sim_neonatal[,as.character(input$data_selecionada)],
+            mun = dados_map_sim_neonatal$municipio,
+            legeName = "Mudança na tendência por munípio no PR",
+            legeLabels = levels(dados_map_sim_neonatal[,as.character(input$data_selecionada)])
+          )$map,
+          UFmapOrd(
+            varToPlot = dados_map_sim_neonatal_rs[,as.character(input$data_selecionada)],
+            mun = dados_map_sim_neonatal_rs$municipio,
+            legeName = "Mudança na tendência por RS no PR",
+            legeLabels = levels(dados_map_sim_neonatal_rs[,as.character(input$data_selecionada)])
+          )$map)
+      }
     })
 
     output$mapa_sim_neonatal <- renderPlot({
@@ -292,8 +314,8 @@ mod_analise_geografica_server <- function(id, opcoes_usuario) {
                 input$radio,
                 input$escolha_usuario) %>%
       bindEvent(input$gerar_graficos)
-    #
-    # #Mapa sim materno
+
+    # Mapa sim materno--------------------------------------
 
     titulo_sim_materno <- eventReactive(input$gerar_graficos, {
       ifelse(
@@ -310,22 +332,31 @@ mod_analise_geografica_server <- function(id, opcoes_usuario) {
     output$titulo_sim_materno <- renderText(titulo_sim_materno())
 
     mapa_sim_materno <- eventReactive(input$gerar_graficos, {
-      ifelse(
-        input$radio == "RS",
+      if(input$radio == "RS"){
+        #Plota o mapa da Regional de Saúde
         RSmapOrd(
           varToPlot = dados_map_sim_materno[,as.character(input$data_selecionada)],
           legeName = "Mudança na tendência",
           mun = dados_map_sim_materno$municipio,
           RS =  input$escolha_usuario,
           legeLabels = levels(dados_map_sim_materno[,as.character(input$data_selecionada)])
-        ),
-        UFmapOrd(
-          varToPlot = dados_map_sim_materno[,as.character(input$data_selecionada)],
-          mun = dados_map_sim_materno$municipio,
-          legeName = "Mudança na tendência",
-          legeLabels = levels(dados_map_sim_materno[,as.character(input$data_selecionada)])
-        )
-      )
+        )}
+      else{
+        #Plota o mapa do estado do PR por município ao lado do mapa do PR por RS
+        ggpubr::ggarrange(
+          UFmapOrd(
+            varToPlot = dados_map_sim_materno[,as.character(input$data_selecionada)],
+            mun = dados_map_sim_materno$municipio,
+            legeName = "Mudança na tendência por munípio no PR",
+            legeLabels = levels(dados_map_sim_materno[,as.character(input$data_selecionada)])
+          )$map,
+          UFmapOrd(
+            varToPlot = dados_map_sim_materno_rs[,as.character(input$data_selecionada)],
+            mun = dados_map_sim_materno_rs$municipio,
+            legeName = "Mudança na tendência por RS no PR",
+            legeLabels = levels(dados_map_sim_materno_rs[,as.character(input$data_selecionada)])
+          )$map)
+      }
     })
 
     output$mapa_sim_materno <- renderPlot({
@@ -353,23 +384,33 @@ mod_analise_geografica_server <- function(id, opcoes_usuario) {
     output$titulo_sif_gestante <- renderText(titulo_sif_gestante())
 
     mapa_sif_gestante <- eventReactive(input$gerar_graficos, {
-      ifelse(
-        input$radio == "RS",
+      if(input$radio == "RS"){
+        #Plota o mapa da Regional de Saúde
         RSmapOrd(
           varToPlot = dados_map_sif_gestante[,as.character(input$data_selecionada)],
           legeName = "Mudança na tendência",
           mun = dados_map_sif_gestante$municipio,
           RS =  input$escolha_usuario,
           legeLabels = levels(dados_map_sif_gestante[,as.character(input$data_selecionada)])
-        ),
-        UFmapOrd(
-          varToPlot = dados_map_sif_gestante[,as.character(input$data_selecionada)],
-          mun = dados_map_sif_gestante$municipio,
-          legeName = "Mudança na tendência",
-          legeLabels = levels(dados_map_sif_gestante[,as.character(input$data_selecionada)])
-        )
-      )
+        )}
+      else{
+        #Plota o mapa do estado do PR por município ao lado do mapa do PR por RS
+        ggpubr::ggarrange(
+          UFmapOrd(
+            varToPlot = dados_map_sif_gestante[,as.character(input$data_selecionada)],
+            mun = dados_map_sif_gestante$municipio,
+            legeName = "Mudança na tendência por munípio no PR",
+            legeLabels = levels(dados_map_sif_gestante[,as.character(input$data_selecionada)])
+          )$map,
+          UFmapOrd(
+            varToPlot = dados_map_sif_gestante_rs[,as.character(input$data_selecionada)],
+            mun = dados_map_sif_gestante_rs$municipio,
+            legeName = "Mudança na tendência por RS no PR",
+            legeLabels = levels(dados_map_sif_gestante_rs[,as.character(input$data_selecionada)])
+          )$map)
+      }
     })
+
 
     output$mapa_sif_gestante <- renderPlot({
       mapa_sif_gestante()
@@ -396,22 +437,31 @@ mod_analise_geografica_server <- function(id, opcoes_usuario) {
     output$titulo_sif_congenita <- renderText(titulo_sif_congenita())
 
     mapa_sif_congenita <- eventReactive(input$gerar_graficos, {
-      ifelse(
-        input$radio == "RS",
+      if(input$radio == "RS"){
+        #Plota o mapa da Regional de Saúde
         RSmapOrd(
           varToPlot = dados_map_sif_congenita[,as.character(input$data_selecionada)],
           legeName = "Mudança na tendência",
           mun = dados_map_sif_congenita$municipio,
           RS =  input$escolha_usuario,
           legeLabels = levels(dados_map_sif_congenita[,as.character(input$data_selecionada)])
-        ),
-        UFmapOrd(
-          varToPlot = dados_map_sif_congenita[,as.character(input$data_selecionada)],
-          mun = dados_map_sif_congenita$municipio,
-          legeName = "Mudança na tendência",
-          legeLabels = levels(dados_map_sif_congenita[,as.character(input$data_selecionada)])
-        )
-      )
+        )}
+      else{
+        #Plota o mapa do estado do PR por município ao lado do mapa do PR por RS
+        ggpubr::ggarrange(
+          UFmapOrd(
+            varToPlot = dados_map_sif_congenita[,as.character(input$data_selecionada)],
+            mun = dados_map_sif_congenita$municipio,
+            legeName = "Mudança na tendência por munípio no PR",
+            legeLabels = levels(dados_map_sif_congenita[,as.character(input$data_selecionada)])
+          )$map,
+          UFmapOrd(
+            varToPlot = dados_map_sif_congenita_rs[,as.character(input$data_selecionada)],
+            mun = dados_map_sif_congenita_rs$municipio,
+            legeName = "Mudança na tendência por RS no PR",
+            legeLabels = levels(dados_map_sif_congenita_rs[,as.character(input$data_selecionada)])
+          )$map)
+      }
     })
 
     output$mapa_sif_congenita <- renderPlot({
@@ -422,11 +472,11 @@ mod_analise_geografica_server <- function(id, opcoes_usuario) {
                 input$escolha_usuario) %>%
       bindEvent(input$gerar_graficos)
 
-  })
-}
+    })
+  }
 
-## To be copied in the UI
-# mod_analise_geografica_ui("analise_geografica_1")
+  ## To be copied in the UI
+  # mod_analise_geografica_ui("analise_geografica_1")
 
-## To be copied in the server
-# mod_analise_geografica_server("analise_geografica_1")
+  ## To be copied in the server
+  # mod_analise_geografica_server("analise_geografica_1")
