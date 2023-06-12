@@ -2532,6 +2532,13 @@ tabela_intervencao <- function(dados,
                                na=NULL,
                                dados_sinasc = 100000){
 
+  # na (numeric) quantidade de não informados
+  stopifnot(is.numeric(dados),is.numeric(dados_sinasc))
+
+  note = ifelse(!is.null(na),paste0("* indica valor p menor que 5%. ",na,
+                                    "% de valores não informados."),
+                "* indica valor p menor que 5%.")
+
   dados <- (dados / dados_sinasc) * 100000
 
   if(any(dados==0)){
@@ -2557,7 +2564,7 @@ tabela_intervencao <- function(dados,
       kableExtra::column_spec(1, bold = F) %>%
       kableExtra::column_spec(2, width = "10em") %>%
       kableExtra::kable_styling(latex_options = c("striped", "hold_position"),full_width = F ) %>%
-      kableExtra::footnote(general = paste0("* indica valor p menor que 5%. ",na,"% de valores não informados"),
+      kableExtra::footnote(general =  note,
                            general_title = "",
                            threeparttable = TRUE, escape = F)}
   else{
@@ -2586,7 +2593,7 @@ tabela_intervencao <- function(dados,
       kableExtra::column_spec(1, bold = F) %>%
       kableExtra::column_spec(2, width = "10em") %>%
       kableExtra::kable_styling(latex_options = c("striped", "hold_position"),full_width = F ) %>%
-      kableExtra::footnote(general = paste0("* indica valor p menor que 5%. ",na,"% de valores não informados"),
+      kableExtra::footnote(general =  note,
                            general_title = "",
                            threeparttable = TRUE, escape = F)
   }
