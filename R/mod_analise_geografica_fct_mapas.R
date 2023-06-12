@@ -165,7 +165,7 @@ UFmapOrd <- function(varToPlot,
                                  name=legeName,
                                  na.value="white",
                                  labels = legeLabels) +
-      ggplot2::theme(legend.position = "right",
+      ggplot2::theme(legend.position = "bottom",#"right"
                      text = ggplot2::element_text(size = ggplot2::rel(4)),
                      legend.text = ggplot2::element_text(size = ggplot2::rel(2.8)))
 
@@ -178,7 +178,7 @@ UFmapOrd <- function(varToPlot,
                                  name=legeName,
                                  na.value="white",
                                  labels = legeLabels) +
-      ggplot2::theme(legend.position = "right",
+      ggplot2::theme(legend.position = "bottom",#"right"
                      text = ggplot2::element_text(size = ggplot2::rel(4)),
                      legend.text = ggplot2::element_text(size = ggplot2::rel(2.8)))
 
@@ -188,7 +188,7 @@ UFmapOrd <- function(varToPlot,
       ggplot2::geom_sf(ggplot2::aes(fill=Freq)) +
       ggplot2::scale_fill_brewer(name=legeName,type="seq",palette="YlOrRd",
                                  na.value="white",labels = legeLabels) +
-      ggplot2::theme(legend.position = "right",
+      ggplot2::theme(legend.position = "bottom",#"right"
                      text = ggplot2::element_text(size = ggplot2::rel(4)),
                      legend.text = ggplot2::element_text(size = ggplot2::rel(2.8)))
   }
