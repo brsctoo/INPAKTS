@@ -1,7 +1,7 @@
 ## code to prepare `dados_map` dataset goes here
 
 data_prep_geo <- function(data_prep,
-                          data_primeira_intervencao = "2015-05-01"){
+                            data_primeira_intervencao = "2015-05-01"){
 
   #Datas somente considerando o mês de janeiro
   datas <- seq.Date(
@@ -76,8 +76,9 @@ data_prep_geo_rs <- function(data_prep,
   macro <- c()
 
   df <- data.frame(micro = levels(data_prep$micro))
-  #87
-  for (j in 1:10){
+  #87, 80
+  n = length(datas) - 1
+  for (j in 1:n){
     #i in 1:399
     for (i in 1:length(levels(data_prep$micro))) {
 
