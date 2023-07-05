@@ -23,11 +23,6 @@ mod_inicio_ui <- function(id) {
           )
         ),
 
-        # fluidRow(
-        #   bs4Dash::infoBox(title = "Número de casos na semana", 36, color = "danger", icon = icon("credit-card")),
-        #   bs4Dash::infoBox(title = "Número de casos no mês", 2, color = "warning", icon = icon("credit-card")),
-        #   bs4Dash::infoBox(title = "Número de casos no ano", 2, color = "maroon", icon = icon("fas fa-chart-bar"))
-        # )
         shinyWidgets::useBs4Dash(),
         br(),
         br(),
@@ -89,16 +84,6 @@ mod_inicio_ui <- function(id) {
         ),
         br()
 
-        # bs4Dash::infoBox(
-        #   title = strong("Dados disponíveis:"),
-        #   width = 12,
-        #   icon = icon("database"),
-        #   value = paste0(
-        #     format(as.Date(min(dados_sinasc_intervencao$data_variable)), "%B de %Y"), " até ",
-        #     format(as.Date(max(dados_sinasc_intervencao$data_variable)), "%B de %Y")
-        #   )
-        # )
-
       ),
       sidebarPanel(
         style = "background-color: #6baed630;",
@@ -112,14 +97,19 @@ mod_inicio_ui <- function(id) {
         br(),
         p(
           tags$b(
-            "Plataforma de gestão e monitoramento do impacto de intervenções e eventos externos em Séries Temporais na saúde materno-infantil, da mulher e da criança"
+            "Plataforma de gestão e monitoramento do impacto de intervenções e eventos
+            externos em Séries Temporais na saúde materno-infantil, da mulher e da criança"
           ),
           align = "center",
           style = "font-size: 30px"
         ),
         br(),
         h5(
-          "Você gostaria de visualizar e monitorar o impacto de eventos externos, como políticas públicas (por exemplo, o Programa Rede Mãe Paranaense) e ocorrências de agravos (como a COVID-19), na saúde materno-infantil, levando em conta fatores de risco associados, como idade, raça e gênero? Aqui, você pode realizar análises de séries temporais de forma adequada!"
+          "Você gostaria de visualizar e monitorar o impacto de eventos externos,
+          como políticas públicas (por exemplo, o Programa Rede Mãe Paranaense) e
+          ocorrências de agravos (como a COVID-19), na saúde materno-infantil, levando
+          em conta fatores de risco associados, como idade, raça e gênero? Aqui, você
+          pode realizar análises de séries temporais de forma adequada!"
         ),
         br(),
         h5("O que você precisa ter em mãos antes de iniciar:"),
@@ -129,11 +119,16 @@ mod_inicio_ui <- function(id) {
         br(),
         h5("O que a INPAKTS disponibiliza?"),
         p(
-          "Modelos estatísticos adaptativos para os dados e localidade escolhida de modo que você poderá saber qual a mudança em tendência ocorrida após cada intervenção. E melhor, essa tendência está em porcentagem de mudança mensal. Você também poderá visualizar no mapa do estado do Paraná, quais municípios apresentaram tendência de aumento ou redução após a intervenção analisada."
+          "Modelos estatísticos adaptativos para os dados e localidade escolhida de
+          modo que você poderá saber qual a mudança em tendência ocorrida após cada
+          intervenção. E melhor, essa tendência está em porcentagem de mudança mensal.
+          Você também poderá visualizar no mapa do estado do Paraná, quais municípios
+          apresentaram tendência de aumento ou redução após a intervenção analisada."
         ),
         br(),
         h5(
-          "Por exemplo, no que se refere à pandemia, o impacto da COVID-19 pode ser estimado no risco de vulnerabilidade para:"
+          "Por exemplo, no que se refere à pandemia, o impacto da COVID-19 pode
+          ser estimado no risco de vulnerabilidade para:"
         ),
         tags$ul(
           tags$li("mortalidade neonatal (geral, precoce e tardia);"),
@@ -145,7 +140,9 @@ mod_inicio_ui <- function(id) {
         h5("como também para:"),
         tags$ul(
           tags$li(
-            "acesso aos cuidados durante o pré-natal e após o parto, na saúde gestacional, nas taxas relacionadas ao parto, nascimento prematuro e outros fatores que podem impactar desfechos da gravidez e do desenvolvimento infantil."
+            "acesso aos cuidados durante o pré-natal e após o parto, na saúde gestacional,
+            nas taxas relacionadas ao parto, nascimento prematuro e outros fatores que podem
+            impactar desfechos da gravidez e do desenvolvimento infantil."
           )
         ),
         br(),
@@ -189,7 +186,8 @@ mod_inicio_server <- function(id, opcoes_usuario) {
       }else{
         updateSelectInput(inputId = "escolha_usuario",
                           label = "Município:",
-                          choice =levels(dados_sinasc_intervencao$municipio))
+                          choice =levels(municipios_PR$municipio))
+                          #choice =levels(dados_sinasc_intervencao$municipio))
       }
 
     }
