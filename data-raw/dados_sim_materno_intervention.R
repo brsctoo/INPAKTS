@@ -52,8 +52,7 @@ dados_sim_materno_intervention <- rbind(sim_2015_2018, sim_2019_2022) %>%
   dplyr::filter(tipo_idade =="Anos") %>%
   dplyr::mutate(idade = ifelse(idade>=10 & idade<19, "Jovens: 10 a 18 anos",
                                ifelse(idade>=19 & idade < 31, "Adultos Jovens: 19 a 30 anos",
-                                      ifelse(idade>=31 & idade<=60,"Adultos: 31 a 59 anos",
-                                             ifelse(idade > 60 & idade<90, "Idosos: acima de 60", NA))))) %>%
+                                      ifelse(idade>=31 & idade<=60,"Adultos: 31 a 59 anos", NA)))) %>%
   dplyr::rename(data_variable=data_obito) %>%
   dplyr::select(municipio_obito,data_variable,idade,raca_cor)
 
@@ -82,7 +81,8 @@ rm(list=setdiff(ls(), c("dados_sim_materno_intervention","geo")))
 dados_sim_materno_intervention <- dados_sim_materno_intervention %>%
   dplyr::left_join(geo) %>%
   dplyr::relocate(municipio,micro,macro) %>%
-  dplyr::select(-municipio_obito)
+  dplyr::select(-municipio_obito) %>%
+
 
 
 # Salvando os dados na pasta data
