@@ -27,15 +27,25 @@ grafico_analise_impacto <- function(dados,
                                     intervention1 = "2017-03-01",
                                     intervention2 = "2021-03-01",
                                     n_previsoes = 6){
+  stopifnot(is.numeric(dados),is.character(titulo), is.character(ylabel), is.numeric(n_previsoes))
   # Argumentos da função:
   #dados (inteiro) = inteiros com valores observados da serie temporal de acordo com o filtro criado pelo usuário
   #titulo (char)   = título do gráfico gerado
-  #tipo (char)     = se "markers", então gráfico de dispersão. Se "lines", então gráfico de linhas
+  #n_previsoes (inteiro) = quantidade de previsões a frente, default são 6 meses
+  # intervention1 = data da primeira intervenção
+  # intervention2 = data da segunda intervenção
 
   # Checando se os tipos de args usados pelo usuário estão corretos:-------
   #### Ou
   # A função stopifnot() recebe uma série de expressões lógicas como argumentos
   # e se alguma delas for falsa é gerado um erro especificando qual expressão é falsa.
+
+  #Se o vetor numérico dados não tiver informação, então plota gráfico vazio
+  if(sum(dados) == 0 ){
+    return(invisible())
+    #Retorna gráfico tipo plotly vazio
+    #return(empty_plot())
+  }
 
   st <- data.frame(DATA=seq.Date(from = as.Date(min(dados_sinasc_intervencao$data_variable)),
                                  to = as.Date(max(dados_sinasc_intervencao$data_variable))-months(1),
@@ -617,21 +627,41 @@ grafico_analise_impacto_sexo <- function(dados,
                                          intervention1 = "2017-03-01",
                                          intervention2 = "2021-03-01"){
 
-  #stopifnot(is.numeric(dados),is.character(titulo),is.character(intervention1),is.character(intervention2))
+  stopifnot(is.data.frame(dados),is.character(titulo), is.character(ylabel))
   # Argumentos da função:
-  #dados (inteiro) = inteiros com valores observados da serie temporal de acordo com o filtro criado pelo usuário
+  #dados (data.frame) = dados filtrados de acordo com a seleção do usuário para o nível geográfico e o local
   #titulo (char)   = título do gráfico gerado
   #intervention1 (char)     =  data da primeira intervenção
   #intervention2 (char)     =  data da segunda intervenção
 
+  #data.frame dados com zero linha, então plota gráfico vazio
+  if(nrow(dados) == 0 ){
+    return(invisible())
+    #Retorna gráfico tipo plotly vazio
+    #return(empty_plot())
+  }
 
   masculino_st <- dados %>%
-    dplyr::filter(sexo == "Masculino") %>%
-    return_ts(data_variable,inicio = c(2015,1), tipo = "mensal")
+    dplyr::filter(sexo == "Masculino")
 
   feminino_st <- dados %>%
-    dplyr::filter(sexo == "Feminino") %>%
+    dplyr::filter(sexo == "Feminino")
+
+  #Se não há observações para no mínimo um dos sexo, então plota gráfico vazio
+  if(nrow(masculino_st) == 0 |  nrow(feminino_st) == 0 ){
+    return(invisible())
+    #Retorna gráfico tipo plotly vazio
+    #return(empty_plot())
+  }
+
+  #Criando vetores numéricos para cada um dos sexos:
+  masculino_st <- masculino_st %>%
     return_ts(data_variable,inicio = c(2015,1), tipo = "mensal")
+
+  feminino_st <- feminino_st %>%
+    return_ts(data_variable,inicio = c(2015,1), tipo = "mensal")
+
+
 
   # Ajuste para obter o log mesmo no caso de a série temporal conter zero
   if(any(masculino_st==0)){
@@ -641,8 +671,6 @@ grafico_analise_impacto_sexo <- function(dados,
   if(any(feminino_st==0)){
     feminino_st <- (feminino_st + min(feminino_st[feminino_st > 0])/2)
   }
-
-  #stopifnot(is.numeric(dados),is.character(titulo))
 
   st <- data.frame(DATA=seq.Date(from = as.Date(min(dados_sinasc_intervencao$data_variable)),
                                  to = as.Date(max(dados_sinasc_intervencao$data_variable))-months(1),
@@ -1019,13 +1047,19 @@ grafico_analise_impacto_idade <- function(dados,
                                           intervention2 = "2021-03-01",
                                           dados_sinasc = 100000){
 
-  #stopifnot(is.numeric(dados),is.character(titulo),is.character(intervention1),is.character(intervention2))
+  stopifnot(is.data.frame(dados),is.character(titulo), is.character(ylabel))
   # Argumentos da função:
-  #dados (inteiro) = inteiros com valores observados da serie temporal de acordo com o filtro criado pelo usuário
-  #titulo (char)   = título do gráfico gerado
-  #intervention1 (char)   =  data da primeira intervenção
-  #intervention2 (char)   =  data da segunda intervenção
+  # dados (data.frame) = dados filtrados de acordo com a seleção do usuário para o nível geográfico e o local
+  # titulo (char)   = título do gráfico gerado
+  # intervention1 (char)   =  data da primeira intervenção
+  # intervention2 (char)   =  data da segunda intervenção
 
+  #Se o vetor numérico dados não tiver informação, então plota gráfico vazio
+  if(nrow(dados) == 0 ){
+    return(invisible())
+    #Retorna gráfico tipo plotly vazio
+    #return(empty_plot())
+  }
 
   jovem_st <- dados %>%
     dplyr::filter(idade == "Jovens: 10 a 18 anos") %>%
@@ -1044,6 +1078,12 @@ grafico_analise_impacto_idade <- function(dados,
     return_ts(data_variable,inicio = c(2015,1), tipo = "mensal")
 
   adulto_st <-   (adulto_st / dados_sinasc) * 100000
+
+  #Se não tiver observações para as series, então plota gráfico vazio
+  if(sum(adulto_st) == 0 |  sum(adulto_jovem_st) == 0 |  sum(jovem_st) == 0 ){
+    return(invisible())
+    #return(empty_plot())
+  }
 
 
   st <- data.frame(DATA=seq.Date(from = as.Date(min(dados_sinasc_intervencao$data_variable)),
@@ -1422,13 +1462,19 @@ grafico_analise_impacto_raca <- function(dados,
                                          intervention2 = "2021-03-01",
                                          dados_sinasc = 100000){
 
-  #stopifnot(is.numeric(dados),is.character(titulo),is.character(intervention1),is.character(intervention2))
+  stopifnot(is.data.frame(dados),is.character(titulo), is.character(ylabel))
   # Argumentos da função:
-  #dados (inteiro) = inteiros com valores observados da serie temporal de acordo com o filtro criado pelo usuário
+  # dados (data.frame) = dados filtrados de acordo com a seleção do usuário para o nível geográfico e o local
   #titulo (char)   = título do gráfico gerado
   #intervention1 (char)   =  data da primeira intervenção
   #intervention2 (char)   =  data da segunda intervenção
 
+  #Se o vetor numérico dados não tiver informação, então plota gráfico vazio
+  if(nrow(dados) == 0 ){
+    return(invisible())
+    #Retorna gráfico tipo plotly vazio
+    #return(empty_plot())
+  }
 
   branca_st <- dados %>%
     dplyr::filter(raca_cor == "Branca") %>%
@@ -1442,6 +1488,12 @@ grafico_analise_impacto_raca <- function(dados,
     return_ts(data_variable,inicio = c(2015,1), tipo = "mensal")
 
   nao_branca_st <- (nao_branca_st / dados_sinasc) * 100000
+
+  #Se não tiver observações para as series, então plota gráfico vazio
+  if(sum(branca_st) == 0 |  sum(nao_branca_st) == 0 ){
+    return(invisible())
+    #return(empty_plot())
+  }
 
   st <- data.frame(DATA=seq.Date(from = as.Date(min(dados_sinasc_intervencao$data_variable)),
                                  to = as.Date(max(dados_sinasc_intervencao$data_variable))-months(1),
@@ -1743,14 +1795,22 @@ grafico_analise_impacto_tipo_mortalidade <- function(dados,
                                                      intervention1 = "2017-03-01",
                                                      intervention2 = "2021-03-01"){
 
-  #stopifnot(is.numeric(dados),is.character(titulo),is.character(intervention1),is.character(intervention2))
+  stopifnot(is.data.frame(dados),is.character(titulo), is.character(ylabel))
+
   # Argumentos da função:
-  #dados (inteiro) = inteiros com valores observados da serie temporal de acordo com o filtro criado pelo usuário
-  #titulo (char)   = título do gráfico gerado
-  #intervention1 (char)   =  data da primeira intervenção
-  #intervention2 (char)   =  data da segunda intervenção
+  # dados (data.frame) = dados filtrados de acordo com a seleção do usuário para o nível geográfico e o local
+  # titulo (char)   = título do gráfico gerado
+  # intervention1 (char)   =  data da primeira intervenção
+  # intervention2 (char)   =  data da segunda intervenção
 
+  #Se o vetor numérico dados não tiver informação, então plota gráfico vazio
+  if(nrow(dados) == 0 ){
+    return(invisible())
+    #Retorna gráfico tipo plotly vazio
+    #return(empty_plot())
+  }
 
+  # vetores numericos
   fetal_st <- dados %>%
     dplyr::filter(tipo_mortalidade == "fetal") %>%
     return_ts(data_variable,inicio = c(2015,1), tipo = "mensal")
@@ -1762,6 +1822,12 @@ grafico_analise_impacto_tipo_mortalidade <- function(dados,
   neonatal_tardia_st <- dados %>%
     dplyr::filter(tipo_mortalidade == "neonatal_tardia") %>%
     return_ts(data_variable,inicio = c(2015,1), tipo = "mensal")
+
+  #Se não há observações para os vetores numéricos acima, então plota gráfico vazio
+  if(sum(fetal_st) == 0 |  sum(neonatal_precoce_st) == 0 |  sum(neonatal_tardia_st) == 0 ){
+    return(invisible())
+    #return(empty_plot())
+  }
 
   st <- data.frame(DATA=seq.Date(from = as.Date(min(dados_sinasc_intervencao$data_variable)),
                                  to = as.Date(max(dados_sinasc_intervencao$data_variable))-months(1),
@@ -2136,13 +2202,19 @@ grafico_analise_impacto_idade_sif_c <- function(dados,
                                                 intervention1 = "2017-03-01",
                                                 intervention2 = "2021-03-01"){
 
-  #stopifnot(is.numeric(dados),is.character(titulo),is.character(intervention1),is.character(intervention2))
+  stopifnot(is.data.frame(dados),is.character(titulo), is.character(ylabel))
   # Argumentos da função:
-  #dados (inteiro) = inteiros com valores observados da serie temporal de acordo com o filtro criado pelo usuário
-  #titulo (char)   = título do gráfico gerado
-  #intervention1 (char)   =  data da primeira intervenção
-  #intervention2 (char)   =  data da segunda intervenção
+  # dados (data.frame) = dados filtrados de acordo com a seleção do usuário para o nível geográfico e o local
+  # titulo (char)   = título do gráfico gerado
+  # intervention1 (char)   =  data da primeira intervenção
+  # intervention2 (char)   =  data da segunda intervenção
 
+  #Se o vetor numérico dados não tiver informação, então plota gráfico vazio
+  if(sum(dados) == 0 ){
+    return(invisible())
+    #Retorna gráfico tipo plotly vazio
+    #return(empty_plot())
+  }
 
   jovem_st <- dados %>%
     dplyr::filter(idade == "Menos de 7 dias") %>%
@@ -2155,6 +2227,12 @@ grafico_analise_impacto_idade_sif_c <- function(dados,
   adulto_st <- dados %>%
     dplyr::filter(idade  == "28 dias a 1 ano") %>%
     return_ts(data_variable,inicio = c(2015,1), tipo = "mensal")
+
+  #Se não tiver observações para as series, então plota gráfico vazio
+  if(sum(adulto_st) == 0 |  sum(adulto_jovem_st) == 0 |  sum(jovem_st) == 0 ){
+    return(invisible())
+    #return(empty_plot())
+  }
 
   st <- data.frame(DATA=seq.Date(from = as.Date(min(dados_sinasc_intervencao$data_variable)),
                                  to = as.Date(max(dados_sinasc_intervencao$data_variable))-months(1),
@@ -2534,6 +2612,17 @@ tabela_intervencao <- function(dados,
 
   # na (numeric) quantidade de não informados
   stopifnot(is.numeric(dados),is.numeric(dados_sinasc))
+
+  # Argumentos da função:
+  #dados =
+  #titulo (char)   = título do gráfico gerado
+  #date_intervention1    =  data da primeira intervenção
+  #date_intervention2   =  data da segunda intervenção
+
+  #Se o vetor numérico dados não tiver informação, então plota gráfico vazio
+  if(sum(dados) == 0 ){
+    return(invisible())
+  }
 
   note = ifelse(!is.null(na),paste0("* indica valor p menor que 5%. ",na,
                                     "% de valores não informados."),
