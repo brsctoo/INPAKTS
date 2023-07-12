@@ -35,7 +35,7 @@ mod_intervencao_sinasc_ui <- function(id){
       #hr()
       # h6(textOutput(ns("info_user1"))),
       hr(),
-      # Criando layout onde gráficos e a tabelas serão exibidos -------
+      # Layout onde gráficos e a tabelas serão exibidos -------
       bs4Dash::bs4Card(
         title = textOutput(ns("info_user_geral")),#htmlOutput(ns("info_user")),
         status = "primary",
@@ -219,14 +219,14 @@ mod_intervencao_sinasc_server <- function(id, opcoes_usuario){
 
 
 
-    # filtrando os dados de acordo com as opções do usuário
+    # filtrando os dados de acordo com as opções do usuário e após usuário clicar botão Gerar gráfico
     dataCategorica <- eventReactive(input$gerar_graficos, {
       dados_sinasc_intervencao %>%
         data_prep(nivel_geografico = opcoes_usuario$nivel_geografico,
                   local = opcoes_usuario$escolha_usuario)
     })
 
-    # Série temporal altera-se de acordo com as opções selecionadas pelo user e após clicar em gerar gráfico
+    # Série numerica altera-se de acordo com as opções selecionadas pelo usuario e após clicar em gerar gráfico
     data <- eventReactive(input$gerar_graficos, {
       dataCategorica() %>%
         return_ts(data_variable,inicio = c(2015,1), tipo = "mensal")
@@ -264,7 +264,7 @@ mod_intervencao_sinasc_server <- function(id, opcoes_usuario){
 
     # Gráficos -------
 
-    ## Geral -------
+      ## Geral -------
     output$plot_geral <- plotly::renderPlotly({
       req(opcoes_usuario$date_intervention[1])
       grafico_analise_impacto(dados = data() ,
@@ -325,7 +325,7 @@ mod_intervencao_sinasc_server <- function(id, opcoes_usuario){
 
     # Tabelas ------
 
-    ## Com resultados  globais ------
+    ## Para resultados  gerais ------
     tabela <- eventReactive(input$gerar_graficos, {
       tabela_intervencao(data(),
                          opcoes_usuario$date_intervention[1],
@@ -341,30 +341,37 @@ mod_intervencao_sinasc_server <- function(id, opcoes_usuario){
                 opcoes_usuario$date_intervention[2]) %>%
       bindEvent(input$gerar_graficos)
 
-    ## Com resultados  por sexo------
-    # toListen <- reactive({
-    #   list(input$sexo,input$gerar_resultado_sexo)
+    ## Para resultados  por sexo------
+
+    # dataCategorica_1 <- eventReactive(input$gerar_resultado_sexo, {
+    #   dados_sinasc_intervencao %>%
+    #     data_prep(nivel_geografico = opcoes_usuario$nivel_geografico,
+    #               local = opcoes_usuario$escolha_usuario)
     # })
 
+    observeEvent(input$gerar_resultado_sexo, {
     output$info_modelo_ajustado_sexo <- renderText({
-      req(input$gerar_resultado_sexo, opcoes_usuario$date_intervention[1])
+
+      req(input$gerar_resultado_sexo, opcoes_usuario$date_intervention[1],cancelOutput = FALSE)
+
       dataCategorica() %>%
         dplyr::filter(sexo==input$sexo) %>%
         return_ts(data_variable,inicio = c(2015,1), tipo = "mensal") %>%
-        tabela_intervencao( opcoes_usuario$date_intervention[1], opcoes_usuario$date_intervention[2])})
+        tabela_intervencao(opcoes_usuario$date_intervention[1], opcoes_usuario$date_intervention[2])})
+    })
 
+    ## Para resultados  por idade------
 
-    ## Com resultados  por idade------
-
+    observeEvent(input$gerar_resultado_idade, {
     output$info_modelo_ajustado_idade <- renderText({
-      req(input$gerar_resultado_idade, opcoes_usuario$date_intervention[1])
+      req(opcoes_usuario$date_intervention[1])
       dataCategorica() %>%
         dplyr::filter(idade==input$idade) %>%
         return_ts(data_variable,inicio = c(2015,1), tipo = "mensal") %>%
         tabela_intervencao( opcoes_usuario$date_intervention[1], opcoes_usuario$date_intervention[2])})
+    })
 
-
-    ## Com resultados  por raça/cor-------
+    ## Para resultados  por raça/cor-------
 
     # Quantidade de não informado por raca de  acordo com opcoes selecionadas por usuário
     na_raca <- eventReactive(input$gerar_resultado_raca, {
@@ -380,16 +387,18 @@ mod_intervencao_sinasc_server <- function(id, opcoes_usuario){
 
     })
 
+    observeEvent(input$gerar_resultado_raca, {
     output$info_modelo_ajustado_raca <- renderText({
-      req(input$gerar_resultado_raca, opcoes_usuario$date_intervention[1])
+      req(opcoes_usuario$date_intervention[1])
       dataCategorica() %>%
         dplyr::filter(raca_cor == input$raca) %>%
         return_ts(data_variable, inicio = c(2015,1), tipo = "mensal") %>%
         tabela_intervencao( opcoes_usuario$date_intervention[1],
                             opcoes_usuario$date_intervention[2],
                             na = na_raca())})
+    })
 
-    # Relatório com análise dos resíduos ----------------------------------------
+    # Relatório dos resíduos ----------------------------------------
 
     # Após clicar em gerar gráfico o bottom do relatório aparecerá apenas se o usuário selecionar no
     # mínimo uma data de intervenção
