@@ -772,7 +772,8 @@ grafico_analise_impacto_idade <- function(dados,
                                           ylabel = "Nascidos vivos",
                                           intervention1 = "2017-03-01",
                                           intervention2 = "2021-03-01",
-                                          dados_sinasc = 100000){
+                                          dados_sinasc = 100000,
+                                          min_observacoes = 0){
 
   stopifnot(is.data.frame(dados),is.character(titulo), is.character(ylabel))
   # Argumentos da função:
@@ -783,7 +784,7 @@ grafico_analise_impacto_idade <- function(dados,
   # min_observacoes (numero) = quantidade mínima de observações em cada série
 
   #Se o vetor numérico dados não tiver informação, então plota gráfico vazio
-  if(nrow(dados) == 0 ){
+  if(nrow(dados) <=  min_observacoes ){
     return(invisible())
     #Retorna gráfico tipo plotly vazio
     #return(empty_plot())
@@ -808,7 +809,7 @@ grafico_analise_impacto_idade <- function(dados,
   adulto_st <-   (adulto_st / dados_sinasc) * 100000
 
   #Se não tiver observações para as series, então plota gráfico vazio
-  if(sum(adulto_st) == 0 |  sum(adulto_jovem_st) == 0 |  sum(jovem_st) == 0 ){
+  if(sum(adulto_st) <=  min_observacoes |  sum(adulto_jovem_st) <=  min_observacoes |  sum(jovem_st) <=  min_observacoes ){
     return(invisible())
     #return(empty_plot())
   }
