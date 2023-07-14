@@ -26,7 +26,8 @@ grafico_analise_impacto <- function(dados,
                                     ylabel = "Nascidos vivos",
                                     intervention1 = "2017-03-01",
                                     intervention2 = "2021-03-01",
-                                    n_previsoes = 6){
+                                    n_previsoes = 6,
+                                    min_observacoes = 0){
 
   stopifnot(is.numeric(dados),is.character(titulo), is.character(ylabel), is.numeric(n_previsoes))
   # Argumentos da função:
@@ -35,9 +36,10 @@ grafico_analise_impacto <- function(dados,
   # n_previsoes (inteiro) = quantidade de previsões a frente, default são 6 meses
   # intervention1 = data da primeira intervenção
   # intervention2 = data da segunda intervenção
+  # min_observacoes (numero) = quantidade  mínima de observações na série para retornar gráfico vazio
 
   #Se o vetor numérico dados não tiver informação, então plota gráfico vazio
-  if(sum(dados) == 0 ){
+  if(sum(dados) <=  min_observacoes ){
     return(invisible())
     #Retorna gráfico tipo plotly vazio
     #return(empty_plot())
@@ -348,7 +350,8 @@ grafico_analise_impacto_sexo <- function(dados,
                                          #tipo = "lines",
                                          ylabel = "Nascidos vivos",
                                          intervention1 = "2017-03-01",
-                                         intervention2 = "2021-03-01"){
+                                         intervention2 = "2021-03-01",
+                                         min_observacoes = 0){
 
   stopifnot(is.data.frame(dados),is.character(titulo), is.character(ylabel))
   # Argumentos da função:
@@ -356,13 +359,14 @@ grafico_analise_impacto_sexo <- function(dados,
   #titulo (char)   = título do gráfico gerado
   #intervention1 (char)     =  data da primeira intervenção
   #intervention2 (char)     =  data da segunda intervenção
+  # min_observacoes (numero) = quantidade  mínima de observações em cada série para retornar gráfico vazio
 
   #data.frame dados com zero linha, então plota gráfico vazio
-  if(nrow(dados) == 0 ){
-    return(invisible())
-    #Retorna gráfico tipo plotly vazio
-    #return(empty_plot())
-  }
+  # if(nrow(dados) == 0 ){
+  #   return(invisible())
+  #   #Retorna gráfico tipo plotly vazio
+  #   #return(empty_plot())
+  # }
 
   masculino_st <- dados %>%
     dplyr::filter(sexo == "Masculino")
@@ -371,7 +375,7 @@ grafico_analise_impacto_sexo <- function(dados,
     dplyr::filter(sexo == "Feminino")
 
   #Se não há observações para no mínimo um dos sexo, então plota gráfico vazio
-  if(nrow(masculino_st) == 0 |  nrow(feminino_st) == 0 ){
+  if(nrow(masculino_st) <= min_observacoes |  nrow(feminino_st) <= min_observacoes ){
     return(invisible())
     #Retorna gráfico tipo plotly vazio
     #return(empty_plot())
@@ -776,6 +780,7 @@ grafico_analise_impacto_idade <- function(dados,
   # titulo (char)   = título do gráfico gerado
   # intervention1 (char)   =  data da primeira intervenção
   # intervention2 (char)   =  data da segunda intervenção
+  # min_observacoes (numero) = quantidade mínima de observações em cada série
 
   #Se o vetor numérico dados não tiver informação, então plota gráfico vazio
   if(nrow(dados) == 0 ){
@@ -1183,40 +1188,54 @@ grafico_analise_impacto_raca <- function(dados,
                                          ylabel = "Nascidos vivos",
                                          intervention1 = "2017-03-01",
                                          intervention2 = "2021-03-01",
-                                         dados_sinasc = 100000){
+                                         dados_sinasc = 100000,
+                                         min_observacoes = 0){
 
-  stopifnot(is.data.frame(dados),is.character(titulo), is.character(ylabel))
+  stopifnot(is.data.frame(dados),is.character(titulo), is.character(ylabel),is.numeric(min_observacoes))
   # Argumentos da função:
   # dados (data.frame) = dados filtrados de acordo com a seleção do usuário para o nível geográfico e o local
   #titulo (char)   = título do gráfico gerado
   #intervention1 (char)   =  data da primeira intervenção
   #intervention2 (char)   =  data da segunda intervenção
+  #min_observacoes (numero) = quantidade mínima de observações em cada série
 
   #Se o vetor numérico dados não tiver informação, então plota gráfico vazio
-  if(nrow(dados) == 0 ){
+  # if(nrow(dados) == 0 ){
+  #   return(invisible())
+  #   #Retorna gráfico tipo plotly vazio
+  #   #return(empty_plot())
+  # }
+
+  branca_st <- dados %>%
+    dplyr::filter(raca_cor == "Branca")
+
+  nao_branca_st <- dados %>%
+    dplyr::filter(raca_cor == "Não branca")
+
+  #Se não há observações para no mínimo uma das raças, então plota gráfico vazio
+  if(nrow( branca_st) <= min_observacoes |  nrow(nao_branca_st) <= min_observacoes ){
     return(invisible())
     #Retorna gráfico tipo plotly vazio
     #return(empty_plot())
   }
 
-  branca_st <- dados %>%
-    dplyr::filter(raca_cor == "Branca") %>%
+  #Criando vetores numéricos para cada um das raças:
+  branca_st <-  branca_st %>%
     return_ts(data_variable,inicio = c(2015,1), tipo = "mensal")
 
+  nao_branca_st <- nao_branca_st %>%
+    return_ts(data_variable,inicio = c(2015,1), tipo = "mensal")
+
+  if(sum(branca_st) <= min_observacoes | sum(nao_branca_st) <= min_observacoes ){
+    return(invisible())
+    #Retorna gráfico tipo plotly vazio
+    #return(empty_plot())
+  }
 
   branca_st <-   (branca_st / dados_sinasc) * 100000
 
-  nao_branca_st <- dados %>%
-    dplyr::filter(raca_cor == "Não branca") %>%
-    return_ts(data_variable,inicio = c(2015,1), tipo = "mensal")
-
   nao_branca_st <- (nao_branca_st / dados_sinasc) * 100000
 
-  #Se não tiver observações para as series, então plota gráfico vazio
-  if(sum(branca_st) == 0 |  sum(nao_branca_st) == 0 ){
-    return(invisible())
-    #return(empty_plot())
-  }
 
   st <- data.frame(DATA=seq.Date(from = as.Date(min(dados_sinasc_intervencao$data_variable)),
                                  to = as.Date(max(dados_sinasc_intervencao$data_variable))-months(1),
@@ -1525,6 +1544,7 @@ grafico_analise_impacto_tipo_mortalidade <- function(dados,
   # titulo (char)   = título do gráfico gerado
   # intervention1 (char)   =  data da primeira intervenção
   # intervention2 (char)   =  data da segunda intervenção
+  #min_observacoes (numero) = quantidade mínima de observações em cada série
 
   #Se o vetor numérico dados não tiver informação, então plota gráfico vazio
   if(nrow(dados) == 0 ){
@@ -1923,7 +1943,8 @@ grafico_analise_impacto_idade_sif_c <- function(dados,
                                                 #tipo = "lines",
                                                 ylabel = "Nascidos vivos",
                                                 intervention1 = "2017-03-01",
-                                                intervention2 = "2021-03-01"){
+                                                intervention2 = "2021-03-01",
+                                                min_observacoes = 0){
 
   stopifnot(is.data.frame(dados),is.character(titulo), is.character(ylabel))
 
@@ -1932,9 +1953,10 @@ grafico_analise_impacto_idade_sif_c <- function(dados,
   # titulo (char)   = título do gráfico gerado
   # intervention1 (char)   =  data da primeira intervenção
   # intervention2 (char)   =  data da segunda intervenção
+  # min_observacoes (numero) = quantidade  mínima de observações em cada série para retornar gráfico vazio
 
   #Se o vetor numérico dados não tiver informação, então plota gráfico vazio
-  if(sum(dados) == 0 ){
+  if(nrow(dados) <= min_observacoes ){
     return(invisible())
     #Retorna gráfico tipo plotly vazio
     #return(empty_plot())
@@ -1953,7 +1975,7 @@ grafico_analise_impacto_idade_sif_c <- function(dados,
     return_ts(data_variable,inicio = c(2015,1), tipo = "mensal")
 
   #Se não tiver observações para as series, então plota gráfico vazio
-  if(sum(adulto_st) == 0 |  sum(adulto_jovem_st) == 0 |  sum(jovem_st) == 0 ){
+  if(sum(adulto_st) <= min_observacoes |  sum(adulto_jovem_st) <= min_observacoes |  sum(jovem_st) <= min_observacoes ){
     return(invisible())
     #return(empty_plot())
   }
@@ -2332,7 +2354,8 @@ tabela_intervencao <- function(dados,
                                date_intervention1,
                                date_intervention2,
                                na=NULL,
-                               dados_sinasc = 100000){
+                               dados_sinasc = 100000,
+                               min_observacoes = 0){
 
   stopifnot(is.numeric(dados),is.numeric(dados_sinasc))
 
@@ -2342,9 +2365,10 @@ tabela_intervencao <- function(dados,
   # date_intervention1    =  data da primeira intervenção
   # date_intervention2   =  data da segunda intervenção
   # na (numeric) quantidade de não informados
+  # min_observacoes (numero) = quantidade mínima de observações em cada série
 
   #Se o vetor numérico dados não tiver informação, então plota gráfico vazio
-  if(sum(dados) == 0 ){
+  if(sum(dados) <= min_observacoes ){
     return(invisible())
   }
 
