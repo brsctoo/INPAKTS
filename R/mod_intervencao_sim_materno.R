@@ -14,7 +14,7 @@ mod_intervencao_sim_materno_ui <- function(id){
 
       shinyWidgets::useBs4Dash(),
 
-      # Criando layout onde gráficos e a tabelas serão exibidos -------
+      # Layout para gráficos e a tabelas (front end) -------
       bs4Dash::bs4Card(
         title = textOutput(ns("info_user_geral")),#htmlOutput(ns("info_user")),
         status = "primary",
@@ -47,7 +47,7 @@ mod_intervencao_sim_materno_ui <- function(id){
         fluidRow(
           column(10),
           column(2,
-                 actionButton(inputId = ns("gerar_resultado_idade"),label = "Gerar resultados"))),
+                 actionButton(inputId = ns("gerar_resultado_idade"), label = "Gerar resultados"))),
         fluidRow(
           column(2,
                  selectInput(inputId = ns("idade"),
@@ -96,10 +96,31 @@ mod_intervencao_sim_materno_server <- function(id, opcoes_usuario){
     #nrow(dataCategorica()) == 0
 
     observeEvent( input$gerar_graficos, {
+      if(nrow(dataCategorica()) == 0){
+        shinyalert::shinyalert(
+          title = "Atenção",
+          text = paste("Dados não serão gerados devido a insuficiente quantidade
+                       de informações. Há", nrow(dataCategorica()),"informações no banco de dados"),
+          type = "warning",
+          size = "m")
+      }
+    })
+
+    observeEvent( input$gerar_resultado_raca, {
       if( nrow(dataCategorica()) == 0){
         shinyalert::shinyalert(
           title = "Atenção",
-          text = "Dados com zero informações",
+          text = "Dados não serão gerados devido a insuficiente quantidade de informações",
+          type = "warning",
+          size = "m")
+      }
+    })
+
+    observeEvent( input$gerar_resultado_idade, {
+      if( nrow(dataCategorica()) == 0){
+        shinyalert::shinyalert(
+          title = "Atenção",
+          text = "Dados não serão gerados devido a insuficiente quantidade de informações",
           type = "warning",
           size = "m")
       }
@@ -136,7 +157,7 @@ mod_intervencao_sim_materno_server <- function(id, opcoes_usuario){
       }
     })
 
-    # Atualizando o título dos cabeçalhos dos box com os gráficos de acordo com as opções do usuário na apresentação ----------
+    # Título dos cabeçalhos dos box com os gráficos de acordo com as opções do usuário na apresentação ----------
 
 
 
@@ -183,14 +204,19 @@ mod_intervencao_sim_materno_server <- function(id, opcoes_usuario){
                   local=opcoes_usuario$escolha_usuario)
     })
 
-    # Série temporal altera-se de acordo com as opções selecionadas pelo user e após clicar em gerar gráfico
+    # Série temporal para dados da mortalidade materna
     data_sim_materno <- eventReactive(input$gerar_graficos, {
+      # validate(
+      #   # Se nrow(dataCategorica()) == 0, então  data_sim_materno() não será atualizado
+      #   need(nrow(dataCategorica()) > 0, FALSE)
+      #)
       dataCategorica() %>%
         return_ts(data_variable,inicio = c(2015,1), tipo = "mensal")
     })
 
     # filtrando os dados de acordo com as opções do usuário
     dataCategorica_sinasc <- eventReactive(input$gerar_graficos, {
+
       dados_sinasc_intervencao %>%
         data_prep(nivel_geografico = opcoes_usuario$nivel_geografico,
                   local=opcoes_usuario$escolha_usuario)
@@ -213,7 +239,8 @@ mod_intervencao_sim_materno_server <- function(id, opcoes_usuario){
 
       #media = mean(data_sinasc())
 
-      ifelse(data_sinasc()== 0, (data_sim_materno() / mean(data_sinasc()))* 100000,
+      ifelse(data_sinasc()== 0,
+             (data_sim_materno() / mean(data_sinasc()))* 100000,
              (data_sim_materno() / data_sinasc()) * 100000)
 
       #dados <- ifelse(data_sinasc()== 0, mean(data_sinasc()), data_sinasc())
@@ -257,6 +284,7 @@ mod_intervencao_sim_materno_server <- function(id, opcoes_usuario){
     ## Geral -------
     output$plot_geral <- plotly::renderPlotly({
       req(opcoes_usuario$date_intervention[1])
+
       grafico_analise_impacto(dados = data() ,
                               titulo = titulo(),
                               ylabel = "Óbitos Maternos por 100 mil nascidos vivos",
@@ -274,6 +302,12 @@ mod_intervencao_sim_materno_server <- function(id, opcoes_usuario){
     observeEvent(input$gerar_resultado_idade, {
       output$plot_idade <- plotly::renderPlotly({
         req(opcoes_usuario$date_intervention[1])
+
+        # validate(
+        #   # Se nrow(dataCategorica()) == 0, então  data_sim_materno() não será atualizado
+        #   need(nrow(dataCategorica()) > 0, FALSE)
+        # )
+
         grafico_analise_impacto_idade(dados = dataCategorica(),
                                       titulo = titulo_idade(),
                                       ylabel = "Óbitos Maternos por 100 mil nascidos vivos",
@@ -290,7 +324,10 @@ mod_intervencao_sim_materno_server <- function(id, opcoes_usuario){
     ## Raça -------
     observeEvent(input$gerar_resultado_raca, {
       output$plot_raca <- plotly::renderPlotly({
+
+        #Se usuário não selecionar, no mínimo, uma data o gráfico não será gerado
         req(opcoes_usuario$date_intervention[1])
+
         grafico_analise_impacto_raca(dados = dataCategorica(),
                                      titulo = titulo_raca(),
                                      ylabel = "Óbitos Maternos por 100 mil nascidos vivos",
@@ -304,33 +341,41 @@ mod_intervencao_sim_materno_server <- function(id, opcoes_usuario){
 
     # Tabelas ------
 
-    ## Com resultados  globais ------
+    ## Resultados  gerais ------
     tabela <- eventReactive(input$gerar_graficos, {
-      tabela_intervencao(data(),opcoes_usuario$date_intervention[1],opcoes_usuario$date_intervention[2])
+
+      tabela_intervencao(data(),
+                         opcoes_usuario$date_intervention[1],
+                         opcoes_usuario$date_intervention[2])
     })
 
     output$info_modelo_ajustado <- renderText({
-      req(opcoes_usuario$date_intervention[1])
+      req(input$gerar_graficos, opcoes_usuario$date_intervention[1])
       tabela()
     }) %>%
-      bindCache(opcoes_usuario$escolha_usuario, input$interv_sim_materno,
+      bindCache(opcoes_usuario$escolha_usuario,
+                input$interv_sim_materno,
                 opcoes_usuario$date_intervention[1],
                 opcoes_usuario$date_intervention[2]) %>%
       bindEvent(input$gerar_graficos)
 
-    ## Com resultados  por idade------
+    ## Resultados  por idade------
 
+    # observeEvent(input$gerar_resultado_idade, {
     output$info_modelo_ajustado_idade <- renderText({
-      req(input$gerar_resultado_idade,opcoes_usuario$date_intervention[1])
+
+      req(input$gerar_resultado_idade, opcoes_usuario$date_intervention[1])
+
       dataCategorica() %>%
         dplyr::filter(idade==input$idade) %>%
         return_ts(data_variable,inicio = c(2015,1), tipo = "mensal") %>%
         tabela_intervencao(opcoes_usuario$date_intervention[1],
                            opcoes_usuario$date_intervention[2],
                            dados_sinasc = data_sinasc())})
+    # })
 
 
-    ## Com resultados  por raça/cor-------
+    ## Resultados  por raça/cor-------
 
     # Quantidade de não informado por raca de  acordo com opcoes selecionadas por usuário
     na_raca <- eventReactive(input$gerar_resultado_raca, {
@@ -347,7 +392,9 @@ mod_intervencao_sim_materno_server <- function(id, opcoes_usuario){
     })
 
     output$info_modelo_ajustado_raca <- renderText({
+
       req(input$gerar_resultado_raca,opcoes_usuario$date_intervention[1])
+
       dataCategorica() %>%
         dplyr::filter(raca_cor == input$raca) %>%
         return_ts(data_variable, inicio = c(2015,1), tipo = "mensal") %>%
@@ -356,12 +403,13 @@ mod_intervencao_sim_materno_server <- function(id, opcoes_usuario){
                            na = na_raca(),
                            dados_sinasc = data_sinasc())})
 
-    # Relatório com análise dos resíduos ----------------------------------------
+    # Relatório resíduos ----------------------------------------
 
-    # Após clicar em gerar gráfico o bottom do relatório aparecerá apenas se o usuário selecionar no
-    # mínimo uma data de intervenção
+    # Após clicar em gerar gráfico, o bottom do relatório aparecerá apenas se o
+    # usuário selecionar, no mínimo, uma data de intervenção
     observeEvent(input$gerar_graficos, {
-      if (length(opcoes_usuario$date_intervention[1])==0)
+
+      if (length(opcoes_usuario$date_intervention[1])==0 | nrow(dataCategorica()) == 0)
         # Botão gerar análise de resíduos fica oculto
         shinyjs::hide("relatorio")
       else
