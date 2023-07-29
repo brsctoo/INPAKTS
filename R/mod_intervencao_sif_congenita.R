@@ -209,10 +209,10 @@ mod_intervencao_sif_congenita_server <- function(id, opcoes_usuario){
                               intervention1 = opcoes_usuario$date_intervention[1],
                               intervention2 = opcoes_usuario$date_intervention[2])
     }) %>%
-      bindCache(opcoes_usuario$escolha_usuario,
+      bindCache(titulo(),
+                opcoes_usuario$escolha_usuario,
                 opcoes_usuario$date_intervention[1],
-                opcoes_usuario$date_intervention[2],
-                input$interv_sif_congenita) %>%
+                opcoes_usuario$date_intervention[2]) %>%
       bindEvent(input$gerar_graficos)
 
     ## Idade -------
@@ -220,10 +220,10 @@ mod_intervencao_sif_congenita_server <- function(id, opcoes_usuario){
       output$plot_idade <- plotly::renderPlotly({
         req( opcoes_usuario$date_intervention[1])
         grafico_analise_impacto_idade_sif_c(dados = dataCategorica(),
-                                      titulo = titulo_idade(),
-                                      ylabel = "Novos casos",
-                                      intervention1 =  opcoes_usuario$date_intervention[1],
-                                      intervention2 =  opcoes_usuario$date_intervention[2])
+                                            titulo = titulo_idade(),
+                                            ylabel = "Novos casos",
+                                            intervention1 =  opcoes_usuario$date_intervention[1],
+                                            intervention2 =  opcoes_usuario$date_intervention[2])
       }) %>%
         bindCache(opcoes_usuario$escolha_usuario,  opcoes_usuario$date_intervention[1],
                   opcoes_usuario$date_intervention[2], input$interv_sif_congenita) %>%
@@ -232,7 +232,7 @@ mod_intervencao_sif_congenita_server <- function(id, opcoes_usuario){
     ## Raça -------
     observeEvent(input$gerar_resultado_raca, {
       output$plot_raca <- plotly::renderPlotly({
-        req( opcoes_usuario$date_intervention[1])
+        req(opcoes_usuario$date_intervention[1])
         grafico_analise_impacto_raca(dados = dataCategorica(),
                                      titulo = titulo_raca(),
                                      ylabel = "Novos casos",
