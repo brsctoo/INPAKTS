@@ -209,10 +209,10 @@ mod_intervencao_sif_gestante_server <- function(id, opcoes_usuario){
                               intervention1 = opcoes_usuario$date_intervention[1],
                               intervention2 = opcoes_usuario$date_intervention[2])
     }) %>%
-      bindCache(opcoes_usuario$escolha_usuario,
+      bindCache(titulo(),
+                opcoes_usuario$escolha_usuario,
                 opcoes_usuario$date_intervention[1],
-                opcoes_usuario$date_intervention[2],
-                input$interv_sif_gestante) %>%
+                opcoes_usuario$date_intervention[2]) %>%
       bindEvent(input$gerar_graficos)
 
     ## Idade -------
