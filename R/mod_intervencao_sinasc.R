@@ -26,18 +26,17 @@ mod_intervencao_sinasc_ui <- function(id){
       #          # paste("Você selecionou duas datas de intervenção nos dias",
       #          #          textOutput(ns("date_intervention1")),"e",
       #          #          textOutput(ns("date_intervention2"))),
-      #          ## Botão com informações:-------
+      #   Botão com informações:
       #          actionButton(
       #            inputId = ns("info"),
       #            label = "Informações",
       #            icon = icon("thumbs-up")
       #          ))),
-      #hr()
-      # h6(textOutput(ns("info_user1"))),
       hr(),
+
       # Layout onde gráficos e a tabelas serão exibidos -------
       bs4Dash::bs4Card(
-        title = textOutput(ns("info_user_geral")),#htmlOutput(ns("info_user")),
+        title = textOutput(ns("info_user_geral")), #htmlOutput(ns("info_user")),
         status = "primary",
         width = 12,
         collapsed = FALSE,
@@ -129,11 +128,12 @@ mod_intervencao_sinasc_ui <- function(id){
 #' intervencao_sinasc Server Functions
 #'
 #' @noRd
-mod_intervencao_sinasc_server <- function(id, opcoes_usuario){
+mod_intervencao_sinasc_server <- function(id, opcoes_usuario, min_observacoes = 10){
   moduleServer( id, function(input, output, session){
     ns <- session$ns
 
     # Pop-ups -------
+
 
     ## Pop-up surgirá se nenhuma data de intervenção for selecionada e usuario clicar no botao para gerar algum gráfico-------
     observeEvent( input$gerar_graficos, {
@@ -177,7 +177,7 @@ mod_intervencao_sinasc_server <- function(id, opcoes_usuario){
     })
 
 
-    # Atualizando o título dos cabeçalhos dos box com os gráficos de acordo com as opções do usuário na apresentação ----------
+    # Título dos cabeçalhos dos box com os gráficos. Atualizados de acordo com as opções do usuário na pag. inicial ----------
 
 
 
@@ -264,13 +264,14 @@ mod_intervencao_sinasc_server <- function(id, opcoes_usuario){
 
     # Gráficos -------
 
-      ## Geral -------
+    ## Geral -------
     output$plot_geral <- plotly::renderPlotly({
       req(opcoes_usuario$date_intervention[1])
       grafico_analise_impacto(dados = data() ,
                               titulo = titulo(),
                               intervention1 =  opcoes_usuario$date_intervention[1],
-                              intervention2 =  opcoes_usuario$date_intervention[2])
+                              intervention2 =  opcoes_usuario$date_intervention[2],
+                              min_observacoes = min_observacoes)
     }) %>%
       bindCache(opcoes_usuario$escolha_usuario,
                 opcoes_usuario$date_intervention[1],
@@ -287,7 +288,8 @@ mod_intervencao_sinasc_server <- function(id, opcoes_usuario){
                                      titulo = titulo_sexo(),
                                      ylabel = "Nascidos vivos",
                                      intervention1 =  opcoes_usuario$date_intervention[1],
-                                     intervention2 =  opcoes_usuario$date_intervention[2])
+                                     intervention2 =  opcoes_usuario$date_intervention[2],
+                                     min_observacoes = min_observacoes)
       }) %>%
         bindCache(opcoes_usuario$escolha_usuario,
                   opcoes_usuario$date_intervention[1],
@@ -298,15 +300,18 @@ mod_intervencao_sinasc_server <- function(id, opcoes_usuario){
     ## Idade -------
     observeEvent(input$gerar_resultado_idade, {
       output$plot_idade <- plotly::renderPlotly({
-        req( opcoes_usuario$date_intervention[1])
+        req(opcoes_usuario$date_intervention[1])
         grafico_analise_impacto_idade(dados = dataCategorica(),
                                       titulo = titulo_idade(),
                                       ylabel = "Nascidos vivos",
                                       intervention1 =  opcoes_usuario$date_intervention[1],
-                                      intervention2 =  opcoes_usuario$date_intervention[2])
+                                      intervention2 =  opcoes_usuario$date_intervention[2],
+                                      min_observacoes = min_observacoes)
       }) %>%
-        bindCache(opcoes_usuario$escolha_usuario,  opcoes_usuario$date_intervention[1],
-                  opcoes_usuario$date_intervention[2], input$interv_sinasc) %>%
+        bindCache(opcoes_usuario$escolha_usuario,
+                  opcoes_usuario$date_intervention[1],
+                  opcoes_usuario$date_intervention[2],
+                  input$interv_sinasc) %>%
         bindEvent(input$gerar_resultado_idade)})
 
     ## Raça -------
@@ -317,10 +322,13 @@ mod_intervencao_sinasc_server <- function(id, opcoes_usuario){
                                      titulo = titulo_raca(),
                                      ylabel = "Nascidos vivos",
                                      intervention1 =  opcoes_usuario$date_intervention[1],
-                                     intervention2 =  opcoes_usuario$date_intervention[2])
+                                     intervention2 =  opcoes_usuario$date_intervention[2],
+                                     min_observacoes = min_observacoes)
       }) %>%
-        bindCache(opcoes_usuario$escolha_usuario,  opcoes_usuario$date_intervention[1],
-                  opcoes_usuario$date_intervention[2], input$interv_sinasc) %>%
+        bindCache(opcoes_usuario$escolha_usuario,
+                  opcoes_usuario$date_intervention[1],
+                  opcoes_usuario$date_intervention[2],
+                  input$interv_sinasc) %>%
         bindEvent(input$gerar_resultado_raca)})
 
     # Tabelas ------
@@ -329,7 +337,8 @@ mod_intervencao_sinasc_server <- function(id, opcoes_usuario){
     tabela <- eventReactive(input$gerar_graficos, {
       tabela_intervencao(data(),
                          opcoes_usuario$date_intervention[1],
-                         opcoes_usuario$date_intervention[2])
+                         opcoes_usuario$date_intervention[2],
+                         min_observacoes = min_observacoes)
     })
 
     output$info_modelo_ajustado <- renderText({
@@ -343,32 +352,41 @@ mod_intervencao_sinasc_server <- function(id, opcoes_usuario){
 
     ## Para resultados  por sexo------
 
-    # dataCategorica_1 <- eventReactive(input$gerar_resultado_sexo, {
-    #   dados_sinasc_intervencao %>%
-    #     data_prep(nivel_geografico = opcoes_usuario$nivel_geografico,
-    #               local = opcoes_usuario$escolha_usuario)
-    # })
+    dataCategorica_sexo <- eventReactive(input$gerar_resultado_sexo, {
+      dataCategorica()
+    })
 
-    observeEvent(input$gerar_resultado_sexo, {
-    output$info_modelo_ajustado_sexo <- renderText({
+    observeEvent(input$sexo, {
+      output$info_modelo_ajustado_sexo <- renderText({
 
-      req(input$gerar_resultado_sexo, opcoes_usuario$date_intervention[1],cancelOutput = FALSE)
+        req(opcoes_usuario$date_intervention[1])
 
-      dataCategorica() %>%
-        dplyr::filter(sexo==input$sexo) %>%
-        return_ts(data_variable,inicio = c(2015,1), tipo = "mensal") %>%
-        tabela_intervencao(opcoes_usuario$date_intervention[1], opcoes_usuario$date_intervention[2])})
+        dataCategorica_sexo() %>%
+          dplyr::filter(sexo==input$sexo) %>%
+          return_ts(data_variable,inicio = c(2015,1), tipo = "mensal") %>%
+          tabela_intervencao(opcoes_usuario$date_intervention[1],
+                             opcoes_usuario$date_intervention[2],
+                             min_observacoes = min_observacoes)
+      })
     })
 
     ## Para resultados  por idade------
 
-    observeEvent(input$gerar_resultado_idade, {
-    output$info_modelo_ajustado_idade <- renderText({
-      req(opcoes_usuario$date_intervention[1])
-      dataCategorica() %>%
-        dplyr::filter(idade==input$idade) %>%
-        return_ts(data_variable,inicio = c(2015,1), tipo = "mensal") %>%
-        tabela_intervencao( opcoes_usuario$date_intervention[1], opcoes_usuario$date_intervention[2])})
+    dataCategorica_idade <- eventReactive(input$gerar_resultado_idade, {
+      dataCategorica()
+    })
+
+    observeEvent(input$idade, {
+      output$info_modelo_ajustado_idade <- renderText({
+
+        req(opcoes_usuario$date_intervention[1])
+
+        dataCategorica_idade() %>%
+          dplyr::filter(idade==input$idade) %>%
+          return_ts(data_variable,inicio = c(2015,1), tipo = "mensal") %>%
+          tabela_intervencao( opcoes_usuario$date_intervention[1],
+                              opcoes_usuario$date_intervention[2],
+                              min_observacoes = min_observacoes)})
     })
 
     ## Para resultados  por raça/cor-------
@@ -376,10 +394,10 @@ mod_intervencao_sinasc_server <- function(id, opcoes_usuario){
     # Quantidade de não informado por raca de  acordo com opcoes selecionadas por usuário
     na_raca <- eventReactive(input$gerar_resultado_raca, {
 
-      denominador = dataCategorica() %>%
+      denominador = dataCategorica_raca() %>%
         nrow()
 
-      numerador = dataCategorica() %>%
+      numerador = dataCategorica_raca() %>%
         dplyr::filter(raca_cor == "Não informado") %>%
         nrow()
 
@@ -387,15 +405,22 @@ mod_intervencao_sinasc_server <- function(id, opcoes_usuario){
 
     })
 
-    observeEvent(input$gerar_resultado_raca, {
-    output$info_modelo_ajustado_raca <- renderText({
-      req(opcoes_usuario$date_intervention[1])
-      dataCategorica() %>%
-        dplyr::filter(raca_cor == input$raca) %>%
-        return_ts(data_variable, inicio = c(2015,1), tipo = "mensal") %>%
-        tabela_intervencao( opcoes_usuario$date_intervention[1],
-                            opcoes_usuario$date_intervention[2],
-                            na = na_raca())})
+    dataCategorica_raca <- eventReactive(input$gerar_resultado_raca, {
+      dataCategorica()
+    })
+
+    observeEvent(input$raca, {
+      output$info_modelo_ajustado_raca <- renderText({
+        req(opcoes_usuario$date_intervention[1])
+
+        dataCategorica_raca() %>%
+          dplyr::filter(raca_cor == input$raca) %>%
+          return_ts(data_variable, inicio = c(2015,1), tipo = "mensal") %>%
+          tabela_intervencao( opcoes_usuario$date_intervention[1],
+                              opcoes_usuario$date_intervention[2],
+                              na = na_raca(),
+                              min_observacoes = min_observacoes)
+      })
     })
 
     # Relatório dos resíduos ----------------------------------------
@@ -437,9 +462,9 @@ mod_intervencao_sinasc_server <- function(id, opcoes_usuario){
         })
 
         local <-  eventReactive(input$gerar_graficos, {
-          ifelse(opcoes_usuario$nivel_geografico=="PR","Estado do Paraná",
-                 ifelse(opcoes_usuario$nivel_geografico=="macro",paste("Macrorregião",opcoes_usuario$escolha_usuario),
-                        ifelse(opcoes_usuario$nivel_geografico=="micro",paste("Regional de Saúde",opcoes_usuario$escolha_usuario),
+          ifelse(opcoes_usuario$nivel_geografico == "PR","Estado do Paraná",
+                 ifelse(opcoes_usuario$nivel_geografico == "macro", paste("Macrorregião",opcoes_usuario$escolha_usuario),
+                        ifelse(opcoes_usuario$nivel_geografico == "micro", paste("Regional de Saúde",opcoes_usuario$escolha_usuario),
                                paste("Município de", opcoes_usuario$escolha_usuario))))
         })
 
