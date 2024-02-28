@@ -91,9 +91,9 @@ mod_sobre_ui <- function(id) {
         tags$h2("Equipe de Desenvolvimento"),
         tags$p("Conheça nossa equipe de desenvolvimento:"),
         tags$ul(
-          tags$li("Nome do Bolsista 1"),
-          tags$li("Nome do Bolsista 2"),
-          tags$li("Nome do Bolsista 3"),
+          tags$li("Felipe Yamamoto Tenedine"),
+          tags$li("Gabriel Domingues Justo"),
+          tags$li("Karla Horrana Tenorio Sacani"),
           tags$li("Coordenadora: Eniuce Menezes")
         )
       ),
