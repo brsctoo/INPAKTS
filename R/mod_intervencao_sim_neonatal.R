@@ -232,11 +232,57 @@ mod_intervencao_sim_neonatal_server <- function(id, opcoes_usuario){
         data_prep(nivel_geografico = opcoes_usuario$nivel_geografico, local=opcoes_usuario$escolha_usuario)
     })
 
-    # Série temporal altera-se de acordo com as opções selecionadas pelo user e após clicar em gerar gráfico
-    data <- eventReactive(input$gerar_graficos, {
+    # Série temporal para dados da mortalidade neonatal
+    data_sim_neonatal <- eventReactive(input$gerar_graficos, {
+      # validate(
+      #   # Se nrow(dataCategorica()) == 0, então  data_sim_materno() não será atualizado
+      #   need(nrow(dataCategorica()) > 0, FALSE)
+      #)
       dataCategorica() %>%
         return_ts(data_variable,inicio = c(2015,1), tipo = "mensal")
     })
+
+    # filtrando os dados de acordo com as opções do usuário
+    dataCategorica_sinasc <- eventReactive(input$gerar_graficos, {
+
+      dados_sinasc_intervencao %>%
+        data_prep(nivel_geografico = opcoes_usuario$nivel_geografico,
+                  local=opcoes_usuario$escolha_usuario)
+    })
+
+    # Série temporal com dados do SINASC (nascidos vivos)
+    data_sinasc <- eventReactive(input$gerar_graficos, {
+      dataCategorica_sinasc() %>%
+        return_ts(data_variable,inicio = c(2015,1), tipo = "mensal")
+    })
+
+
+    # data <- eventReactive(input$gerar_graficos, {
+    #   (data_sim_materno() /  data_sinasc()) * 100000
+    # })
+
+
+
+    data <- eventReactive(input$gerar_graficos, {
+
+      #media = mean(data_sinasc())
+
+      ifelse(data_sinasc()== 0,
+             (data_sim_neonatal() / mean(data_sinasc()))* 1000,
+             (data_sim_neonatal() / data_sinasc()) * 1000)
+
+      #dados <- ifelse(data_sinasc()== 0, mean(data_sinasc()), data_sinasc())
+      # dados <- c(1:length(data_sinasc()))
+
+      # for(i in 1:length(data_sinasc())){
+      #   if(data_sinasc()[i] == 0){ dados[i] = media
+      #   }else{
+      #     dados[i] = data_sinasc()[i]
+      #   }
+      # }
+      #(data_sim_materno() /  dados) * 100000
+    })
+
 
     # Título da série altera-se de acordo com as opções selecionadas pelo user e após clicar em gerar gráfico
     titulo <- eventReactive(input$gerar_graficos, {
