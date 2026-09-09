@@ -17,7 +17,7 @@ mod_intervencao_sim_neonatal_ui <- function(id){
 
       #shinyWidgets::useSweetAlert(),
 
-      shinyWidgets::useBs4Dash(),
+      useBs4Dash(),
 
 
       # Criando layout onde gráficos e a tabelas serão exibidos -------

@@ -16,7 +16,7 @@ mod_intervencao_sif_gestante_ui <- function(id){
 
       #shinyWidgets::useSweetAlert(),
 
-      shinyWidgets::useBs4Dash(),
+      useBs4Dash(),
 
 
       hr(),

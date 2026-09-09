@@ -16,7 +16,7 @@ mod_intervencao_sinasc_ui <- function(id){
 
       #shinyWidgets::useSweetAlert(),
 
-      shinyWidgets::useBs4Dash(),
+      useBs4Dash(),
 
       #shinyjs::useShinyjs(),
 

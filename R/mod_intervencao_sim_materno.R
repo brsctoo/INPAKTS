@@ -12,7 +12,7 @@ mod_intervencao_sim_materno_ui <- function(id){
   tagList(
     fluidPage(
 
-      shinyWidgets::useBs4Dash(),
+      useBs4Dash(),
 
       # Layout para gráficos e a tabelas (front end) -------
       bs4Dash::bs4Card(

@@ -23,7 +23,7 @@ mod_inicio_ui <- function(id) {
           )
         ),
 
-        shinyWidgets::useBs4Dash(),
+        useBs4Dash(),
         br(),
         br(),
         br(),
