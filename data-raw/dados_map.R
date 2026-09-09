@@ -1,13 +1,13 @@
-## code to prepare `dados_map` dataset goes here
+## Code to prepare `dados_map` dataset goes here
 
 data_prep_geo <- function(data_prep,
                             data_primeira_intervencao = "2015-05-01"){
 
-  #Datas somente considerando o mês de janeiro
+  # Datas somente considerando o mês de janeiro
   datas <- seq.Date(
     from = as.Date(data_primeira_intervencao),
-    #from = as.Date(min(data_prep$data_variable)) + months(5),
-    to =   as.Date(max(data_prep$data_variable)) - months(1),
+    # from = as.Date(min(data_prep$data_variable)) + months(5),
+    to = as.Date(max(data_prep$data_variable)) - months(1),
     by = "1 month")
 
   data_inicio_Ano <- as.numeric(format(as.Date(min(data_prep$data_variable)),format = "%Y"))
@@ -48,7 +48,7 @@ data_prep_geo <- function(data_prep,
     dplyr::select("MUNICIPIO","RS","MACRO") %>%
     dplyr::rename(municipio= MUNICIPIO, micro = RS, macro = MACRO)
 
-  #Adicionando micro, macro regiões
+  # Adicionando micro, macro regiões
   df <- df %>%
     dplyr::left_join(munic, by = "municipio")
 }
@@ -58,10 +58,10 @@ data_prep_geo <- function(data_prep,
 data_prep_geo_rs <- function(data_prep,
                              data_primeira_intervencao = "2015-05-01"){
 
-  #Datas somente considerando o mês de janeiro
+  # Datas somente considerando o mês de janeiro
   datas <- seq.Date(
     from = as.Date(data_primeira_intervencao),
-    #from = as.Date(min(data_prep$data_variable)) + months(5),
+    # from = as.Date(min(data_prep$data_variable)) + months(5),
     to =   as.Date(max(data_prep$data_variable)) - months(1),
     by = "1 month")
 
@@ -76,7 +76,7 @@ data_prep_geo_rs <- function(data_prep,
   macro <- c()
 
   df <- data.frame(micro = levels(data_prep$micro))
-  #87, 80
+  # 87, 80
   n = length(datas) - 1
   for (j in 1:n){
     #i in 1:399
@@ -101,8 +101,6 @@ data_prep_geo_rs <- function(data_prep,
 
   return(df)
 }
-
-
 
 # Para os municípios
 
@@ -171,4 +169,3 @@ usethis::use_data(dados_map_sim_neonatal_rs, overwrite = TRUE)
 usethis::use_data(dados_map_sif_gestante_rs, overwrite = TRUE)
 
 usethis::use_data(dados_map_sif_congenita_rs, overwrite = TRUE)
-

@@ -1,4 +1,4 @@
-## code to prepare `dados_sim_neonatal` dataset goes here
+## Code to prepare `dados_sim_neonatal` dataset goes here
 
 sim_2015_2018 <- readr::read_delim(unz(description = "data/SIM-2015-2018.zip",
                                        filename = "SIM-2015-2018.csv"),
@@ -41,8 +41,7 @@ dados_sim_neonatal <- rbind(sim_2015_2018, sim_2019_2022) %>%
                      "escolaridade_mae", "raca_cor", "estado_civil", "local_ocorrencia"),as.factor) %>%
   dplyr::mutate_at(c("idade"),as.numeric)
 
-#Adicionando macro e  microregião ao dataset usando o dataset do SINASC
-
+# Adicionando macro e  microregião ao dataset usando o dataset do SINASC
 
 geo_sinasc <- data.frame(micro = dados_sinasc$micro,
                          macro =dados_sinasc$macro,

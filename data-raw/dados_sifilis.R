@@ -1,5 +1,4 @@
 
-## code to prepare `dados_sifilis` dataset goes here
 # Sifilis gestante
 sif_gestante <- foreign::read.dbf(file = "data/SIFGENET.DBF")%>%
   dplyr::select(NU_NOTIFIC, DT_NOTIFIC, ID_MUNICIP, ID_REGIONA, ID_UNIDADE,
@@ -15,15 +14,15 @@ munic$ibge_estabelecimento <- as.numeric(munic$ibge_estabelecimento)
 dados_sif_gestante <- sif_gestante %>% tidyr::drop_na(ID_MUNICIP) %>%
   dplyr::mutate_at("ID_MUNICIP",as.character) %>%
   dplyr::mutate_at("ID_MUNICIP",as.numeric) %>%
-  #Mantendo apenas cidades do estado do PR (iniciando com 41:
+  # Mantendo apenas cidades do estado do PR (iniciando com 41:
   dplyr::filter(substr(ID_MUNICIP,1,2) == "41") %>%
   dplyr::rename(ibge_estabelecimento="ID_MUNICIP") %>%
-  #dplyr::filter(DT_NOTIFIC >= "2017-01-01") %>%
+  # dplyr::filter(DT_NOTIFIC >= "2017-01-01") %>%
   dplyr::mutate(data_categorica = ifelse(DT_NOTIFIC > "2020-03-20",'Depois','Antes'),
                 data_variable = DT_NOTIFIC) %>%
   dplyr::left_join(munic,by = "ibge_estabelecimento") %>%
   dplyr::mutate_at(c("municipio","micro","macro","municipio_semacento","populacao"), as.factor) %>%
-  #dplyr::mutate_at(c("CS_RACA"),as.factor) %>%
+  # dplyr::mutate_at(c("CS_RACA"),as.factor) %>%
   dplyr::mutate_at(c("CS_RACA", "TPEVIDENCI", "CS_ESCOL_N", "TPTESTE1", "TPCONFIRMA"), as.character) %>%
   dplyr::mutate_at(c("CS_RACA", "TPEVIDENCI", "CS_ESCOL_N", "TPTESTE1", "TPCONFIRMA"), as.numeric) %>%
   dplyr::mutate(CS_RACA = as.numeric(as.character(CS_RACA)),
@@ -63,14 +62,14 @@ dados_sif_gestante <- sif_gestante %>% tidyr::drop_na(ID_MUNICIP) %>%
                 TPCONFIRMA = forcats::fct_relevel(TPCONFIRMA, levels = "Reagente", "Não reagente",  "Não realizado","Ignorado")) %>%
   dplyr::mutate_at(c("CS_RACA","idade_mae1","TPEVIDENCI","CS_ESCOL_N","TPTESTE1","TPCONFIRMA"), as.factor)
 
-#levels(dados_sif_gestante$TPCONFIRMA)
+# levels(dados_sif_gestante$TPCONFIRMA)
 
-#(length(seq(from = DT_NASC, to = DT_NOTIFIC, by = 'year'))-1))
+# (length(seq(from = DT_NASC, to = DT_NOTIFIC, by = 'year'))-1))
 
-#forcats::fct_count(dados_sif_gestante$TPCONFIRMA, prop = T)
-#summary(sifilis1$ID_MUNICIP)
-#sifilis1[sifilis1$NU_NOTIFIC=="5292687",]
-#sifilis1[sifilis1$NU_NOTIFIC=="6461456",]
+# forcats::fct_count(dados_sif_gestante$TPCONFIRMA, prop = T)
+# summary(sifilis1$ID_MUNICIP)
+# sifilis1[sifilis1$NU_NOTIFIC=="5292687",]
+# sifilis1[sifilis1$NU_NOTIFIC=="6461456",]
 
 usethis::use_data(dados_sif_gestante, overwrite = TRUE)
 

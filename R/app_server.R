@@ -6,17 +6,17 @@
 #' @noRd
 app_server <- function(input, output, session) {
 
-  #Criando arquivo para armazenar os caches
+  # Criando arquivo para armazenar os caches
   shinyOptions(
     cache = cachem::cache_disk(
     # dir = NULL (default) será usado e criado um diretório temporário.
     dir = "./cache",
     destroy_on_finalize =T))#,
-    #Tempo, em segundos, que os arquivos em cache ficarão armazenados
-    #max_age = 60))
+    # Tempo, em segundos, que os arquivos em cache ficarão armazenados
+    # max_age = 60))
 
-  ## Configurando a página inicial -------
- #w <- waiter::Waiter$new(
+  # Configurando a página inicial -------
+  # w <- waiter::Waiter$new(
     # html = h1(
     #   p(),
     #   h1(strong("Protótipo:"), align = "center"),
@@ -36,11 +36,11 @@ app_server <- function(input, output, session) {
     #image ="www/pagina_inicial.png"
     #Url da imagem exibida na página inicial
     #image = "https://images.pexels.com/photos/2664417/pexels-photo-2664417.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2"
-  #)$show()
+  # )$show()
 
   ### Fixando o tempo que a tela inicial aparecerá -------
-  #Sys.sleep(15)
-  #w$hide()
+  # Sys.sleep(15)
+  # w$hide()
 
 
   # Your application server logic

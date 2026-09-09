@@ -1,7 +1,5 @@
 
-## code to prepare `dados_sif_congenita` dataset goes here
-
-#Sifilis congenita
+# Sifilis congenita
 sif_congenita <- foreign::read.dbf(file = "data/SIFICNET.DBF")%>%
   dplyr::select(NU_NOTIFIC, DT_NOTIFIC, ID_MUNICIP, ID_REGIONA, ID_UNIDADE,
                 DT_DIAG, SEM_DIAG, DT_NASC, CS_SEXO, CS_GESTANT, CS_RACA,
@@ -16,10 +14,10 @@ munic$ibge_estabelecimento <- as.numeric(munic$ibge_estabelecimento)
 dados_sif_congenita <- sif_congenita %>% tidyr::drop_na(ID_MUNICIP) %>%
   dplyr::mutate_at("ID_MUNICIP",as.character) %>%
   dplyr::mutate_at("ID_MUNICIP",as.numeric) %>%
-  #Mantendo apenas cidades do estado do PR (iniciando com 41:
+  # Mantendo apenas cidades do estado do PR (iniciando com 41:
   dplyr::filter(substr(ID_MUNICIP,1,2) == "41") %>%
   dplyr::rename(ibge_estabelecimento="ID_MUNICIP") %>%
-  #dplyr::filter(DT_NOTIFIC >= "2017-01-01") %>%
+  # dplyr::filter(DT_NOTIFIC >= "2017-01-01") %>%
   dplyr::mutate(data_categorica = ifelse(DT_NOTIFIC > "2020-03-20",'Depois','Antes'),
                 data_variable = DT_NOTIFIC) %>%
   dplyr::left_join(munic,by = "ibge_estabelecimento") %>%
@@ -58,11 +56,11 @@ dados_sif_congenita <- sif_congenita %>% tidyr::drop_na(ID_MUNICIP) %>%
 
 levels(dados_sif_congenita$ANTSIFIL_N)
 
-#summary(sifilis1$ID_MUNICIP)
-#sifilis1[sifilis1$NU_NOTIFIC=="5292687",]
-#sifilis1[sifilis1$NU_NOTIFIC=="6461456",]
+# summary(sifilis1$ID_MUNICIP)
+# sifilis1[sifilis1$NU_NOTIFIC=="5292687",]
+# sifilis1[sifilis1$NU_NOTIFIC=="6461456",]
 
-#forcats::fct_count(dados_sif_congenita$ANTSIFIL_N, prop = T)
+# forcats::fct_count(dados_sif_congenita$ANTSIFIL_N, prop = T)
 
 usethis::use_data(dados_sif_congenita, overwrite = TRUE)
 

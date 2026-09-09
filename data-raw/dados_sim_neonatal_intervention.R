@@ -1,5 +1,4 @@
-## code to prepare `dados_sim_neonatal_intervention` dataset goes here
-
+## Code to prepare `dados_sim_neonatal_intervention` dataset goes here
 
 require(magrittr,include.only = "%>%")
 
@@ -48,13 +47,13 @@ dados_sim_neonatal_intervention <- rbind(sim_2015_2018, sim_2019_2022) %>%
                      "local_ocorrencia"),as.factor) %>%
   dplyr::rename(data_variable = data_obito) %>%
   dplyr::select(municipio_obito, data_variable, sexo, raca_cor, tipo_mortalidade)
-  #dplyr::select(municipio_obito, data_variable, sexo, raca_cor, tipo_obito, tipo_idade, idade,tipo_mortalidade)
+  # dplyr::select(municipio_obito, data_variable, sexo, raca_cor, tipo_obito, tipo_idade, idade,tipo_mortalidade)
 
 # idade <- dados_sim_neonatal_intervention %>%
-#   dplyr::select(tipo_idade, tipo_obito, idade,tipo_mortalidade)
+# dplyr::select(tipo_idade, tipo_obito, idade,tipo_mortalidade)
 
 
-#Adicionando macro e  microregião ao dataset usando o dataset do SINASC
+# Adicionando macro e  microregião ao dataset usando o dataset do SINASC
 
 
 geo_sinasc <- data.frame(micro = dados_sinasc$micro,
@@ -81,4 +80,3 @@ dados_sim_neonatal_intervention <- dados_sim_neonatal_intervention %>%
 
 
 usethis::use_data(dados_sim_neonatal_intervention, overwrite = TRUE)
-

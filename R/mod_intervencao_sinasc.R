@@ -389,7 +389,7 @@ mod_intervencao_sinasc_server <- function(id, opcoes_usuario, min_observacoes = 
                               min_observacoes = min_observacoes)})
     })
 
-    ## Para resultados  por raça/cor-------
+    ## Para resultados por raça/cor-------
 
     # Quantidade de não informado por raca de  acordo com opcoes selecionadas por usuário
     na_raca <- eventReactive(input$gerar_resultado_raca, {
@@ -438,7 +438,7 @@ mod_intervencao_sinasc_server <- function(id, opcoes_usuario, min_observacoes = 
 
     output$relatorio <- downloadHandler(
 
-      #Nome do arquivo no html
+      # Nome do arquivo no html
       filename <-  "Análise de resíduos (SINASC).html",
 
       content = function(file) {
@@ -471,7 +471,7 @@ mod_intervencao_sinasc_server <- function(id, opcoes_usuario, min_observacoes = 
         # Set up parameters to pass to Rmd document
         params <- list(intervencao1 = opcoes_usuario$date_intervention[1],
                        intervencao2 = opcoes_usuario$date_intervention[2],
-                       #Título no cabeçalho do Relatório:
+                       # Título no cabeçalho do Relatório:
                        titulo = titulo_relatorio(),
                        data_set = data(),
                        local = local() )

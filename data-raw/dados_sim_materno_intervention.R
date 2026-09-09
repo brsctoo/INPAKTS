@@ -1,4 +1,4 @@
-## code to prepare `dados_sim_materno_intervention` dataset goes here
+## Code to prepare `dados_sim_materno_intervention` dataset goes here
 
 require(magrittr,include.only = "%>%")
 
@@ -55,7 +55,6 @@ dados_sim_materno_intervention <- rbind(sim_2015_2018, sim_2019_2022) %>%
                                       ifelse(idade>=31 & idade<=60,"Adultos: 31 a 59 anos", NA)))) %>%
   dplyr::rename(data_variable=data_obito) %>%
   dplyr::select(municipio_obito,data_variable,idade,raca_cor)
-
 
 
 # Adicionando macro e  microregião ao dataset usando o dataset do SINASC

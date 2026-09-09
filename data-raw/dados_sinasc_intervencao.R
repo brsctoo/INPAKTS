@@ -1,11 +1,11 @@
-## code to prepare `dados_sinasc_intervencao` dataset goes here
+## Code to prepare `dados_sinasc_intervencao` dataset goes here
 
 require(magrittr, include.only = "%>%")
 
 sinasc_2015 <- readr::read_delim(unz(description = "data/sinasc-2015-2019.zip",
                                      filename = "sinasc-2015.csv"),
                                  delim = ";")
-#locale = locale(encoding='UTF-8'))
+# locale = locale(encoding='UTF-8'))
 sinasc_2016 <- readr::read_delim(unz(description = "data/sinasc-2015-2019.zip",
                                      filename = "sinasc-2016.csv"),
                                  delim = ";")
@@ -35,9 +35,9 @@ dados_sinasc_intervencao <- rbind(sinasc_2015,sinasc_2016,sinasc_2017,sinasc_201
   dplyr::select(cnes_estabelecimento,ibge_estabelecimento,semanas_de_gestacao,tipo_parto,consulta_prenatal...18,
                 data_nascimento,parto_cesarea, semana_gestacao,cesarea_anterior_parto,mes_gestacao_prenatal,
                 sexo, idade, raça_cor_rn) %>%
-  #Retirando linhas com NA:
+  # Retirando linhas com NA:
   tidyr::drop_na(ibge_estabelecimento) %>%
-  #Mantendo apenas cidades do estado do PR (iniciando com 41):
+  # Mantendo apenas cidades do estado do PR (iniciando com 41):
   dplyr::filter(substr(ibge_estabelecimento,1,2) == "41") %>%
   dplyr::mutate(data_categorica = ifelse(data_nascimento > "2020-03-20",'Depois','Antes')) %>%
   dplyr::left_join(munic,by = "ibge_estabelecimento") %>%
@@ -85,4 +85,3 @@ dados_sinasc_intervencao <- rbind(sinasc_2015,sinasc_2016,sinasc_2017,sinasc_201
 
 
 usethis::use_data(dados_sinasc_intervencao, overwrite = TRUE)
-
