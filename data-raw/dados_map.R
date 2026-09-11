@@ -21,26 +21,49 @@ data_prep_geo <- function(data_prep,
   macro <- c()
 
   df <- data.frame(municipio = levels(data_prep$municipio))
-  #87
+
+  # Separa as cidades antes de entrar no loop
+  dados_por_cidade <- split(data_prep, data_prep$municipio)
+  nomes_cidades <- names(dados_por_cidade)
+
   for (j in 1:87){
-    #i in 1:399
+    message(sprintf("data_prep_geo (Municípios) - Processando mês %d de 87...", j))
     for (i in 1:length(levels(data_prep$municipio))) {
+      # 1. Isolamento dos dados
+      municipio[i] <- nomes_cidades[i]
+      dados <- dados_por_cidade[[i]]
 
-      municipio[i] <- levels(data_prep$municipio)[i]
-      dados <- data_prep[data_prep$municipio == municipio[i], ]
-      serie <- return_ts(dados,data_variable , inicio = c(data_inicio_Ano, data_inicio_Mes))
-      trendAntes[i] = sinasc_modelo.ajustado(dados = serie, intervention1 = datas[j], intervention2 = NA)$ResultingTrends[1, 1]
-      trendChange[i] = sinasc_modelo.ajustado(dados = serie, intervention1 = datas[j], intervention2 = NA)$fit_lm$coefficients[3]
-      trendChangeCat[i] = c(ifelse(summary(sinasc_modelo.ajustado(serie)$fit_lm)$coefficients[3,4]<0.05,
-                                   ifelse(trendChange[i]>0, "Aumentou", "Diminuiu"), "Estável"))
+      # 2. Conversao para Serie Temporal
+      serie <- return_ts(dados, data_variable, inicio = c(data_inicio_Ano, data_inicio_Mes))
 
+      modelo <- sinasc_modelo.ajustado(
+        dados = serie,
+        intervention1 = datas[j],
+        intervention2 = NA
+      )
+
+      # 3. Tendencia Previa
+      trendAntes[i] = modelo$ResultingTrends[1, 1]
+
+      # 4. Mudanca de Tendencia
+      trendChange[i] = modelo$fit_lm$coefficients[3]
+
+      # 5. Reajuste para extrair o P-valor (significancia)
+      # O p-valor e extraido do modelo padrao (cravado em Marco de 2017).
+      p_valor <- summary(modelo$fit_lm)$coefficients[3, 4]
+      if (p_valor >= 0.05) {
+        trendChangeCat[i] <- "Estável"
+      } else if (trendChange[i] > 0) {
+        trendChangeCat[i] <- "Aumentou"
+      } else {
+        trendChangeCat[i] <- "Diminuiu"
+      }
     }
 
     df[,j+1] <- as.factor(trendChangeCat)
 
     # Renomeando o nome da coluna para a data de intervenção
     names(df)[j+1] <- as.character(datas[j])
-
   }
 
   load("data/munic.RData")
@@ -78,18 +101,39 @@ data_prep_geo_rs <- function(data_prep,
   df <- data.frame(micro = levels(data_prep$micro))
   # 87, 80
   n = length(datas) - 1
-  for (j in 1:n){
-    #i in 1:399
+  for (j in 1:n) {
+    message(sprintf("data_prep_geo_rs (Regionais) - Processando mês %d de %d...", j, n))
+    # i in 1:399
     for (i in 1:length(levels(data_prep$micro))) {
-
+      # 1. Isolamento dos dados
       micro[i] <- levels(data_prep$micro)[i]
       dados <- data_prep[data_prep$micro == micro[i], ]
-      serie <- return_ts(dados,data_variable , inicio = c(data_inicio_Ano, data_inicio_Mes))
-      trendAntes[i] = sinasc_modelo.ajustado(dados = serie, intervention1 = datas[j], intervention2 = NA)$ResultingTrends[1, 1]
-      trendChange[i] = sinasc_modelo.ajustado(dados = serie, intervention1 = datas[j], intervention2 = NA)$fit_lm$coefficients[3]
-      trendChangeCat[i] = c(ifelse(summary(sinasc_modelo.ajustado(serie)$fit_lm)$coefficients[3,4]<0.05,
-                                   ifelse(trendChange[i]>0, "Aumentou", "Diminuiu"), "Estável"))
 
+      # 2. Conversao para Serie Temporal
+      serie <- return_ts(dados,data_variable , inicio = c(data_inicio_Ano, data_inicio_Mes))
+
+      modelo <- sinasc_modelo.ajustado(
+        dados = serie,
+        intervention1= datas[j],
+        intervention2 = NA
+      )
+
+      # 3. Tendencia Previa
+      trendAntes[i] = modelo$ResultingTrends[1, 1]
+
+      # 4. Mudanca de Tendencia
+      trendChange[i] = modelo$fit_lm$coefficients[3]
+
+      # 5. Reajuste para extrair o P-valor (significancia)
+      # O p-valor e extraido do modelo padrao (cravado em Marco de 2017).
+      p_valor <- summary(modelo$fit_lm)$coefficients[3,4]
+      if (p_valor >= 0.05) {
+        trendChangeCat[i] <- "Estável"
+      } else if (trendChange[i] > 0) {
+        trendChangeCat[i] <- "Aumentou"
+      } else {
+        trendChangeCat[i] <- "Diminuiu"
+      }
     }
 
     df[,j+1] <- as.factor(trendChangeCat)
