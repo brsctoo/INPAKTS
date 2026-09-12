@@ -11,7 +11,6 @@ names(munic) <- c("ibge_estabelecimento","municipio","micro","macro","municipio_
 
 munic$ibge_estabelecimento <- as.numeric(munic$ibge_estabelecimento)
 
-
 dados_sif_congenita_intervention <- sif_congenita %>% tidyr::drop_na(ID_MUNICIP) %>%
   dplyr::mutate_at("ID_MUNICIP",as.character) %>%
   dplyr::mutate_at("ID_MUNICIP",as.numeric) %>%

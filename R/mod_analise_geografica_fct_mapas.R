@@ -200,10 +200,3 @@ UFmapOrd <- function(varToPlot,
   invisible(list(map=map))#,cluster.distr=cluster.distr))
 
 }
-
-
-
-
-
-
-

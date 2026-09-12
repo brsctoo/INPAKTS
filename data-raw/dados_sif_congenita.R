@@ -1,3 +1,4 @@
+## Code to prepare `dados_sif_congenita` dataset goes here
 
 # Sifilis congenita
 sif_congenita <- foreign::read.dbf(file = "data/SIFICNET.DBF")%>%
@@ -86,4 +87,3 @@ levels(dados_sif_congenita$ANTSIFIL_N)
 # forcats::fct_count(dados_sif_congenita$ANTSIFIL_N, prop = T)
 
 usethis::use_data(dados_sif_congenita, overwrite = TRUE)
-

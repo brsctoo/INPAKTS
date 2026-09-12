@@ -89,4 +89,3 @@ dados_sim_materno_intervention <- dados_sim_materno_intervention %>%
 
 # Salvando os dados na pasta data
 usethis::use_data(dados_sim_materno_intervention, overwrite = TRUE)
-
