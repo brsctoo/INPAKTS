@@ -44,38 +44,78 @@ dados_sinasc <- rbind(sinasc_2015,sinasc_2016,sinasc_2017,sinasc_2018,sinasc_201
   dplyr::mutate_at(c("semanas_de_gestacao","tipo_parto","consulta_prenatal...18","parto_cesarea",
                      "cesarea_anterior_parto","macro","municipio","micro"),as.factor) %>%
   dplyr::rename(consulta_prenatal="consulta_prenatal...18") %>%
-  dplyr::mutate(consulta_prenatal = forcats::fct_recode(consulta_prenatal,
-                                                        "Ignorado" = "Não informado"),
-                semanas_de_gestacao = forcats::fct_recode(semanas_de_gestacao,
-                                                          "Ignorado" = "Não informado",
-                                                          "Menos de 22" = "Menos de 22 semanas",
-                                                          "22 a 27" = "22 a 27 semanas",
-                                                          "28 a 31" = "28 a 31 semanas",
-                                                          "32 a 36" = "32 a 36 semanas",
-                                                          "37 a 41" = "37 a 41 semanas",
-                                                          "42 e mais" = "42 semanas e mais"),
-                cesarea_anterior_parto = forcats::fct_recode(cesarea_anterior_parto,
-                                                             "Ignorado" = "Não informado",
-                                                             "Ignorado" = "Não se aplica",
-                                                             "Ignorado" = "ignorado"),
-                parto_cesarea1 = forcats::fct_recode(parto_cesarea,
-                                                     "0"="Nenhum",
-                                                     "4000"= "Não informado"),
-                parto_cesarea1 = as.numeric(as.character(parto_cesarea1)),
-                parto_cesarea1 = ifelse(parto_cesarea1 > 36,"Ignorado",
-                                        ifelse(parto_cesarea1==0,"Nenhum",
-                                               ifelse(parto_cesarea1==1,"Um",
-                                                      ifelse(parto_cesarea1== 2,"Dois",
-                                                             ifelse(parto_cesarea1 > 2,"Mais que dois",NA))))),
-                mes_gestacao_prenatal1 = as.numeric(mes_gestacao_prenatal),
-                mes_gestacao_prenatal1 = ifelse(is.na(mes_gestacao_prenatal1) ,"Ignorado",
-                                                ifelse(mes_gestacao_prenatal1 >= 1 & mes_gestacao_prenatal1 < 4 ,"1º Trimestre",
-                                                       ifelse(mes_gestacao_prenatal1 >= 4 & mes_gestacao_prenatal1 < 7 ,"2º Trimestre",
-                                                              ifelse(mes_gestacao_prenatal1 >= 7 & mes_gestacao_prenatal1 < 11 ,"3º Trimestre","Ignorado")))),
-                consulta_prenatal = forcats::fct_relevel(consulta_prenatal, levels = "Nenhuma","1 a 3", "4 a 6", "7 e mais", "Ignorado"),
-                semanas_de_gestacao = forcats::fct_relevel(semanas_de_gestacao,levels = "Menos de 22", "22 a 27", "28 a 31", "32 a 36", "37 a 41", "42 e mais", "Ignorado"),
-                cesarea_anterior_parto = forcats::fct_relevel(cesarea_anterior_parto,levels = "Sim", "Não", "Ignorado"),
-                parto_cesarea1 = forcats::fct_relevel(parto_cesarea1,levels = "Nenhum", "Um", "Dois", "Mais que dois",  "Ignorado")) %>%
+  dplyr::mutate(
+    # Recodificação de Fatores Simples
+    consulta_prenatal = forcats::fct_recode(
+      consulta_prenatal,
+      "Ignorado" = "Não informado"
+    ),
+
+    semanas_de_gestacao = forcats::fct_recode(
+      semanas_de_gestacao,
+      "Menos de 22" = "Menos de 22 semanas",
+      "Ignorado" = "Não informado",
+      "22 a 27" = "22 a 27 semanas",
+      "28 a 31" = "28 a 31 semanas",
+      "32 a 36" = "32 a 36 semanas",
+      "37 a 41" = "37 a 41 semanas",
+      "42 e mais" = "42 semanas e mais"
+    ),
+
+    cesarea_anterior_parto = forcats::fct_recode(
+      cesarea_anterior_parto,
+      "Ignorado" = "Não informado",
+      "Ignorado" = "Não se aplica",
+      "Ignorado" = "ignorado"
+    ),
+
+    parto_cesarea1 = forcats::fct_recode(
+      parto_cesarea,
+      "0"="Nenhum",
+      "4000"= "Não informado"
+    ),
+
+    # Tratamento de variável - parto_cesarea
+    parto_cesarea1 = as.numeric(as.character(parto_cesarea1)),
+    parto_cesarea1 = dplyr::case_when(
+      parto_cesarea1 > 36 ~ "Ignorado",
+      parto_cesarea1 == 0 ~ "Nenhum",
+      parto_cesarea1 == 1 ~ "Um",
+      parto_cesarea1 == 2 ~ "Dois",
+      parto_cesarea1 > 2 ~ "Mais que dois",
+      TRUE ~ NA_character_
+    ),
+
+    # Tratamento de variável - mes_gestacao_prenatal
+    mes_gestacao_prenatal1 = as.numeric(mes_gestacao_prenatal),
+    mes_gestacao_prenatal1 = dplyr::case_when(
+      is.na(mes_gestacao_prenatal1) ~ "Ignorado",
+      mes_gestacao_prenatal1 >= 1 & mes_gestacao_prenatal1 < 4  ~ "1º Trimestre",
+      mes_gestacao_prenatal1 >= 4 & mes_gestacao_prenatal1 < 7  ~ "2º Trimestre",
+      mes_gestacao_prenatal1 >= 7 & mes_gestacao_prenatal1 < 11 ~ "3º Trimestre",
+      TRUE ~ "Ignorado"
+    ),
+
+    # Ordenação de níveis (Fatores)
+    consulta_prenatal = forcats::fct_relevel(
+      consulta_prenatal,
+      "Nenhuma","1 a 3", "4 a 6", "7 e mais", "Ignorado"
+    ),
+
+    semanas_de_gestacao = forcats::fct_relevel(
+      semanas_de_gestacao,
+      "Menos de 22", "22 a 27", "28 a 31", "32 a 36", "37 a 41", "42 e mais", "Ignorado"
+    ),
+
+    cesarea_anterior_parto = forcats::fct_relevel(
+      cesarea_anterior_parto,
+      "Sim", "Não", "Ignorado"
+    ),
+
+    parto_cesarea1 = forcats::fct_relevel(
+      parto_cesarea1,
+      "Nenhum", "Um", "Dois", "Mais que dois",  "Ignorado")
+  ) %>%
   dplyr::mutate_at(c("parto_cesarea1","mes_gestacao_prenatal1"),as.factor) %>%
   dplyr::relocate(municipio,micro,macro,municipio_semacento)
 

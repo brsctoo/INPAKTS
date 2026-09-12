@@ -50,9 +50,14 @@ dados_sim_materno_intervention <- rbind(sim_2015_2018, sim_2019_2022) %>%
                                                       "Até 42 dias pós parto"="4",
                                                       "43 a 365 dias pós parto"="5"))%>%
   dplyr::filter(tipo_idade =="Anos") %>%
-  dplyr::mutate(idade = ifelse(idade>=10 & idade<19, "Jovens: 10 a 18 anos",
-                               ifelse(idade>=19 & idade < 31, "Adultos Jovens: 19 a 30 anos",
-                                      ifelse(idade>=31 & idade<=60,"Adultos: 31 a 59 anos", NA)))) %>%
+  dplyr::mutate(
+    idade = dplyr::case_when(
+      idade >= 10 & idade < 19  ~ "Jovens: 10 a 18 anos",
+      idade >= 19 & idade < 31  ~ "Adultos Jovens: 19 a 30 anos",
+      idade >= 31 & idade <= 60 ~ "Adultos: 31 a 59 anos",
+      TRUE                      ~ NA_character_
+    )
+  ) %>%
   dplyr::rename(data_variable=data_obito) %>%
   dplyr::select(municipio_obito,data_variable,idade,raca_cor)
 

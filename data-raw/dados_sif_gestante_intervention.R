@@ -1,3 +1,4 @@
+## Code to prepare `dados_sifilis` dataset goes here
 
 # Sifilis gestante
 sif_gestante <- foreign::read.dbf(file = "data/SIFGENET.DBF")%>%
@@ -25,40 +26,77 @@ dados_sif_gestante_intervention <- sif_gestante %>% tidyr::drop_na(ID_MUNICIP) %
   # dplyr::mutate_at(c("CS_RACA"),as.factor) %>%
   dplyr::mutate_at(c("CS_RACA", "TPEVIDENCI", "CS_ESCOL_N", "TPTESTE1", "TPCONFIRMA"), as.character) %>%
   dplyr::mutate_at(c("CS_RACA", "TPEVIDENCI", "CS_ESCOL_N", "TPTESTE1", "TPCONFIRMA"), as.numeric) %>%
-  dplyr::mutate(CS_RACA = as.numeric(as.character(CS_RACA)),
-                CS_RACA = ifelse(is.na(CS_RACA), "Ignorado",
-                                 ifelse(CS_RACA==1,"Branca",
-                                        ifelse(CS_RACA>1 & CS_RACA<6, "Não-branca",ifelse(CS_RACA==9, "Ignorado",NA)))),
-                idade_mae = as.numeric(round(difftime(as.Date(DT_NOTIFIC),as.Date(DT_NASC), units = "days")/365,0)),
-                TPEVIDENCI = ifelse(is.na(TPEVIDENCI), "Ignorado",
-                                    ifelse(TPEVIDENCI==1, "Primária",
-                                           ifelse(TPEVIDENCI==2, "Secundária",
-                                                  ifelse(TPEVIDENCI==3, "Terciária",
-                                                         ifelse(TPEVIDENCI==4, "Latente",
-                                                                ifelse(TPEVIDENCI==9, "Ignorado",NA)))))),
-                CS_ESCOL_N = ifelse(is.na(CS_ESCOL_N), "Ignorado",
-                                    ifelse(CS_ESCOL_N%in%c(1,2,3), "EF incompleto",
-                                           ifelse(CS_ESCOL_N%in%c(4,5,6,7,8), "EF completo",
-                                                  ifelse(CS_ESCOL_N%in%c(0,9,10), "Ignorado",NA)))),
-                TPTESTE1 = ifelse(is.na(TPTESTE1), "Ignorado",
-                                  ifelse(TPTESTE1==1, "Reagente",
-                                         ifelse(TPTESTE1==2, "Não reagente",
-                                                ifelse(TPTESTE1==3, "Não realizado",
-                                                       ifelse(TPTESTE1==9, "Ignorado", NA))))),
-                TPCONFIRMA = ifelse(is.na(TPCONFIRMA), "Ignorado",
-                                    ifelse(TPCONFIRMA==1, "Reagente",
-                                           ifelse(TPCONFIRMA==2, "Não reagente",
-                                                  ifelse(TPCONFIRMA==3, "Não realizado",
-                                                         ifelse(TPCONFIRMA==9, "Ignorado", NA))))),
-                idade = ifelse(idade_mae>=10 & idade_mae<19, "Jovens: 10 a 18 anos",
-                               ifelse(idade_mae>=19 & idade_mae < 31, "Adultos Jovens: 19 a 30 anos",
-                                      ifelse(idade_mae>=31 & idade_mae<=60,"Adultos: 31 a 59 anos",
-                                             ifelse(idade_mae > 60 & idade_mae<90, "Idosos: acima de 60", NA)))),
-                raca_cor = forcats::fct_recode(CS_RACA,
-                                               "Branca" = "Branca",
-                                               "Não branca" = "Não-branca",
-                                               "Não informado" = "Ignorado")
-                ) %>%
+  dplyr::mutate(
+    # Recodifica Raça/Cor
+    CS_RACA = as.numeric(as.character(CS_RACA)),
+    CS_RACA = dplyr::case_when(
+      is.na(CS_RACA) ~ "Ignorado",
+      CS_RACA == 1 ~ "Branca",
+      CS_RACA > 1 & CS_RACA < 6  ~ "Não-branca",
+      CS_RACA == 9 ~ "Ignorado",
+      TRUE ~ NA_character_
+    ),
+
+    # Calcula a idade da mãe em anos
+    idade_mae = as.numeric(round(difftime(as.Date(DT_NOTIFIC),as.Date(DT_NASC), units = "days") / 365, 0)),
+
+    # Recodifica Tipo de Evidência
+    TPEVIDENCI = dplyr::case_when(
+      is.na(TPEVIDENCI) ~ "Ignorado",
+      TPEVIDENCI == 1 ~ "Primária",
+      TPEVIDENCI == 2 ~ "Secundária",
+      TPEVIDENCI == 3 ~ "Terciária",
+      TPEVIDENCI == 4 ~ "Latente",
+      TPEVIDENCI == 9 ~ "Ignorado",
+      TRUE ~ NA_character_
+    ),
+
+    # Recodifica Escolaridade
+    CS_ESCOL_N = dplyr::case_when(
+      is.na(CS_ESCOL_N) ~ "Ignorado",
+      CS_ESCOL_N %in% c(1, 2, 3) ~ "EF incompleto",
+      CS_ESCOL_N %in% 4:8 ~ "EF completo",
+      CS_ESCOL_N %in% c(0, 9, 10) ~ "Ignorado",
+      TRUE ~ NA_character_
+    ),
+
+    # Recodifica Teste 1
+    TPTESTE1 = dplyr::case_when(
+      is.na(TPTESTE1) ~ "Ignorado",
+      TPTESTE1 == 1 ~ "Reagente",
+      TPTESTE1 == 2 ~ "Não reagente",
+      TPTESTE1 == 3 ~ "Não realizado",
+      TPTESTE1 == 9 ~ "Ignorado",
+      TRUE ~ NA_character_
+    ),
+
+    # Recodifica Teste Confirmatório
+    TPCONFIRMA = dplyr::case_when(
+      is.na(TPCONFIRMA) ~ "Ignorado",
+      TPCONFIRMA == 1 ~ "Reagente",
+      TPCONFIRMA == 2 ~ "Não reagente",
+      TPCONFIRMA == 3 ~ "Não realizado",
+      TPCONFIRMA == 9 ~ "Ignorado",
+      TRUE ~ NA_character_
+    ),
+
+    # Categoriza a Idade da Mãe
+    idade = dplyr::case_when(
+      idade_mae >= 10 & idade_mae < 19 ~ "Jovens: 10 a 18 anos",
+      idade_mae >= 19 & idade_mae < 31 ~ "Adultos Jovens: 19 a 30 anos",
+      idade_mae >= 31 & idade_mae <= 60 ~ "Adultos: 31 a 59 anos",
+      idade_mae > 60  & idade_mae < 90 ~ "Idosos: acima de 60",
+      TRUE ~ NA_character_
+    ),
+
+    # Criação da raca_cor renomeando categorias
+    raca_cor = forcats::fct_recode (
+      CS_RACA,
+      "Branca" = "Branca",
+      "Não branca" = "Não-branca",
+      "Não informado" = "Ignorado"
+    )
+  ) %>%
   dplyr::mutate_at(c("TPCONFIRMA"), as.factor)%>%
   dplyr::relocate(municipio,micro,macro,municipio_semacento) %>%
   dplyr::rename(data_variable = DT_NOTIFIC) %>%

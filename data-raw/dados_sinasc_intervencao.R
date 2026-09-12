@@ -42,40 +42,73 @@ dados_sinasc_intervencao <- rbind(sinasc_2015,sinasc_2016,sinasc_2017,sinasc_201
   dplyr::mutate(data_categorica = ifelse(data_nascimento > "2020-03-20",'Depois','Antes')) %>%
   dplyr::left_join(munic,by = "ibge_estabelecimento") %>%
   dplyr::mutate_at(c("semanas_de_gestacao","tipo_parto","consulta_prenatal...18","parto_cesarea",
-                     "cesarea_anterior_parto","macro","municipio","micro","sexo"),as.factor) %>%
+                      "cesarea_anterior_parto","macro","municipio","micro","sexo"),as.factor) %>%
   dplyr::rename(consulta_prenatal="consulta_prenatal...18", raca_cor = raça_cor_rn) %>%
-  dplyr::mutate(consulta_prenatal = forcats::fct_recode(consulta_prenatal,
-                                                        "Ignorado" = "Não informado"),
-                semanas_de_gestacao = forcats::fct_recode(semanas_de_gestacao,
-                                                          "Ignorado" = "Não informado"),
-                cesarea_anterior_parto = forcats::fct_recode(cesarea_anterior_parto,
-                                                             "Ignorado" = "Não informado",
-                                                             "Ignorado" = "Não se aplica",
-                                                             "Ignorado" = "ignorado"),
-                parto_cesarea1 = forcats::fct_recode(parto_cesarea,
-                                                     "0"="Nenhum",
-                                                     "4000"= "Não informado"),
-                parto_cesarea1 = as.numeric(as.character(parto_cesarea1)),
-                parto_cesarea1 = ifelse(parto_cesarea1 > 36,"Ignorado",
-                                        ifelse(parto_cesarea1==0,"Nenhum",
-                                               ifelse(parto_cesarea1==1,"Um",
-                                                      ifelse(parto_cesarea1== 2,"Dois",
-                                                             ifelse(parto_cesarea1 > 2,"Mais que dois",NA))))),
-                mes_gestacao_prenatal1 = as.numeric(mes_gestacao_prenatal),
-                mes_gestacao_prenatal1 = ifelse(is.na(mes_gestacao_prenatal1) ,"Ignorado",
-                                                ifelse(mes_gestacao_prenatal1 >= 1 & mes_gestacao_prenatal1 < 4 ,"1º Trimestre",
-                                                       ifelse(mes_gestacao_prenatal1 >= 4 & mes_gestacao_prenatal1 < 7 ,"2º Trimestre",
-                                                              ifelse(mes_gestacao_prenatal1 >= 7 & mes_gestacao_prenatal1 < 11 ,"3º Trimestre","Ignorado")))),
-                idade = ifelse(idade>=10 & idade<19, "Jovens: 10 a 18 anos",
-                               ifelse(idade>=19 & idade < 31, "Adultos Jovens: 19 a 30 anos",
-                                      ifelse(idade>=31 & idade<=60,"Adultos: 31 a 59 anos",
-                                             ifelse(idade > 60 & idade<90, "Idosos: acima de 60", NA)))),
-                raca_cor = forcats::fct_recode(raca_cor,
-                                                  "Branca" = "Branca",
-                                                  "Não branca" = "Preta",
-                                                  "Não branca" = "Amarela",
-                                                  "Não branca" = "Indígena",
-                                                  "Não branca" = "Parda" )) %>%
+  dplyr::mutate(
+    # Recodificação de Fatores
+    consulta_prenatal = forcats::fct_recode(
+      consulta_prenatal,
+      "Ignorado" = "Não informado"
+    ),
+
+    semanas_de_gestacao = forcats::fct_recode(
+      semanas_de_gestacao,
+      "Ignorado" = "Não informado"
+    ),
+
+    cesarea_anterior_parto = forcats::fct_recode(
+      cesarea_anterior_parto,
+      "Ignorado" = "Não informado",
+      "Ignorado" = "Não se aplica",
+      "Ignorado" = "ignorado"
+    ),
+
+    parto_cesarea1 = forcats::fct_recode(
+      parto_cesarea,
+      "0"="Nenhum",
+      "4000"= "Não informado"
+    ),
+
+    # Tratamento da variável - parto_cesarea
+    parto_cesarea1 = as.numeric(as.character(parto_cesarea1)),
+      parto_cesarea1 = dplyr::case_when(
+        parto_cesarea1 > 36 ~ "Ignorado",
+        parto_cesarea1 == 0 ~ "Nenhum",
+        parto_cesarea1 == 1 ~ "Um",
+        parto_cesarea1 == 2 ~ "Dois",
+        parto_cesarea1 > 2 ~ "Mais que dois",
+        TRUE ~ NA_character_
+    ),
+
+    # Tratamento da variável - mes_gestacao_prenatal
+    mes_gestacao_prenatal1 = as.numeric(mes_gestacao_prenatal),
+    mes_gestacao_prenatal1 = dplyr::case_when(
+      is.na(mes_gestacao_prenatal1) ~ "Ignorado",
+      mes_gestacao_prenatal1 >= 1 & mes_gestacao_prenatal1 < 4 ~ "1º Trimestre",
+      mes_gestacao_prenatal1 >= 4 & mes_gestacao_prenatal1 < 7 ~ "2º Trimestre",
+      mes_gestacao_prenatal1 >= 7 & mes_gestacao_prenatal1 < 11 ~ "3º Trimestre"
+      TRUE ~ "Ignorado"
+    ),
+
+    # Classificação por Idade
+    idade = dplyr::case_when(
+      idade >= 10 & idade < 19 ~ "Jovens: 10 a 18 anos",
+      idade >= 19 & idade < 31 ~ "Adultos Jovens: 19 a 30 anos",
+      idade >= 31 & idade <= 60 ~ "Adultos: 31 a 59 anos",
+      idade > 60 & idade < 90, "Idosos: acima de 60",
+      TRUE ~ NA_character_
+    ),
+
+    # Agrupamento por Raça/Cor
+    raca_cor = forcats::fct_recode(
+      raca_cor,
+      "Branca" = "Branca",
+      "Não branca" = "Preta",
+      "Não branca" = "Amarela",
+      "Não branca" = "Indígena",
+      "Não branca" = "Parda"
+    )
+  ) %>%
   tidyr::drop_na(raca_cor) %>%
   dplyr::mutate_at(c("parto_cesarea1","mes_gestacao_prenatal1"),as.factor) %>%
   dplyr::relocate(municipio,micro,macro,municipio_semacento) %>%

@@ -19,27 +19,38 @@ dados_sim_neonatal_intervention <- rbind(sim_2015_2018, sim_2019_2022) %>%
                 ,morte_puerperio, morte_mulher, escolaridade_mae, raca_cor,
                 estado_civil,sexo,raca_cor) %>%
   dplyr::mutate_at(c("idade"),as.numeric) %>%
-  dplyr::mutate(data_categorica = ifelse(data_obito > "2020-03-20",'Depois','Antes'),
-                tipo_morte_parto = forcats::fct_recode(tipo_morte_parto,
-                                                       "N.I."="Ignorado"),
-                morte_puerperio = forcats::fct_recode(morte_puerperio,
-                                                      "N.I."="Ignorado"),
-                escolaridade_mae = forcats::fct_recode(escolaridade_mae,
-                                                       "N.I."="Ignorado"),
-                estado_civil = forcats::fct_recode(estado_civil,
-                                                   "N.I."="Ignorado"),
-                municipio_obito = tolower(municipio_obito),
-                raca_cor = forcats::fct_recode(raca_cor,
-                                               "Branca" = "Branca",
-                                               "Não branca" = "Preta",
-                                               "Não branca" = "Amarela",
-                                               "Não branca" = "Indígena",
-                                               "Não branca" = "Parda",
-                                               "Não informado" = "N.I."),
-                tipo_mortalidade = ifelse(tipo_idade == "N.I.", "fetal",
-                                          ifelse(tipo_idade == "Horas" , "neonatal_precoce",
-                                                 ifelse(tipo_idade  == "Dias"  & idade <=6 , "neonatal_precoce",
-                                                        ifelse( tipo_idade == "Dias" & idade>=7 & idade<=27  , "neonatal_tardia", "outra"))))) %>%
+  dplyr::mutate(
+    # Datas
+    data_categorica = ifelse(data_obito > "2020-03-20",'Depois','Antes'),
+
+    # Padronização de rótulos
+    tipo_morte_parto = forcats::fct_recode(tipo_morte_parto, "N.I."="Ignorado"),
+    morte_puerperio = forcats::fct_recode(morte_puerperio, "N.I."="Ignorado"),
+    escolaridade_mae = forcats::fct_recode(escolaridade_mae, "N.I."="Ignorado"),
+    estado_civil = forcats::fct_recode(estado_civil, "N.I."="Ignorado"),
+
+    # Textos
+    municipio_obito = tolower(municipio_obito),
+
+    # Agrupamento de Raça/Cor
+    raca_cor = forcats::fct_recode(
+      raca_cor,
+      "Branca" = "Branca",
+      "Não branca" = "Preta",
+      "Não branca" = "Amarela",
+      "Não branca" = "Indígena",
+      "Não branca" = "Parda",
+      "Não informado" = "N.I."
+    ),
+
+    # Classificação da Mortalidade
+    tipo_mortalidade = dplyr::case_when(
+      tipo_idade == "N.I" ~ "fetal",
+      tipo_idade == "Horas" | (tipo_idade == "Dias" & idade <= 6) ~ "neonatal_precoce",
+      tipo_idade == "Dias" & idade >= 7 & idade <= 27             ~ "neonatal_tardia",
+      TRUE  ~ "outra"
+    )
+  ) %>%
   dplyr::mutate_at(c("tipo_gestacao","tipo_parto","tipo_obito","tp_morte_ocorreu",
                      "tipo_morte_parto","causa_basica","local_ocorrencia",
                      "data_categorica", "morte_puerperio", "morte_mulher",
