@@ -78,11 +78,9 @@ geo <- geo_sinasc %>% dplyr::semi_join(munic_sim_materno) %>%
 rm(list=setdiff(ls(), c("dados_sim_materno_intervention","geo")))
 
 dados_sim_materno_intervention <- dados_sim_materno_intervention %>%
-  dplyr::left_join(geo) %>%
-  dplyr::relocate(municipio,micro,macro) %>%
-  dplyr::select(-municipio_obito) %>%
-
-
+  dplyr::left_join(geo, by = "municipio_obito") %>%
+  dplyr::relocate(municipio, micro, macro) %>%
+  dplyr::select(-municipio_obito)
 
 # Salvando os dados na pasta data
 usethis::use_data(dados_sim_materno_intervention, overwrite = TRUE)
