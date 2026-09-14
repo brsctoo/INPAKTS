@@ -22,22 +22,15 @@ dados_sim_materno_intervention <- rbind(sim_2015_2018, sim_2019_2022) %>%
                 local_ocorrencia, morte_puerperio, morte_mulher, escolaridade,
                 raca_cor, estado_civil, idade) %>%
   dplyr::mutate_at(c("idade"),as.numeric) %>%
-  dplyr::mutate(data_categorica = ifelse(data_obito > "2020-03-20",'Depois','Antes'),
-                tipo_morte_parto = forcats::fct_recode(tipo_morte_parto,
-                                                       "N.I."="Ignorado"),
-                morte_puerperio = forcats::fct_recode(morte_puerperio,
-                                                      "N.I."="Ignorado"),
-                escolaridade = forcats::fct_recode(escolaridade,
-                                                   "N.I."="Ignorado"),
-                estado_civil = forcats::fct_recode(estado_civil,
-                                                   "N.I."="Ignorado"),
+  dplyr::mutate(data_categorica = marcar_periodo_intervencao(data_obito),
                 municipio_obito = tolower(municipio_obito),
-                raca_cor = forcats::fct_recode(raca_cor,
-                                               "Branca" = "Branca",
-                                               "Não branca" = "Preta",
-                                               "Não branca" = "Amarela",
-                                               "Não branca" = "Indígena",
-                                               "Não branca" = "Parda" )) %>%
+                raca_cor = recodifica_raca_cor(raca_cor)) %>%
+  padroniza_ignorado(c(
+    "tipo_morte_parto",
+    "morte_puerperio",
+    "escolaridade",
+    "estado_civil")
+  ) %>%
   dplyr::mutate_at(c("tipo_gestacao","tipo_parto","tipo_obito","tp_morte_ocorreu",
                      "tipo_morte_parto","causa_basica","local_ocorrencia",
                      "data_categorica", "morte_puerperio", "morte_mulher",
@@ -51,12 +44,7 @@ dados_sim_materno_intervention <- rbind(sim_2015_2018, sim_2019_2022) %>%
                                                       "43 a 365 dias pós parto"="5"))%>%
   dplyr::filter(tipo_idade =="Anos") %>%
   dplyr::mutate(
-    idade = dplyr::case_when(
-      idade >= 10 & idade < 19  ~ "Jovens: 10 a 18 anos",
-      idade >= 19 & idade < 31  ~ "Adultos Jovens: 19 a 30 anos",
-      idade >= 31 & idade <= 60 ~ "Adultos: 31 a 59 anos",
-      TRUE                      ~ NA_character_
-    )
+    idade = classifica_faixa_etaria(idade, tipo = "jovem_adulto_idoso")
   ) %>%
   dplyr::rename(data_variable=data_obito) %>%
   dplyr::select(municipio_obito,data_variable,idade,raca_cor)
@@ -64,28 +52,12 @@ dados_sim_materno_intervention <- rbind(sim_2015_2018, sim_2019_2022) %>%
 
 # Adicionando macro e  microregião ao dataset usando o dataset do SINASC
 
-geo_sinasc <- data.frame(micro = dados_sinasc$micro,
-                         macro = dados_sinasc$macro,
-                         municipio = dados_sinasc$municipio,
-                         municipio_obito = dados_sinasc$municipio_semacento) %>%
-  dplyr::mutate(municipio_obito = tolower(municipio_obito))
-
-
-munic_sim_materno <- data.frame(
-  municipio_obito = dados_sim_materno_intervention$municipio_obito)
-
-rm(list=setdiff(ls(), c("dados_sim_materno_intervention","geo_sinasc","munic_sim_materno")))
-
-geo <- geo_sinasc %>% dplyr::semi_join(munic_sim_materno) %>%
-  dplyr::distinct()
-
-
-rm(list=setdiff(ls(), c("dados_sim_materno_intervention","geo")))
-
-dados_sim_materno_intervention <- dados_sim_materno_intervention %>%
-  dplyr::left_join(geo, by = "municipio_obito") %>%
-  dplyr::relocate(municipio, micro, macro) %>%
-  dplyr::select(-municipio_obito)
+dados_sim_materno_intervention <- juntar_geo_sinasc(
+  dados_sim_materno_intervention,
+  "municipio_obito",
+  dados_sinasc,
+  incluir_municipio_oficial = TRUE
+)
 
 # Salvando os dados na pasta data
 usethis::use_data(dados_sim_materno_intervention, overwrite = TRUE)

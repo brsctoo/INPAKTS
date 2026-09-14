@@ -1,215 +1,40 @@
 ## Code to prepare `dados_map` dataset goes here
 
-data_prep_geo <- function(data_prep,
-                            data_primeira_intervencao = "2015-05-01"){
-
-  # Datas somente considerando o mês de janeiro
-  datas <- seq.Date(
-    from = as.Date(data_primeira_intervencao),
-    # from = as.Date(min(data_prep$data_variable)) + months(5),
-    to = as.Date(max(data_prep$data_variable)) - months(1),
-    by = "1 month")
-
-  data_inicio_Ano <- as.numeric(format(as.Date(min(data_prep$data_variable)),format = "%Y"))
-  data_inicio_Mes <- as.numeric(format(as.Date(min(data_prep$data_variable)),format = "%m"))
-
-  municipio <- c()
-  trendAntes <- c()
-  trendChange <- c()
-  trendChangeCat <- c()
-  micro <- c()
-  macro <- c()
-
-  df <- data.frame(municipio = levels(data_prep$municipio))
-
-  # Separa as cidades antes de entrar no loop
-  dados_por_cidade <- split(data_prep, data_prep$municipio)
-  nomes_cidades <- names(dados_por_cidade)
-
-  for (j in 1:87){
-    message(sprintf("data_prep_geo (Municípios) - Processando mês %d de 87...", j))
-    for (i in 1:length(levels(data_prep$municipio))) {
-      # 1. Isolamento dos dados
-      municipio[i] <- nomes_cidades[i]
-      dados <- dados_por_cidade[[i]]
-
-      # 2. Conversao para Serie Temporal
-      serie <- return_ts(dados, data_variable, inicio = c(data_inicio_Ano, data_inicio_Mes))
-
-      modelo <- sinasc_modelo.ajustado(
-        dados = serie,
-        intervention1 = datas[j],
-        intervention2 = NA
-      )
-
-      # 3. Tendencia Previa
-      trendAntes[i] = modelo$ResultingTrends[1, 1]
-
-      # 4. Mudanca de Tendencia
-      trendChange[i] = modelo$fit_lm$coefficients[3]
-
-      # 5. Reajuste para extrair o P-valor (significancia)
-      # O p-valor e extraido do modelo padrao (cravado em Marco de 2017).
-      p_valor <- summary(modelo$fit_lm)$coefficients[3, 4]
-      if (p_valor >= 0.05) {
-        trendChangeCat[i] <- "Estável"
-      } else if (trendChange[i] > 0) {
-        trendChangeCat[i] <- "Aumentou"
-      } else {
-        trendChangeCat[i] <- "Diminuiu"
-      }
-    }
-
-    df[,j+1] <- as.factor(trendChangeCat)
-
-    # Renomeando o nome da coluna para a data de intervenção
-    names(df)[j+1] <- as.character(datas[j])
-  }
-
-  load("data/munic.RData")
-  munic <- munic %>%
-    dplyr::select("MUNICIPIO","RS","MACRO") %>%
-    dplyr::rename(municipio= MUNICIPIO, micro = RS, macro = MACRO)
-
-  # Adicionando micro, macro regiões
-  df <- df %>%
-    dplyr::left_join(munic, by = "municipio")
-}
-
-
-
-data_prep_geo_rs <- function(data_prep,
-                             data_primeira_intervencao = "2015-05-01"){
-
-  # Datas somente considerando o mês de janeiro
-  datas <- seq.Date(
-    from = as.Date(data_primeira_intervencao),
-    # from = as.Date(min(data_prep$data_variable)) + months(5),
-    to =   as.Date(max(data_prep$data_variable)) - months(1),
-    by = "1 month")
-
-  data_inicio_Ano <- as.numeric(format(as.Date(min(data_prep$data_variable)),format = "%Y"))
-  data_inicio_Mes <- as.numeric(format(as.Date(min(data_prep$data_variable)),format = "%m"))
-
-  micro <- c()
-  trendAntes <- c()
-  trendChange <- c()
-  trendChangeCat <- c()
-  micro <- c()
-  macro <- c()
-
-  df <- data.frame(micro = levels(data_prep$micro))
-  # 87, 80
-  n = length(datas) - 1
-  for (j in 1:n) {
-    message(sprintf("data_prep_geo_rs (Regionais) - Processando mês %d de %d...", j, n))
-    # i in 1:399
-    for (i in 1:length(levels(data_prep$micro))) {
-      # 1. Isolamento dos dados
-      micro[i] <- levels(data_prep$micro)[i]
-      dados <- data_prep[data_prep$micro == micro[i], ]
-
-      # 2. Conversao para Serie Temporal
-      serie <- return_ts(dados,data_variable , inicio = c(data_inicio_Ano, data_inicio_Mes))
-
-      modelo <- sinasc_modelo.ajustado(
-        dados = serie,
-        intervention1= datas[j],
-        intervention2 = NA
-      )
-
-      # 3. Tendencia Previa
-      trendAntes[i] = modelo$ResultingTrends[1, 1]
-
-      # 4. Mudanca de Tendencia
-      trendChange[i] = modelo$fit_lm$coefficients[3]
-
-      # 5. Reajuste para extrair o P-valor (significancia)
-      # O p-valor e extraido do modelo padrao (cravado em Marco de 2017).
-      p_valor <- summary(modelo$fit_lm)$coefficients[3,4]
-      if (p_valor >= 0.05) {
-        trendChangeCat[i] <- "Estável"
-      } else if (trendChange[i] > 0) {
-        trendChangeCat[i] <- "Aumentou"
-      } else {
-        trendChangeCat[i] <- "Diminuiu"
-      }
-    }
-
-    df[,j+1] <- as.factor(trendChangeCat)
-
-    # Renomeando o nome da coluna para a data de intervenção
-    names(df)[j+1] <- as.character(datas[j])
-
-  }
-
-  return(df)
-}
+munic_geo <- carregar_munic() %>% dplyr::select(municipio, micro, macro)
 
 # Para os municípios
-
-dados_map_sinasc <- data_prep_geo(dados_sinasc_intervencao)
-dados_map_sim_materno <- data_prep_geo(dados_sim_materno_intervention)
-dados_map_sim_neonatal <- data_prep_geo(dados_sim_neonatal_intervention)
-dados_map_sif_gestante <- data_prep_geo(dados_sif_gestante_intervention)
-dados_map_sif_congenita <- data_prep_geo(dados_sif_congenita_intervention)
-
+dados_map_sinasc <- data_prep_geo(dados_sinasc_intervencao, nivel = "municipio") %>%
+  dplyr::left_join(munic_geo, by = "municipio")
+dados_map_sim_materno <- data_prep_geo(dados_sim_materno_intervention, nivel = "municipio") %>%
+  dplyr::left_join(munic_geo, by = "municipio")
+dados_map_sim_neonatal <- data_prep_geo(dados_sim_neonatal_intervention, nivel = "municipio") %>%
+  dplyr::left_join(munic_geo, by = "municipio")
+dados_map_sif_gestante <- data_prep_geo(dados_sif_gestante_intervention, nivel = "municipio") %>%
+  dplyr::left_join(munic_geo, by = "municipio")
+dados_map_sif_congenita <- data_prep_geo(dados_sif_congenita_intervention, nivel = "municipio") %>%
+  dplyr::left_join(munic_geo, by = "municipio")
 
 usethis::use_data(dados_map_sinasc, overwrite = TRUE)
-
 usethis::use_data(dados_map_sim_materno, overwrite = TRUE)
-
 usethis::use_data(dados_map_sim_neonatal, overwrite = TRUE)
-
 usethis::use_data(dados_map_sif_gestante, overwrite = TRUE)
-
 usethis::use_data(dados_map_sif_congenita, overwrite = TRUE)
 
 
 # Para regionais de saúde
-dados_map_sinasc_rs <- data_prep_geo_rs(dados_sinasc_intervencao)
-names(dados_map_sinasc_rs)[1] <- c("NUMEROREGSAUDE")
-
-dados_map_sinasc_rs <- dados_map_sinasc_rs %>%
-  merge(dengueControl::pr_mun[,c("NUMEROREGSAUDE","nome")]) %>%
-  dplyr::rename("micro" = "NUMEROREGSAUDE", "municipio" = "nome")
-
-
-dados_map_sim_materno_rs <- data_prep_geo_rs(dados_sim_materno_intervention)
-names(dados_map_sim_materno_rs)[1] <- c("NUMEROREGSAUDE")
-
-dados_map_sim_materno_rs <-  dados_map_sim_materno_rs %>%
-  merge(dengueControl::pr_mun[,c("NUMEROREGSAUDE","nome")]) %>%
-  dplyr::rename("micro" = "NUMEROREGSAUDE", "municipio" = "nome")
-
-dados_map_sim_neonatal_rs <- data_prep_geo_rs(dados_sim_neonatal_intervention)
-names(dados_map_sim_neonatal_rs)[1] <- c("NUMEROREGSAUDE")
-
-dados_map_sim_neonatal_rs <- dados_map_sim_neonatal_rs %>%
-  merge(dengueControl::pr_mun[,c("NUMEROREGSAUDE","nome")]) %>%
-  dplyr::rename("micro" = "NUMEROREGSAUDE", "municipio" = "nome")
-
-dados_map_sif_gestante_rs <- data_prep_geo_rs(dados_sif_gestante_intervention)
-names(dados_map_sif_gestante_rs)[1] <- c("NUMEROREGSAUDE")
-
-dados_map_sif_gestante_rs <- dados_map_sif_gestante_rs %>%
-  merge(dengueControl::pr_mun[,c("NUMEROREGSAUDE","nome")]) %>%
-  dplyr::rename("micro" = "NUMEROREGSAUDE", "municipio" = "nome")
-
-dados_map_sif_congenita_rs  <- data_prep_geo_rs(dados_sif_congenita_intervention)
-names(dados_map_sif_congenita_rs)[1] <- c("NUMEROREGSAUDE")
-
-dados_map_sif_congenita_rs <- dados_map_sif_congenita_rs %>%
-  merge(dengueControl::pr_mun[,c("NUMEROREGSAUDE","nome")]) %>%
-  dplyr::rename("micro" = "NUMEROREGSAUDE", "municipio" = "nome")
-
+dados_map_sinasc_rs <- data_prep_geo(dados_sinasc_intervencao, nivel = "micro") %>%
+  juntar_regiao_saude()
+dados_map_sim_materno_rs <- data_prep_geo(dados_sim_materno_intervention, nivel = "micro") %>%
+  juntar_regiao_saude()
+dados_map_sim_neonatal_rs <- data_prep_geo(dados_sim_neonatal_intervention, nivel = "micro") %>%
+  juntar_regiao_saude()
+dados_map_sif_gestante_rs <- data_prep_geo(dados_sif_gestante_intervention, nivel = "micro") %>%
+  juntar_regiao_saude()
+dados_map_sif_congenita_rs <- data_prep_geo(dados_sif_congenita_intervention, nivel = "micro") %>%
+  juntar_regiao_saude()
 
 usethis::use_data(dados_map_sinasc_rs, overwrite = TRUE)
-
 usethis::use_data(dados_map_sim_materno_rs, overwrite = TRUE)
-
 usethis::use_data(dados_map_sim_neonatal_rs, overwrite = TRUE)
-
 usethis::use_data(dados_map_sif_gestante_rs, overwrite = TRUE)
-
 usethis::use_data(dados_map_sif_congenita_rs, overwrite = TRUE)

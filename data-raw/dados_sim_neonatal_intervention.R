@@ -20,36 +20,21 @@ dados_sim_neonatal_intervention <- rbind(sim_2015_2018, sim_2019_2022) %>%
                 estado_civil,sexo,raca_cor) %>%
   dplyr::mutate_at(c("idade"),as.numeric) %>%
   dplyr::mutate(
-    # Datas
-    data_categorica = ifelse(data_obito > "2020-03-20",'Depois','Antes'),
-
-    # Padronização de rótulos
-    tipo_morte_parto = forcats::fct_recode(tipo_morte_parto, "N.I."="Ignorado"),
-    morte_puerperio = forcats::fct_recode(morte_puerperio, "N.I."="Ignorado"),
-    escolaridade_mae = forcats::fct_recode(escolaridade_mae, "N.I."="Ignorado"),
-    estado_civil = forcats::fct_recode(estado_civil, "N.I."="Ignorado"),
-
-    # Textos
+    data_categorica = marcar_periodo_intervencao(data_obito),
     municipio_obito = tolower(municipio_obito),
-
-    # Agrupamento de Raça/Cor
-    raca_cor = forcats::fct_recode(
-      raca_cor,
-      "Branca" = "Branca",
-      "Não branca" = "Preta",
-      "Não branca" = "Amarela",
-      "Não branca" = "Indígena",
-      "Não branca" = "Parda",
-      "Não informado" = "N.I."
-    ),
-
-    # Classificação da Mortalidade
+    raca_cor = recodifica_raca_cor(raca_cor, incluir_nao_informado = TRUE),
     tipo_mortalidade = dplyr::case_when(
       tipo_idade == "N.I" ~ "fetal",
       tipo_idade == "Horas" | (tipo_idade == "Dias" & idade <= 6) ~ "neonatal_precoce",
       tipo_idade == "Dias" & idade >= 7 & idade <= 27             ~ "neonatal_tardia",
       TRUE  ~ "outra"
     )
+  ) %>%
+  padroniza_ignorado(c(
+    "tipo_morte_parto",
+    "morte_puerperio",
+    "escolaridade_mae",
+    "estado_civil")
   ) %>%
   dplyr::mutate_at(c("tipo_gestacao","tipo_parto","tipo_obito","tp_morte_ocorreu",
                      "tipo_morte_parto","causa_basica","local_ocorrencia",
@@ -65,29 +50,12 @@ dados_sim_neonatal_intervention <- rbind(sim_2015_2018, sim_2019_2022) %>%
 
 
 # Adicionando macro e  microregião ao dataset usando o dataset do SINASC
-
-
-geo_sinasc <- data.frame(micro = dados_sinasc$micro,
-                         macro = dados_sinasc$macro,
-                         municipio = dados_sinasc$municipio,
-                         municipio_obito = dados_sinasc$municipio_semacento) %>%
-  dplyr::mutate(municipio_obito = tolower(municipio_obito))
-
-munic_sim_neonatal <- data.frame(municipio_obito=dados_sim_neonatal_intervention$municipio_obito)
-
-rm(list=setdiff(ls(), c("dados_sim_neonatal_intervention","geo_sinasc","munic_sim_neonatal")))
-
-geo <- geo_sinasc %>% dplyr::semi_join(munic_sim_neonatal) %>%
-  dplyr::distinct()
-
-
-rm(list=setdiff(ls(), c("dados_sim_neonatal_intervention","geo")))
-
-dados_sim_neonatal_intervention <- dados_sim_neonatal_intervention %>%
-  dplyr::left_join(geo) %>%
-  dplyr::relocate(municipio_obito,micro,macro) %>%
-  dplyr::relocate(municipio,micro,macro) %>%
-  dplyr::select(-municipio_obito)
+dados_sim_neonatal_intervention <- juntar_geo_sinasc(
+  dados_sim_neonatal_intervention,
+  "municipio_obito",
+  dados_sinasc,
+  incluir_municipio_oficial = TRUE
+)
 
 
 usethis::use_data(dados_sim_neonatal_intervention, overwrite = TRUE)

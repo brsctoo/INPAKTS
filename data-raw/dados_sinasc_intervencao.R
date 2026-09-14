@@ -1,37 +1,8 @@
 ## Code to prepare `dados_sinasc_intervencao` dataset goes here
 
-require(magrittr, include.only = "%>%")
+munic <- carregar_munic()
 
-sinasc_2015 <- readr::read_delim(unz(description = "data/sinasc-2015-2019.zip",
-                                     filename = "sinasc-2015.csv"),
-                                 delim = ";")
-# locale = locale(encoding='UTF-8'))
-sinasc_2016 <- readr::read_delim(unz(description = "data/sinasc-2015-2019.zip",
-                                     filename = "sinasc-2016.csv"),
-                                 delim = ";")
-sinasc_2017 <- readr::read_delim(unz(description = "data/sinasc-2015-2019.zip",
-                                     filename = "sinasc-2017.csv"),
-                                 delim = ";")
-sinasc_2018 <- readr::read_delim(unz(description = "data/sinasc-2015-2019.zip",
-                                     filename = "sinasc-2018.csv"),
-                                 delim = ";")
-# sinasc_2019 <- readr::read_delim(unz(description = "data/sinasc-2015-2019.zip",
-#                                      filename = "sinasc-2019.csv"),
-#                                  delim = ";")
-# sinasc_2020_2021 <- readr::read_delim(unz(description = "data/sinasc-2020-2021.zip",
-#                                           filename = "sinasc-2020-2021.csv"),
-#                                       delim = ";")
-sinasc_2019_2022 <- readr::read_delim(unz(description = "data/SINASC-2019-2022.zip",
-                                          filename = "SINASC-2019-2022.csv"),
-                                      delim = ";")
-
-load("data/munic.RData")
-names(munic) <- c("ibge_estabelecimento","municipio","micro","macro","municipio_semacento","populacao")
-
-munic$ibge_estabelecimento <- as.numeric(munic$ibge_estabelecimento)
-
-
-dados_sinasc_intervencao <- rbind(sinasc_2015,sinasc_2016,sinasc_2017,sinasc_2018,sinasc_2019_2022) %>%
+dados_sinasc_intervencao <- carregar_sinasc_bruto() %>%
   dplyr::select(cnes_estabelecimento,ibge_estabelecimento,semanas_de_gestacao,tipo_parto,consulta_prenatal...18,
                 data_nascimento,parto_cesarea, semana_gestacao,cesarea_anterior_parto,mes_gestacao_prenatal,
                 sexo, idade, raça_cor_rn) %>%
@@ -39,7 +10,7 @@ dados_sinasc_intervencao <- rbind(sinasc_2015,sinasc_2016,sinasc_2017,sinasc_201
   tidyr::drop_na(ibge_estabelecimento) %>%
   # Mantendo apenas cidades do estado do PR (iniciando com 41):
   dplyr::filter(substr(ibge_estabelecimento,1,2) == "41") %>%
-  dplyr::mutate(data_categorica = ifelse(data_nascimento > "2020-03-20",'Depois','Antes')) %>%
+  dplyr::mutate(data_categorica = marcar_periodo_intervencao(data_nascimento)) %>%
   dplyr::left_join(munic,by = "ibge_estabelecimento") %>%
   dplyr::mutate_at(c("semanas_de_gestacao","tipo_parto","consulta_prenatal...18","parto_cesarea",
                       "cesarea_anterior_parto","macro","municipio","micro","sexo"),as.factor) %>%
@@ -63,51 +34,16 @@ dados_sinasc_intervencao <- rbind(sinasc_2015,sinasc_2016,sinasc_2017,sinasc_201
       "Ignorado" = "ignorado"
     ),
 
-    parto_cesarea1 = forcats::fct_recode(
-      parto_cesarea,
-      "0"="Nenhum",
-      "4000"= "Não informado"
-    ),
-
-    # Tratamento da variável - parto_cesarea
-    parto_cesarea1 = as.numeric(as.character(parto_cesarea1)),
-      parto_cesarea1 = dplyr::case_when(
-        parto_cesarea1 > 36 ~ "Ignorado",
-        parto_cesarea1 == 0 ~ "Nenhum",
-        parto_cesarea1 == 1 ~ "Um",
-        parto_cesarea1 == 2 ~ "Dois",
-        parto_cesarea1 > 2 ~ "Mais que dois",
-        TRUE ~ NA_character_
-    ),
+    recodifica_parto_cesarea(parto_cesarea)
 
     # Tratamento da variável - mes_gestacao_prenatal
-    mes_gestacao_prenatal1 = as.numeric(mes_gestacao_prenatal),
-    mes_gestacao_prenatal1 = dplyr::case_when(
-      is.na(mes_gestacao_prenatal1) ~ "Ignorado",
-      mes_gestacao_prenatal1 >= 1 & mes_gestacao_prenatal1 < 4 ~ "1º Trimestre",
-      mes_gestacao_prenatal1 >= 4 & mes_gestacao_prenatal1 < 7 ~ "2º Trimestre",
-      mes_gestacao_prenatal1 >= 7 & mes_gestacao_prenatal1 < 11 ~ "3º Trimestre"
-      TRUE ~ "Ignorado"
-    ),
+    recodifica_mes_gestacao_prenatal(mes_gestacao_prenatal)
 
     # Classificação por Idade
-    idade = dplyr::case_when(
-      idade >= 10 & idade < 19 ~ "Jovens: 10 a 18 anos",
-      idade >= 19 & idade < 31 ~ "Adultos Jovens: 19 a 30 anos",
-      idade >= 31 & idade <= 60 ~ "Adultos: 31 a 59 anos",
-      idade > 60 & idade < 90, "Idosos: acima de 60",
-      TRUE ~ NA_character_
-    ),
+    idade = classifica_faixa_etaria(idade, tipo = "jovem_adulto_idoso"),
 
     # Agrupamento por Raça/Cor
-    raca_cor = forcats::fct_recode(
-      raca_cor,
-      "Branca" = "Branca",
-      "Não branca" = "Preta",
-      "Não branca" = "Amarela",
-      "Não branca" = "Indígena",
-      "Não branca" = "Parda"
-    )
+    raca_cor = recodifica_raca_cor(raca_cor)
   ) %>%
   tidyr::drop_na(raca_cor) %>%
   dplyr::mutate_at(c("parto_cesarea1","mes_gestacao_prenatal1"),as.factor) %>%

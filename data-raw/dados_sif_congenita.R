@@ -6,11 +6,7 @@ sif_congenita <- foreign::read.dbf(file = "data/SIFICNET.DBF")%>%
                 DT_DIAG, SEM_DIAG, DT_NASC, CS_SEXO, CS_GESTANT, CS_RACA,
                 CS_ESCOL_N, EVO_DIAG_N, ANTSIFIL_N)
 
-load("data/munic.RData")
-names(munic) <- c("ibge_estabelecimento","municipio","micro","macro","municipio_semacento","populacao")
-
-munic$ibge_estabelecimento <- as.numeric(munic$ibge_estabelecimento)
-
+munic <- carregar_munic()
 
 dados_sif_congenita <- sif_congenita %>% tidyr::drop_na(ID_MUNICIP) %>%
   dplyr::mutate_at("ID_MUNICIP",as.character) %>%
@@ -19,7 +15,7 @@ dados_sif_congenita <- sif_congenita %>% tidyr::drop_na(ID_MUNICIP) %>%
   dplyr::filter(substr(ID_MUNICIP,1,2) == "41") %>%
   dplyr::rename(ibge_estabelecimento="ID_MUNICIP") %>%
   # dplyr::filter(DT_NOTIFIC >= "2017-01-01") %>%
-  dplyr::mutate(data_categorica = ifelse(DT_NOTIFIC > "2020-03-20",'Depois','Antes'),
+  dplyr::mutate(data_categorica = marcar_periodo_intervencao(DT_NOTIFIC),
                 data_variable = DT_NOTIFIC) %>%
   dplyr::left_join(munic,by = "ibge_estabelecimento") %>%
   dplyr::mutate_at(c("municipio","micro","macro","municipio_semacento","populacao"), as.factor) %>%
@@ -40,14 +36,7 @@ dados_sif_congenita <- sif_congenita %>% tidyr::drop_na(ID_MUNICIP) %>%
     ),
 
     # Recodifica Raça/Cor
-    CS_RACA = as.numeric(as.character(CS_RACA)),
-    CS_RACA = dplyr::case_when(
-        is.na(CS_RACA) ~ "Ignorado",
-        CS_RACA == 1 ~ "Branca",
-        CS_RACA > 1 & CS_RACA < 6  ~ "Não-branca",
-        CS_RACA == 9 ~ "Ignorado",
-        TRUE ~ NA_character_
-    ),
+    CS_RACA = recodifica_raca_dbf(CS_RACA),
 
     # Recodifica Evolução
     EVO_DIAG_N = dplyr::case_when(

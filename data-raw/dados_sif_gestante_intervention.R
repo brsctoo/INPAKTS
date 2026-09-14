@@ -6,11 +6,7 @@ sif_gestante <- foreign::read.dbf(file = "data/SIFGENET.DBF")%>%
                 DT_DIAG, SEM_DIAG, DT_NASC, CS_SEXO, CS_GESTANT, CS_RACA,
                 CS_ESCOL_N, TPEVIDENCI, TPTESTE1,TPCONFIRMA)
 
-load("data/munic.RData")
-names(munic) <- c("ibge_estabelecimento","municipio","micro","macro","municipio_semacento","populacao")
-
-munic$ibge_estabelecimento <- as.numeric(munic$ibge_estabelecimento)
-
+munic <- carregar_munic()
 
 dados_sif_gestante_intervention <- sif_gestante %>% tidyr::drop_na(ID_MUNICIP) %>%
   dplyr::mutate_at("ID_MUNICIP",as.character) %>%
@@ -28,14 +24,7 @@ dados_sif_gestante_intervention <- sif_gestante %>% tidyr::drop_na(ID_MUNICIP) %
   dplyr::mutate_at(c("CS_RACA", "TPEVIDENCI", "CS_ESCOL_N", "TPTESTE1", "TPCONFIRMA"), as.numeric) %>%
   dplyr::mutate(
     # Recodifica Raça/Cor
-    CS_RACA = as.numeric(as.character(CS_RACA)),
-    CS_RACA = dplyr::case_when(
-      is.na(CS_RACA) ~ "Ignorado",
-      CS_RACA == 1 ~ "Branca",
-      CS_RACA > 1 & CS_RACA < 6  ~ "Não-branca",
-      CS_RACA == 9 ~ "Ignorado",
-      TRUE ~ NA_character_
-    ),
+    CS_RACA = recodifica_raca_dbf(CS_RACA),
 
     # Calcula a idade da mãe em anos
     idade_mae = as.numeric(round(difftime(as.Date(DT_NOTIFIC),as.Date(DT_NASC), units = "days") / 365, 0)),
@@ -81,13 +70,7 @@ dados_sif_gestante_intervention <- sif_gestante %>% tidyr::drop_na(ID_MUNICIP) %
     ),
 
     # Categoriza a Idade da Mãe
-    idade = dplyr::case_when(
-      idade_mae >= 10 & idade_mae < 19 ~ "Jovens: 10 a 18 anos",
-      idade_mae >= 19 & idade_mae < 31 ~ "Adultos Jovens: 19 a 30 anos",
-      idade_mae >= 31 & idade_mae <= 60 ~ "Adultos: 31 a 59 anos",
-      idade_mae > 60  & idade_mae < 90 ~ "Idosos: acima de 60",
-      TRUE ~ NA_character_
-    ),
+    idade = classifica_faixa_etaria(idade_mae, tipo = "jovem_adulto_idoso"),
 
     # Criação da raca_cor renomeando categorias
     raca_cor = forcats::fct_recode (

@@ -6,11 +6,7 @@ sif_gestante <- foreign::read.dbf(file = "data/SIFGENET.DBF")%>%
                 DT_DIAG, SEM_DIAG, DT_NASC, CS_SEXO, CS_GESTANT, CS_RACA,
                 CS_ESCOL_N, TPEVIDENCI, TPTESTE1,TPCONFIRMA)
 
-load("data/munic.RData")
-names(munic) <- c("ibge_estabelecimento","municipio","micro","macro","municipio_semacento","populacao")
-
-munic$ibge_estabelecimento <- as.numeric(munic$ibge_estabelecimento)
-
+munic <- carregar_munic()
 
 dados_sif_gestante <- sif_gestante %>% tidyr::drop_na(ID_MUNICIP) %>%
   dplyr::mutate_at("ID_MUNICIP",as.character) %>%
@@ -19,7 +15,7 @@ dados_sif_gestante <- sif_gestante %>% tidyr::drop_na(ID_MUNICIP) %>%
   dplyr::filter(substr(ID_MUNICIP,1,2) == "41") %>%
   dplyr::rename(ibge_estabelecimento="ID_MUNICIP") %>%
   # dplyr::filter(DT_NOTIFIC >= "2017-01-01") %>%
-  dplyr::mutate(data_categorica = ifelse(DT_NOTIFIC > "2020-03-20",'Depois','Antes'),
+  dplyr::mutate(data_categorica = marcar_periodo_intervencao(DT_NOTIFIC),
                 data_variable = DT_NOTIFIC) %>%
   dplyr::left_join(munic,by = "ibge_estabelecimento") %>%
   dplyr::mutate_at(c("municipio","micro","macro","municipio_semacento","populacao"), as.factor) %>%
@@ -28,27 +24,13 @@ dados_sif_gestante <- sif_gestante %>% tidyr::drop_na(ID_MUNICIP) %>%
   dplyr::mutate_at(c("CS_RACA", "TPEVIDENCI", "CS_ESCOL_N", "TPTESTE1", "TPCONFIRMA"), as.numeric) %>%
   dplyr::mutate(
     # Recodifica Raça/Cor
-    CS_RACA = as.numeric(as.character(CS_RACA)),
-    CS_RACA = dplyr::case_when(
-      is.na(CS_RACA)             ~ "Ignorado",
-      CS_RACA == 1               ~ "Branca",
-      CS_RACA > 1 & CS_RACA < 6  ~ "Não-branca",
-      CS_RACA == 9               ~ "Ignorado",
-      TRUE                       ~ NA_character_
-    ),
+    CS_RACA = recodifica_raca_dbf(CS_RACA),
 
     # Calcula idade da mãe em anos
     idade_mae = as.numeric(round(difftime(as.Date(DT_NOTIFIC), as.Date(DT_NASC), units = "days") / 365, 0)),
 
     # Categoriza a Idade da Mãe
-    idade_mae1 = dplyr::case_when(
-      is.na(idade_mae) ~ "Ignorado",
-      idade_mae >= 10 & idade_mae <= 14 ~ "10-14",
-      idade_mae >= 15 & idade_mae <= 19 ~ "15-19",
-      idade_mae >= 20 & idade_mae <= 39 ~ "20-39",
-      idade_mae >= 40 & idade_mae <= 59 ~ "40-59",
-      TRUE ~ "Ignorado"
-    ),
+    idade_mae1 = classifica_faixa_etaria(idade_mae, tipo = "default"),
 
     # Recodifica Tipo de Evidência
     TPEVIDENCI = dplyr::case_when(

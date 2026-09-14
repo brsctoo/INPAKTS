@@ -1,36 +1,8 @@
 ## Code to prepare `dados_sinasc` dataset goes here
 
-sinasc_2015 <- readr::read_delim(unz(description = "data/sinasc-2015-2019.zip",
-                                     filename = "sinasc-2015.csv"),
-                                 delim = ";")
-# locale = locale(encoding='UTF-8'))
-sinasc_2016 <- readr::read_delim(unz(description = "data/sinasc-2015-2019.zip",
-                                     filename = "sinasc-2016.csv"),
-                                 delim = ";")
-sinasc_2017 <- readr::read_delim(unz(description = "data/sinasc-2015-2019.zip",
-                                     filename = "sinasc-2017.csv"),
-                                 delim = ";")
-sinasc_2018 <- readr::read_delim(unz(description = "data/sinasc-2015-2019.zip",
-                                     filename = "sinasc-2018.csv"),
-                                 delim = ";")
-# sinasc_2019 <- readr::read_delim(unz(description = "data/sinasc-2015-2019.zip",
-#                                      filename = "sinasc-2019.csv"),
-#                                  delim = ";")
-# sinasc_2020_2021 <- readr::read_delim(unz(description = "data/sinasc-2020-2021.zip",
-#                                           filename = "sinasc-2020-2021.csv"),
-#                                       delim = ";")
+munic <- carregar_munic()
 
-sinasc_2019_2022 <- readr::read_delim(unz(description = "data/SINASC-2019-2022.zip",
-                                          filename = "SINASC-2019-2022.csv"),
-                                      delim = ";")
-
-load("data/munic.RData")
-names(munic) <- c("ibge_estabelecimento","municipio","micro","macro","municipio_semacento","populacao")
-
-munic$ibge_estabelecimento <- as.numeric(munic$ibge_estabelecimento)
-
-
-dados_sinasc <- rbind(sinasc_2015,sinasc_2016,sinasc_2017,sinasc_2018,sinasc_2019_2022) %>%
+dados_sinasc <- carregar_sinasc_bruto() %>%
   dplyr::select(cnes_estabelecimento,ibge_estabelecimento,semanas_de_gestacao,tipo_parto,consulta_prenatal...18,
                 data_nascimento,parto_cesarea, semana_gestacao,cesarea_anterior_parto,mes_gestacao_prenatal) %>%
   # Retirando linhas com codigo NA:
@@ -38,7 +10,7 @@ dados_sinasc <- rbind(sinasc_2015,sinasc_2016,sinasc_2017,sinasc_2018,sinasc_201
   # Mantendo apenas cidades do estado do PR (iniciando com 41:
   dplyr::filter(substr(ibge_estabelecimento,1,2) == "41") %>%
   # dplyr::filter(data_nascimento >= "2017-01-01") %>%
-  dplyr::mutate(data_categorica = ifelse(data_nascimento > "2020-03-20",'Depois','Antes')) %>%
+  dplyr::mutate(data_categorica = marcar_periodo_intervencao(data_nascimento)) %>%
   dplyr::mutate(data_variable = data_nascimento) %>%
   dplyr::left_join(munic,by = "ibge_estabelecimento") %>%
   dplyr::mutate_at(c("semanas_de_gestacao","tipo_parto","consulta_prenatal...18","parto_cesarea",
@@ -69,32 +41,10 @@ dados_sinasc <- rbind(sinasc_2015,sinasc_2016,sinasc_2017,sinasc_2018,sinasc_201
       "Ignorado" = "ignorado"
     ),
 
-    parto_cesarea1 = forcats::fct_recode(
-      parto_cesarea,
-      "0"="Nenhum",
-      "4000"= "Não informado"
-    ),
-
-    # Tratamento de variável - parto_cesarea
-    parto_cesarea1 = as.numeric(as.character(parto_cesarea1)),
-    parto_cesarea1 = dplyr::case_when(
-      parto_cesarea1 > 36 ~ "Ignorado",
-      parto_cesarea1 == 0 ~ "Nenhum",
-      parto_cesarea1 == 1 ~ "Um",
-      parto_cesarea1 == 2 ~ "Dois",
-      parto_cesarea1 > 2 ~ "Mais que dois",
-      TRUE ~ NA_character_
-    ),
+    parto_cesarea1 = recodifica_parto_cesarea(parto_cesarea),
 
     # Tratamento de variável - mes_gestacao_prenatal
-    mes_gestacao_prenatal1 = as.numeric(mes_gestacao_prenatal),
-    mes_gestacao_prenatal1 = dplyr::case_when(
-      is.na(mes_gestacao_prenatal1) ~ "Ignorado",
-      mes_gestacao_prenatal1 >= 1 & mes_gestacao_prenatal1 < 4  ~ "1º Trimestre",
-      mes_gestacao_prenatal1 >= 4 & mes_gestacao_prenatal1 < 7  ~ "2º Trimestre",
-      mes_gestacao_prenatal1 >= 7 & mes_gestacao_prenatal1 < 11 ~ "3º Trimestre",
-      TRUE ~ "Ignorado"
-    ),
+    mes_gestacao_prenatal1 = recodifica_mes_gestacao_prenatal(mes_gestacao_prenatal),
 
     # Ordenação de níveis (Fatores)
     consulta_prenatal = forcats::fct_relevel(
