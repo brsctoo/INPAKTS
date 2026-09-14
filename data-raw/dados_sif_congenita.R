@@ -63,7 +63,7 @@ dados_sif_congenita <- sif_congenita %>% tidyr::drop_na(ID_MUNICIP) %>%
     CS_RACA = forcats::fct_relevel(CS_RACA, "Branca", "Não-branca", "Ignorado"),
     idade1 = forcats::fct_relevel(idade1, "< 7 dias", "7 - 27 dias", "28 dias - 1 ano", "> 1 ano"),
     EVO_DIAG_N = forcats::fct_relevel(EVO_DIAG_N, "Sífilis congênita recente", "Sífilis congênita tardia", "Natimorto ou aborto", "Ignorado"),
-    ANTSIFIL_N = forcats::fct_relevel(ANTSIFIL_N, "Durante pré-natal", "Durante parto/curetagem", "Pós parto", "Não realizado", "Ignorado")]
+    ANTSIFIL_N = forcats::fct_relevel(ANTSIFIL_N, "Durante pré-natal", "Durante parto/curetagem", "Pós parto", "Não realizado", "Ignorado")
   )%>%
   dplyr::mutate_at(c("CS_RACA","idade1","EVO_DIAG_N","ANTSIFIL_N"), as.factor)
 

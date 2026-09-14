@@ -18,7 +18,7 @@
 #' @noRd
 padroniza_ignorado <- function(dados, colunas) {
   dados %>%
-    dplyr::mutate(dplyr::across(dplyr::all_of(colunas), ~ forcats::fct_recode(as.factor(.), "Ignorado" = "N.I.")))
+    dplyr::mutate(dplyr::across(dplyr::all_of(colunas), ~ forcats::fct_recode(as.factor(.), "N.I." = "Ignorado")))
 }
 
 #' Carrega e padroniza a tabela de municípios do Paraná
@@ -88,8 +88,7 @@ recodifica_raca_dbf <- function(x) {
 #'
 #' @noRd
 recodifica_raca_cor <- function(x, incluir_nao_informado = FALSE) {
-  mapeamento <- forcats::fct_recode(
-    x,
+  mapeamento <- c(
     "Branca" = "Branca",
     "Não branca" = "Preta",
     "Não branca" = "Amarela",
