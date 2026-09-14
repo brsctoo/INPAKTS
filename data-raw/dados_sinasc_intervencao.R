@@ -34,10 +34,10 @@ dados_sinasc_intervencao <- carregar_sinasc_bruto() %>%
       "Ignorado" = "ignorado"
     ),
 
-    recodifica_parto_cesarea(parto_cesarea)
+    parto_cesarea1 = recodifica_parto_cesarea(parto_cesarea)
 
     # Tratamento da variável - mes_gestacao_prenatal
-    recodifica_mes_gestacao_prenatal(mes_gestacao_prenatal)
+    mes_gestacao_prenatal1 = recodifica_mes_gestacao_prenatal(mes_gestacao_prenatal)
 
     # Classificação por Idade
     idade = classifica_faixa_etaria(idade, tipo = "jovem_adulto_idoso"),
