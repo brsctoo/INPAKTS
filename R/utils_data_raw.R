@@ -1,4 +1,3 @@
-# ==============================================================================
 # utils_data_raw.R
 #
 # Funções internas de preparo dos dados, usadas pelos scripts de data-raw/.
@@ -8,8 +7,19 @@
 # de variáveis, junções geográficas e cálculo de tendência), evitando que a
 # mesma regra de negócio precise ser corrigida em vários arquivos ao mesmo
 # tempo.
-# ==============================================================================
 
+#' Padroniza valores "N.I." para "Ignorado" em colunas especificadas
+#'
+#' @param dados Data.frame a ser modificado
+#' @param colunas Vetor de strings com os nomes das colunas
+#'
+#' @return Data.frame modificado
+#'
+#' @noRd
+padroniza_ignorado <- function(dados, colunas) {
+  dados %>%
+    dplyr::mutate(dplyr::across(dplyr::all_of(colunas), ~ forcats::fct_recode(as.factor(.), "Ignorado" = "N.I.")))
+}
 
 #' Carrega e padroniza a tabela de municípios do Paraná
 #'
@@ -78,7 +88,7 @@ recodifica_raca_dbf <- function(x) {
 #'
 #' @noRd
 recodifica_raca_cor <- function(x, incluir_nao_informado = FALSE) {
-  forcats::fct_recode(
+  mapeamento <- forcats::fct_recode(
     x,
     "Branca" = "Branca",
     "Não branca" = "Preta",
@@ -144,7 +154,7 @@ classifica_faixa_etaria <- function(idade, tipo = c("default", "jovem_adulto_ido
 juntar_geo_sinasc <- function(
   dados,
   coluna_municipio,
-  dados_sinasc
+  dados_sinasc,
   incluir_municipio_oficial = FALSE
 ) {
   # Tabela de referência: um município por linha, com sua micro/macrorregião.
