@@ -35,7 +35,7 @@ mod_intervencao_sim_materno_ui <- function(id){
           column(2,
                  tableOutput((ns("info_modelo_ajustado")))),
           column(10,
-                 plotly::plotlyOutput(ns("plot_geral"))))),
+                 shinycssloaders::withSpinner(plotly::plotlyOutput(ns("plot_geral")))))),
       hr(),
       bs4Dash::bs4Card(
         title = textOutput(ns("info_user_idade")),#htmlOutput(ns("info_user")),
@@ -57,7 +57,7 @@ mod_intervencao_sim_materno_ui <- function(id){
                                          "Adultos: 31 a 59 anos")),
                  tableOutput((ns("info_modelo_ajustado_idade")))),
           column(10,
-                 plotly::plotlyOutput(ns("plot_idade"))))),
+                 shinycssloaders::withSpinner(plotly::plotlyOutput(ns("plot_idade")))))),
       hr(),
       bs4Dash::bs4Card(
         title = textOutput(ns("info_user_raca")),#htmlOutput(ns("info_user")),
@@ -77,7 +77,7 @@ mod_intervencao_sim_materno_ui <- function(id){
                              choices = levels(dados_sim_materno_intervention$raca_cor)[1:2]),
                  tableOutput((ns("info_modelo_ajustado_raca")))),
           column(10,
-                 plotly::plotlyOutput(ns("plot_raca")))))
+                 shinycssloaders::withSpinner(plotly::plotlyOutput(ns("plot_raca"))))))
     )
   )
 }

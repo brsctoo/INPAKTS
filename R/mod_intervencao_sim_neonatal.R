@@ -41,7 +41,7 @@ mod_intervencao_sim_neonatal_ui <- function(id){
           column(2,
                  tableOutput((ns("info_modelo_ajustado")))),
           column(10,
-                 plotly::plotlyOutput(ns("plot_geral"))))),
+                 shinycssloaders::withSpinner(plotly::plotlyOutput(ns("plot_geral")))))),
       hr(),
       bs4Dash::bs4Card(
         title = textOutput(ns("info_user_sexo")),#htmlOutput(ns("info_user")),
@@ -59,7 +59,7 @@ mod_intervencao_sim_neonatal_ui <- function(id){
                  selectInput(inputId = ns("sexo"), label = "Escolha o sexo", choices = c("Feminino","Masculino")),
                  tableOutput((ns("info_modelo_ajustado_sexo")))),
           column(10,
-                 plotly::plotlyOutput(ns("plot_sexo"))))),
+                 shinycssloaders::withSpinner(plotly::plotlyOutput(ns("plot_sexo")))))),
       hr(),
       bs4Dash::bs4Card(
         title = textOutput(ns("info_user_mortalidade")),#htmlOutput(ns("info_user")),
@@ -81,7 +81,7 @@ mod_intervencao_sim_neonatal_ui <- function(id){
                                          "Neonatal tardia" = "neonatal_tardia")),
                  tableOutput((ns("info_modelo_ajustado_tipo_mortalidade")))),
           column(10,
-                 plotly::plotlyOutput(ns("plot_idade"))))),
+                 shinycssloaders::withSpinner(plotly::plotlyOutput(ns("plot_idade")))))),
       hr(),
       bs4Dash::bs4Card(
         title = textOutput(ns("info_user_raca")),#htmlOutput(ns("info_user")),
@@ -101,7 +101,7 @@ mod_intervencao_sim_neonatal_ui <- function(id){
                              choices = levels(dados_sim_neonatal_intervention$raca_cor)[1:2]),
                  tableOutput((ns("info_modelo_ajustado_raca")))),
           column(10,
-                 plotly::plotlyOutput(ns("plot_raca")))))
+                 shinycssloaders::withSpinner(plotly::plotlyOutput(ns("plot_raca"))))))
     )
   )
 }

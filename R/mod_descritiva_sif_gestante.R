@@ -27,17 +27,17 @@ mod_descritiva_sif_gestante_ui <- function(id){
                       h3(strong(textOutput(ns("caption"))), align = "center"))),
       ## Criando layout onde gráficos serão exibido -------
       fluidRow(column(6,
-                      plotOutput(ns("raca"))),
+                      shinycssloaders::withSpinner(plotOutput(ns("raca")))),
                column(6,
-                      plotOutput(ns("idade")))),
+                      shinycssloaders::withSpinner(plotOutput(ns("idade"))))),
       fluidRow(column(6,
-                      plotOutput(ns("classificacao_clinica"))),
+                      shinycssloaders::withSpinner(plotOutput(ns("classificacao_clinica")))),
                column(6,
-                      plotOutput(ns("escolaridade")))),
+                      shinycssloaders::withSpinner(plotOutput(ns("escolaridade"))))),
       fluidRow(column(6,
-                      plotOutput(ns("non_treponemal"))),
+                      shinycssloaders::withSpinner(plotOutput(ns("non_treponemal")))),
                column(6,
-                      plotOutput(ns("treponemal"))))
+                      shinycssloaders::withSpinner(plotOutput(ns("treponemal")))))
     ) )
 }
 

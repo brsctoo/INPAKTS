@@ -67,9 +67,10 @@ mod_analise_geografica_ui <- function(id) {
                       ))),
 
       fluidRow(column(12,
-                      plotOutput(
-                        ns("mapa_sinasc"), height = 500
-                      ))),
+                      shinycssloaders::withSpinner(
+                        plotOutput(ns("mapa_sinasc"), height = 500)
+                      )
+      )),
 
       fluidRow(column(12,
                       h3(
@@ -78,9 +79,10 @@ mod_analise_geografica_ui <- function(id) {
                         ))), align = "center"
                       ))),
       fluidRow(column(12,
-                      plotOutput(
-                        ns("mapa_sim_neonatal"), height = 500
-                      ))),
+                      shinycssloaders::withSpinner(
+                        plotOutput(ns("mapa_sim_neonatal"), height = 500)
+                      )
+      )),
 
       fluidRow(column(12,
                       h3(
@@ -89,9 +91,10 @@ mod_analise_geografica_ui <- function(id) {
                         ))), align = "center"
                       ))),
       fluidRow(column(12,
-                      plotOutput(
-                        ns("mapa_sim_materno"), height = 500
-                      ))),
+                    shinycssloaders::withSpinner(
+                      plotOutput(ns("mapa_sim_materno"), height = 500)
+                    )
+      )),
       fluidRow(column(12,
                       h3(
                         strong(textOutput(ns(
@@ -99,9 +102,10 @@ mod_analise_geografica_ui <- function(id) {
                         ))), align = "center"
                       ))),
       fluidRow(column(12,
-                      plotOutput(
-                        ns("mapa_sif_gestante"), height = 500
-                      ))),
+                    shinycssloaders::withSpinner(
+                      plotOutput(ns("mapa_sif_gestante"), height = 500)
+                    )
+      )),
       fluidRow(column(12,
                       h3(
                         strong(
@@ -109,9 +113,10 @@ mod_analise_geografica_ui <- function(id) {
                         align = "center"
                       ))),
       fluidRow(column(12,
-                      plotOutput(
-                        ns("mapa_sif_congenita"), height = 500
-                      ))),
+                        shinycssloaders::withSpinner(
+                          plotOutput(ns("mapa_sif_congenita"), height = 500)
+                        )
+      )),
     )
   )
 }
@@ -227,6 +232,7 @@ mod_analise_geografica_server <- function(id, opcoes_usuario) {
 
 
     mapa_sinasc <- eventReactive(input$gerar_graficos, {
+      req(input$data_selecionada)
       if(input$radio == "RS"){
         RSmapOrd(
           varToPlot =  dados_map_sinasc[,as.character(input$data_selecionada)],
@@ -280,6 +286,7 @@ mod_analise_geografica_server <- function(id, opcoes_usuario) {
 
 
     mapa_sim_neonatal <- eventReactive(input$gerar_graficos, {
+      req(input$data_selecionada)
       if(input$radio == "RS"){
         #Plota o mapa da Regional de Saúde
         RSmapOrd(
@@ -332,6 +339,7 @@ mod_analise_geografica_server <- function(id, opcoes_usuario) {
     output$titulo_sim_materno <- renderText(titulo_sim_materno())
 
     mapa_sim_materno <- eventReactive(input$gerar_graficos, {
+      req(input$data_selecionada)
       if(input$radio == "RS"){
         #Plota o mapa da Regional de Saúde
         RSmapOrd(
@@ -384,6 +392,7 @@ mod_analise_geografica_server <- function(id, opcoes_usuario) {
     output$titulo_sif_gestante <- renderText(titulo_sif_gestante())
 
     mapa_sif_gestante <- eventReactive(input$gerar_graficos, {
+      req(input$data_selecionada)
       if(input$radio == "RS"){
         #Plota o mapa da Regional de Saúde
         RSmapOrd(

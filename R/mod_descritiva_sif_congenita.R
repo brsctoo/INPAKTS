@@ -27,13 +27,13 @@ mod_descritiva_sif_congenita_ui <- function(id){
                       h3(strong(textOutput(ns("caption"))), align = "center"))),
       # Criando layout onde gráficos serão exibido -------
       fluidRow(column(6,
-                      plotOutput(ns("idade"))),
+                      shinycssloaders::withSpinner(plotOutput(ns("idade")))),
                column(6,
-                      plotOutput(ns("raca")))),
+                      shinycssloaders::withSpinner(plotOutput(ns("raca"))))),
       fluidRow(column(6,
-                      plotOutput(ns("caracteristicas_clinicas"))),
+                      shinycssloaders::withSpinner(plotOutput(ns("caracteristicas_clinicas")))),
                column(6,
-                      plotOutput(ns("diagnostico"))))
+                      shinycssloaders::withSpinner(plotOutput(ns("diagnostico")))))
       # fluidRow(column(6,
       #                 plotOutput(ns("non_treponemal"))),
       #          column(6,

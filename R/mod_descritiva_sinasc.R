@@ -28,17 +28,17 @@ mod_descritiva_sinasc_ui <- function(id){
                       h3(strong(textOutput(ns("caption"))), align = "center"))),
       ## Criando layout onde gráficos serão exibido -------
       fluidRow(column(6,
-                      plotOutput(ns("pre_natal"))),
+                      shinycssloaders::withSpinner(plotOutput(ns("pre_natal")))),
                column(6,
-                      plotOutput(ns("cesarias")))),
+                      shinycssloaders::withSpinner(plotOutput(ns("cesarias"))))),
       fluidRow(column(6,
-                      plotOutput(ns("trimestre_gestacao"))),
+                      shinycssloaders::withSpinner(plotOutput(ns("trimestre_gestacao")))),
                column(6,
-                      plotOutput(ns("tipo_parto")))),
+                      shinycssloaders::withSpinner(plotOutput(ns("tipo_parto"))))),
       fluidRow(column(6,
-                      plotOutput(ns("ocorrencia_cesarea"))),
+                      shinycssloaders::withSpinner(plotOutput(ns("ocorrencia_cesarea")))),
                column(6,
-                      plotOutput(ns("semana_gestacional"))))
+                      shinycssloaders::withSpinner(plotOutput(ns("semana_gestacional")))))
     ) )
 }
 

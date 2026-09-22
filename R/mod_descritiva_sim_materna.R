@@ -40,19 +40,19 @@ mod_descritiva_sim_materna_ui <- function(id){
       #        ))),
       ## Criando layout onde gráficos serão exibido -------
       fluidRow(column(6,
-                      plotOutput(ns("morte_puerperio"))),
+                      shinycssloaders::withSpinner(plotOutput(ns("morte_puerperio")))),
                column(6,
-                      plotOutput(ns("local_ocorrencia")))),
+                      shinycssloaders::withSpinner(plotOutput(ns("local_ocorrencia"))))),
       fluidRow(column(6,
-                      plotOutput(ns("escolaridade"))),
+                      shinycssloaders::withSpinner(plotOutput(ns("escolaridade")))),
                column(6,
-                      plotOutput(ns("raca_cor")))),
+                      shinycssloaders::withSpinner(plotOutput(ns("raca_cor"))))),
       fluidRow(column(6,
-                      plotOutput(ns("estado_civil"))),
+                      shinycssloaders::withSpinner(plotOutput(ns("estado_civil")))),
                column(6,
-                      plotOutput(ns("morte_mulher")))),
+                      shinycssloaders::withSpinner(plotOutput(ns("morte_mulher"))))),
       fluidRow(column(12,
-                      plotOutput(ns("momento_obito"))))
+                      shinycssloaders::withSpinner(plotOutput(ns("momento_obito")))))
     )
   )
 }

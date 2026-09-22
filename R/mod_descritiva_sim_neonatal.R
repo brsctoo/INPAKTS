@@ -27,19 +27,19 @@ mod_descritiva_sim_neonatal_ui <- function(id){
                       h3(strong(textOutput(ns("caption"))), align = "center"))),
       ## Criando layout onde gráficos serão exibido -------
       fluidRow(column(6,
-                      plotOutput(ns("duracao_gestacao"))),
+                      shinycssloaders::withSpinner(plotOutput(ns("duracao_gestacao")))),
                column(6,
-                      plotOutput(ns("tipo_parto")))),
+                      shinycssloaders::withSpinner(plotOutput(ns("tipo_parto"))))),
       fluidRow(column(6,
-                      plotOutput(ns("durante_parto"))),
+                      shinycssloaders::withSpinner(plotOutput(ns("durante_parto")))),
                column(6,
-                      plotOutput(ns("tipo_obito")))),
+                      shinycssloaders::withSpinner(plotOutput(ns("tipo_obito"))))),
       fluidRow(column(6,
-                      plotOutput(ns("local_ocorrencia"))),
+                      shinycssloaders::withSpinner(plotOutput(ns("local_ocorrencia")))),
                column(6,
-                      plotOutput(ns("escolaridade_mae")))),
+                      shinycssloaders::withSpinner(plotOutput(ns("escolaridade_mae"))))),
       fluidRow(column(12,
-                      plotOutput(ns("raca_cor"))))
+                      shinycssloaders::withSpinner(plotOutput(ns("raca_cor")))))
     )
   )
 }

@@ -50,33 +50,27 @@ RSmapOrd <- function(
   # --------------------------------------------------------------------------
 
   # Junta os dados (Aumentou/Diminuiu) com a base de municípios para obter os códigos do IBGE
-  data0= dplyr::full_join(
-    data.frame(MUNICIPIO=mun,Freq = varToPlot),
-    dengueControl::munic
+  data0 <- dplyr::left_join(
+    data.frame(MUNICIPIO = mun, Freq = varToPlot),
+    dengueControl::munic,
+    by = "MUNICIPIO"
   )
 
    # Filtra apenas a coluna de interesse e o código do IBGE para o mapa
   data1=data0 %>% dplyr::rename(codigo_ibg = ID_MUNICIP) %>%
     dplyr::select(Freq,codigo_ibg)
 
-  # Cruza os códigos do IBGE com o shapefile
-  mapa1=sp::merge(dengueControl::pr_mun,data1,by="codigo_ibg")
-
   # --------------------------------------------------------------------------
-  # 2. CONVERSÃO E FILTRO DE REGIÃO
+  # 2. CONVERSÃO
   # --------------------------------------------------------------------------
 
-  # Extrai as coordenadas para uso no mapa
-  mapa1$lon=sp::coordinates(mapa1)[,1]
-  mapa1$lat=sp::coordinates(mapa1)[,2]
+  mapa_base_sf <- sf::st_as_sf(dengueControl::pr_mun)
+  mapa1 <- dplyr::left_join(mapa_base_sf, data1, by = "codigo_ibg")
 
   # Cria o texto interativo que apareceria ao passar o mouse
   mapa1$legenda=paste(
     mapa1$nome,"<br>","Cluster:",mapa1$Freq
   )
-
-  # Converte o objeto 'sp' (antigo) para 'sf'
-  mapa1 <- sf::st_as_sf(mapa1)
 
   # Filtra o mapa para exibir apenas os polígonos pertencentes à Regional de Saúde (RS) escolhida
   mapa2 <- mapa1[as.character(mapa1$NUMEROREGSAUDE)==RS,]
@@ -180,33 +174,27 @@ UFmapOrd <- function(
   # --------------------------------------------------------------------------
 
   # Junta os dados categóricos com a base de municípios para obter os códigos do IBGE
-  data0= dplyr::full_join(
-    data.frame(MUNICIPIO=mun,Freq = varToPlot),
-    dengueControl::munic
+  data0 <- dplyr::left_join(
+    data.frame(MUNICIPIO = mun, Freq = varToPlot),
+    dengueControl::munic,
+    by = "MUNICIPIO"
   )
 
   # Filtra apenas a coluna de interesse e o código do IBGE para o mapa
   data1=data0 %>% dplyr::rename(codigo_ibg = ID_MUNICIP) %>%
     dplyr::select(Freq,codigo_ibg)
 
-  # Cruza os códigos do IBGE com o shapefile do Paraná
-  mapa1=sp::merge(dengueControl::pr_mun,data1,by="codigo_ibg")
-
   # --------------------------------------------------------------------------
   # 2. CONVERSÃO
   # --------------------------------------------------------------------------
 
-  # Extrai as coordenadas para uso no mapa
-  mapa1$lon=sp::coordinates(mapa1)[,1]
-  mapa1$lat=sp::coordinates(mapa1)[,2]
+  mapa_base_sf <- sf::st_as_sf(dengueControl::pr_mun)
+  mapa2 <- dplyr::left_join(mapa_base_sf, data1, by = "codigo_ibg")
 
   # Cria o texto interativo da legenda para a tooltip
-  mapa1$legenda=paste(
-    mapa1$nome,"<br>", "Cluster:",mapa1$Freq
+  mapa2$legenda=paste(
+    mapa2$nome,"<br>", "Cluster:",mapa2$Freq
   )
-
-  # Converte para formato Simple Features (sf) necessário para o geom_sf
-  mapa2 <- sf::st_as_sf(mapa1)
 
   # --------------------------------------------------------------------------
   # 3. RENDERIZAÇÃO DO MAPA
