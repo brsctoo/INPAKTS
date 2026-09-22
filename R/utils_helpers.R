@@ -54,13 +54,11 @@ return_ts <-  function(data_prep,date_var,inicio=c(ano,sem),tipo="mensal") {
     #   summarize(n = n())
     #dados_st <- ts(as.ts(st$n), frequency = 12, start=c(inicio))
     st1 <- data_prep %>%
-      mutate(MES = lubridate::month({{date_var}})) %>%
-      mutate(ANO = lubridate::year({{date_var}})) %>%
-      mutate(DATA = ifelse(MES < 10,
-                           paste0(ANO,"-0",MES,"-01"),
-                           paste0(ANO,"-",MES,"-01"))) %>%
-      mutate_at("DATA",as.Date) %>%
-      group_by(DATA) %>%
+      mutate(
+        MES = lubridate::month({{date_var}}),
+        ANO = lubridate::year({{date_var}}),
+        DATA = as.Date(lubridate::floor_date({{date_var}}, "month"))
+      ) %>% group_by(DATA) %>%
       summarize(n = n())
 
     st <- data.frame(DATA=seq.Date(from = as.Date(min(dados_sinasc_intervencao$data_variable)),
@@ -336,4 +334,3 @@ titulo_box <- function(data1,data2,nivel_geografico_nome,escolha_usuario,texto){
       "-",escolha_usuario,
       ". Data da intervenção 1:", format(data1,"%b/%Y"),
       ". Data da intervenção 2:", format(data2,"%b/%Y"))))}
-
