@@ -8,7 +8,7 @@
 # mesma regra de negócio precise ser corrigida em vários arquivos ao mesmo
 # tempo.
 
-#' Padroniza valores "N.I." para "Ignorado" em colunas especificadas
+#' Padroniza valores "N.I." para "Ignorado"
 #'
 #' @param dados Data.frame a ser modificado
 #' @param colunas Vetor de strings com os nomes das colunas
@@ -252,19 +252,15 @@ recodifica_mes_gestacao_prenatal <- function(x) {
 }
 
 
-#' Calcula a tendência mensal de um indicador por município ou regional
+#' Tendência mensal por município ou regional de saúde
 #'
-#' @param data_prep Data.frame de entrada, já filtrado e tratado, contendo
-#' as colunas `data_variable` (data do evento) e a coluna de agrupamento
-#' indicada em `nivel` (deve ser um fator).
-#' @param nivel Nível geográfico de agrupamento: `"municipio"` ou `"micro"`
-#' (regional de saúde).
-#' @param data_primeira_intervencao Data (string `"YYYY-MM-DD"`) do primeiro
-#' mês a ser testado como possível ponto de intervenção.
+#' @param data_prep Data.frame já tratado, com `data_variable` (data do
+#'   evento) e a coluna indicada em `nivel`, que precisa ser fator.
+#' @param nivel `"municipio"` ou `"micro"` (regional de saúde).
+#' @param data_primeira_intervencao Primeiro mês testado como ponto de
+#'   intervenção, no formato `"YYYY-MM-DD"`.
 #'
-#' @return Um data.frame com uma linha por grupo (município ou regional) e
-#' uma coluna por mês testado, contendo a categoria de tendência
-#' ("Aumentou"/"Diminuiu"/"Estável") daquele grupo naquele mês.
+#' @return Data.frame com uma linha por grupo e uma coluna por mês testado.
 #'
 #' @noRd
 data_prep_geo <- function(
@@ -281,7 +277,6 @@ data_prep_geo <- function(
     by   = "1 month"
   )
 
-  # O último mês da sequência não é testado
   n <- length(datas) - 1
 
   data_inicio_Ano <- as.numeric(format(as.Date(min(data_prep$data_variable)), format = "%Y"))
@@ -289,47 +284,55 @@ data_prep_geo <- function(
 
   grupos <- levels(data_prep[[nivel]])
 
-  # Separa os dados por grupo (município ou regional)
+
   dados_por_grupo <- split(data_prep, data_prep[[nivel]])
+
+  # Uma série mensal por grupo (não depende do mês testado)
+  series_list <- lapply(
+    dados_por_grupo,
+    function(dados) {
+      return_ts(dados, data_variable, inicio = c(data_inicio_Ano, data_inicio_Mes))
+    }
+  )
 
   # Data.frame de resultado
   df <- data.frame(grupos, stringsAsFactors = FALSE)
   names(df)[1] <- nivel
 
-  trendAntes     <- vector("numeric", length(grupos))
-  trendChange    <- vector("numeric", length(grupos))
+  trendAntes <- vector("numeric", length(grupos))
+  trendChange <- vector("numeric", length(grupos))
   trendChangeCat <- vector("character", length(grupos))
 
   for (j in 1:n) {
-    message(sprintf("data_prep_geo (%s) - Processando mês %d de %d...", nivel, j, n))
+    tictoc::tic(sprintf("data_prep_geo (%s) - Processando mês %d de %d", nivel, j, n))
 
     for (i in seq_along(grupos)) {
-      # 1. Isolamento dos dados do grupo
-      dados <- dados_por_grupo[[i]]
 
-      # 2. Conversão para série temporal mensal
-      serie <- return_ts(dados, data_variable, inicio = c(data_inicio_Ano, data_inicio_Mes))
+      serie <- series_list[[i]]
 
-      # 3. Ajuste do modelo de intervenção com ponto de quebra no mês j
+      # 1. Ajuste do modelo de intervenção com ponto de quebra no mês j
       modelo <- sinasc_modelo.ajustado(
         dados = serie,
         intervention1 = datas[j],
         intervention2 = NA
       )
 
-      # 4. Tendência prévia (antes da intervenção)
+      # 2. Tendência prévia
       trendAntes[i] <- modelo$ResultingTrends[1, 1]
 
-      # 5. Mudança de tendência (coeficiente da interação com o ponto de quebra)
+      # 3. Mudança de tendência
       trendChange[i] <- modelo$fit_lm$coefficients[3]
 
-      # 6. P-valor da mudança de tendência, pra decidir se ela é significativa
+      # 4. P-valor da mudança de tendência, pra decidir se ela é significativa
       p_valor <- summary(modelo$fit_lm)$coefficients[3, 4]
 
+      # NA quando não dá pra classificar
       trendChangeCat[i] <- dplyr::case_when(
-        p_valor >= 0.05     ~ "Estável",
-        trendChange[i] > 0  ~ "Aumentou",
-        TRUE                ~ "Diminuiu"
+        is.na(p_valor)         ~ NA_character_,
+        p_valor >= 0.05        ~ "Estável",
+        is.na(trendChange[i])  ~ NA_character_,
+        trendChange[i] > 0     ~ "Aumentou",
+        TRUE                   ~ "Diminuiu"
       )
     }
 
@@ -337,6 +340,8 @@ data_prep_geo <- function(
     # nomeada com a própria data do ponto de intervenção.
     df[, j + 1] <- as.factor(trendChangeCat)
     names(df)[j + 1] <- as.character(datas[j])
+
+    tictoc::toc()
   }
 
   return(df)

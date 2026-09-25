@@ -1,5 +1,6 @@
 ## Code to prepare `dados_map` dataset goes here
 
+tictoc::tic("Processamento dos Mapas")
 munic_geo <- carregar_munic() %>% dplyr::select(municipio, micro, macro)
 
 # Para os municípios
@@ -38,3 +39,5 @@ usethis::use_data(dados_map_sim_materno_rs, overwrite = TRUE)
 usethis::use_data(dados_map_sim_neonatal_rs, overwrite = TRUE)
 usethis::use_data(dados_map_sif_gestante_rs, overwrite = TRUE)
 usethis::use_data(dados_map_sif_congenita_rs, overwrite = TRUE)
+
+tictoc::toc()
