@@ -199,9 +199,9 @@ mod_intervencao_sim_materno_server <- function(id, opcoes_usuario){
 
     # filtrando os dados de acordo com as opções do usuário
     dataCategorica <- eventReactive(input$gerar_graficos, {
-      dados_sim_materno_intervention %>%
-        data_prep(nivel_geografico = opcoes_usuario$nivel_geografico,
-                  local=opcoes_usuario$escolha_usuario)
+      ts_categorias("SIM_Materno",
+                    nivel = opcoes_usuario$nivel_geografico,
+                    local = opcoes_usuario$escolha_usuario)
     })
 
     # Série temporal para dados da mortalidade materna
@@ -210,22 +210,16 @@ mod_intervencao_sim_materno_server <- function(id, opcoes_usuario){
       #   # Se nrow(dataCategorica()) == 0, então  data_sim_materno() não será atualizado
       #   need(nrow(dataCategorica()) > 0, FALSE)
       #)
-      dataCategorica() %>%
-        return_ts(data_variable,inicio = c(2015,1), tipo = "mensal")
-    })
-
-    # filtrando os dados de acordo com as opções do usuário
-    dataCategorica_sinasc <- eventReactive(input$gerar_graficos, {
-
-      dados_sinasc_intervencao %>%
-        data_prep(nivel_geografico = opcoes_usuario$nivel_geografico,
-                  local=opcoes_usuario$escolha_usuario)
+      serie_ts("SIM_Materno",
+               nivel = opcoes_usuario$nivel_geografico,
+               local = opcoes_usuario$escolha_usuario)
     })
 
     # Série temporal com dados do SINASC (nascidos vivos)
     data_sinasc <- eventReactive(input$gerar_graficos, {
-      dataCategorica_sinasc() %>%
-        return_ts(data_variable,inicio = c(2015,1), tipo = "mensal")
+      serie_ts("SINASC",
+               nivel = opcoes_usuario$nivel_geografico,
+               local = opcoes_usuario$escolha_usuario)
     })
 
 
@@ -367,8 +361,8 @@ mod_intervencao_sim_materno_server <- function(id, opcoes_usuario){
       req(input$gerar_resultado_idade, opcoes_usuario$date_intervention[1])
 
       dataCategorica() %>%
-        dplyr::filter(idade==input$idade) %>%
-        return_ts(data_variable,inicio = c(2015,1), tipo = "mensal") %>%
+        dplyr::filter(dimensao == "idade", categoria == input$idade) %>%
+        serie_meses() %>%
         tabela_intervencao(opcoes_usuario$date_intervention[1],
                            opcoes_usuario$date_intervention[2],
                            dados_sinasc = data_sinasc())})
@@ -380,12 +374,9 @@ mod_intervencao_sim_materno_server <- function(id, opcoes_usuario){
     # Quantidade de não informado por raca de  acordo com opcoes selecionadas por usuário
     na_raca <- eventReactive(input$gerar_resultado_raca, {
 
-      denominador = dataCategorica() %>%
-        nrow()
+      denominador = total_casos_cat(dataCategorica(), "raca")
 
-      numerador = dataCategorica() %>%
-        dplyr::filter(raca_cor == "N.I.") %>%
-        nrow()
+      numerador = total_casos_cat(dataCategorica(), "raca", "N.I.")
 
       round((numerador / denominador)*100,2)
 
@@ -396,8 +387,8 @@ mod_intervencao_sim_materno_server <- function(id, opcoes_usuario){
       req(input$gerar_resultado_raca,opcoes_usuario$date_intervention[1])
 
       dataCategorica() %>%
-        dplyr::filter(raca_cor == input$raca) %>%
-        return_ts(data_variable, inicio = c(2015,1), tipo = "mensal") %>%
+        dplyr::filter(dimensao == "raca", categoria == input$raca) %>%
+        serie_meses() %>%
         tabela_intervencao(opcoes_usuario$date_intervention[1],
                            opcoes_usuario$date_intervention[2],
                            na = na_raca(),

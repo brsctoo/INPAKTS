@@ -163,15 +163,16 @@ mod_intervencao_sif_congenita_server <- function(id, opcoes_usuario){
 
     # filtrando os dados de acordo com as opções do usuário
     dataCategorica <- eventReactive(input$gerar_graficos, {
-      dados_sif_congenita_intervention %>%
-        data_prep(nivel_geografico = opcoes_usuario$nivel_geografico,
-                  local=opcoes_usuario$escolha_usuario)
+      ts_categorias("SIF_Congenita",
+                    nivel = opcoes_usuario$nivel_geografico,
+                    local = opcoes_usuario$escolha_usuario)
     })
 
     # Série temporal altera-se de acordo com as opções selecionadas pelo user e após clicar em gerar gráfico
     data <- eventReactive(input$gerar_graficos, {
-      dataCategorica() %>%
-        return_ts(data_variable,inicio = c(2015,1), tipo = "mensal")
+      serie_ts("SIF_Congenita",
+               nivel = opcoes_usuario$nivel_geografico,
+               local = opcoes_usuario$escolha_usuario)
     })
 
 
@@ -267,8 +268,8 @@ mod_intervencao_sif_congenita_server <- function(id, opcoes_usuario){
     output$info_modelo_ajustado_idade <- renderText({
       req(input$gerar_resultado_idade, opcoes_usuario$date_intervention[1])
       dataCategorica() %>%
-        dplyr::filter(idade==input$idade) %>%
-        return_ts(data_variable,inicio = c(2015,1), tipo = "mensal") %>%
+        dplyr::filter(dimensao == "idade", categoria == input$idade) %>%
+        serie_meses() %>%
         tabela_intervencao( opcoes_usuario$date_intervention[1], opcoes_usuario$date_intervention[2])})
 
 
@@ -277,12 +278,9 @@ mod_intervencao_sif_congenita_server <- function(id, opcoes_usuario){
     # Quantidade de não informado por raca de  acordo com opcoes selecionadas por usuário
     na_raca <- eventReactive(input$gerar_resultado_raca, {
 
-      denominador = dataCategorica() %>%
-        nrow()
+      denominador = total_casos_cat(dataCategorica(), "raca")
 
-      numerador = dataCategorica() %>%
-        dplyr::filter(raca_cor == "Não informado") %>%
-        nrow()
+      numerador = total_casos_cat(dataCategorica(), "raca", "Não informado")
 
       round((numerador / denominador)*100,2)
 
@@ -291,8 +289,8 @@ mod_intervencao_sif_congenita_server <- function(id, opcoes_usuario){
     output$info_modelo_ajustado_raca <- renderText({
       req(input$gerar_resultado_raca, opcoes_usuario$date_intervention[1])
       dataCategorica() %>%
-        dplyr::filter(raca_cor == input$raca) %>%
-        return_ts(data_variable, inicio = c(2015,1), tipo = "mensal") %>%
+        dplyr::filter(dimensao == "raca", categoria == input$raca) %>%
+        serie_meses() %>%
         tabela_intervencao( opcoes_usuario$date_intervention[1],
                             opcoes_usuario$date_intervention[2],
                             na = na_raca())})

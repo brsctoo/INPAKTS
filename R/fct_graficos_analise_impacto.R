@@ -369,13 +369,13 @@ grafico_analise_impacto_sexo <- function(dados,
   # }
 
   masculino_st <- dados %>%
-    dplyr::filter(sexo == "Masculino")
+    dplyr::filter(dimensao == "sexo", categoria == "Masculino")
 
   feminino_st <- dados %>%
-    dplyr::filter(sexo == "Feminino")
+    dplyr::filter(dimensao == "sexo", categoria == "Feminino")
 
   #Se não há observações para no mínimo um dos sexo, então plota gráfico vazio
-  if(nrow(masculino_st) <= min_observacoes |  nrow(feminino_st) <= min_observacoes ){
+  if(sum(masculino_st$total_casos) <= min_observacoes |  sum(feminino_st$total_casos) <= min_observacoes ){
     return(invisible())
     #Retorna gráfico tipo plotly vazio
     #return(empty_plot())
@@ -383,10 +383,10 @@ grafico_analise_impacto_sexo <- function(dados,
 
   #Criando vetores numéricos para cada um dos sexos:
   masculino_st <- masculino_st %>%
-    return_ts(data_variable,inicio = c(2015,1), tipo = "mensal")
+    serie_meses()
 
   feminino_st <- feminino_st %>%
-    return_ts(data_variable,inicio = c(2015,1), tipo = "mensal")
+    serie_meses()
 
 
 
@@ -784,27 +784,27 @@ grafico_analise_impacto_idade <- function(dados,
   # min_observacoes (numero) = quantidade mínima de observações em cada série
 
   #Se o vetor numérico dados não tiver informação, então plota gráfico vazio
-  if(nrow(dados) <=  min_observacoes ){
+  if(total_casos_cat(dados, "idade") <=  min_observacoes ){
     return(invisible())
     #Retorna gráfico tipo plotly vazio
     #return(empty_plot())
   }
 
   jovem_st <- dados %>%
-    dplyr::filter(idade == "Jovens: 10 a 18 anos") %>%
-    return_ts(data_variable,inicio = c(2015,1), tipo = "mensal")
+    dplyr::filter(dimensao == "idade", categoria == "Jovens: 10 a 18 anos") %>%
+    serie_meses()
 
   jovem_st <-   (jovem_st / dados_sinasc) * 100000
 
   adulto_jovem_st <- dados %>%
-    dplyr::filter(idade  == "Adultos Jovens: 19 a 30 anos") %>%
-    return_ts(data_variable,inicio = c(2015,1), tipo = "mensal")
+    dplyr::filter(dimensao == "idade", categoria == "Adultos Jovens: 19 a 30 anos") %>%
+    serie_meses()
 
   adulto_jovem_st <-   (adulto_jovem_st / dados_sinasc) * 100000
 
   adulto_st <- dados %>%
-    dplyr::filter(idade  == "Adultos: 31 a 59 anos") %>%
-    return_ts(data_variable,inicio = c(2015,1), tipo = "mensal")
+    dplyr::filter(dimensao == "idade", categoria == "Adultos: 31 a 59 anos") %>%
+    serie_meses()
 
   adulto_st <-   (adulto_st / dados_sinasc) * 100000
 
@@ -1208,13 +1208,13 @@ grafico_analise_impacto_raca <- function(dados,
   # }
 
   branca_st <- dados %>%
-    dplyr::filter(raca_cor == "Branca")
+    dplyr::filter(dimensao == "raca", categoria == "Branca")
 
   nao_branca_st <- dados %>%
-    dplyr::filter(raca_cor == "Não branca")
+    dplyr::filter(dimensao == "raca", categoria == "Não branca")
 
   #Se não há observações para no mínimo uma das raças, então plota gráfico vazio
-  if(nrow( branca_st) <= min_observacoes |  nrow(nao_branca_st) <= min_observacoes ){
+  if(sum(branca_st$total_casos) <= min_observacoes |  sum(nao_branca_st$total_casos) <= min_observacoes ){
     return(invisible())
     #Retorna gráfico tipo plotly vazio
     #return(empty_plot())
@@ -1222,10 +1222,10 @@ grafico_analise_impacto_raca <- function(dados,
 
   #Criando vetores numéricos para cada um das raças:
   branca_st <-  branca_st %>%
-    return_ts(data_variable,inicio = c(2015,1), tipo = "mensal")
+    serie_meses()
 
   nao_branca_st <- nao_branca_st %>%
-    return_ts(data_variable,inicio = c(2015,1), tipo = "mensal")
+    serie_meses()
 
   if(sum(branca_st) <= min_observacoes | sum(nao_branca_st) <= min_observacoes ){
     return(invisible())
@@ -1548,7 +1548,7 @@ grafico_analise_impacto_tipo_mortalidade <- function(dados,
   #min_observacoes (numero) = quantidade mínima de observações em cada série
 
   #Se o vetor numérico dados não tiver informação, então plota gráfico vazio
-  if(nrow(dados) == 0 ){
+  if(total_casos_cat(dados, "tipo") == 0 ){
     return(invisible())
     #Retorna gráfico tipo plotly vazio
     #return(empty_plot())
@@ -1556,16 +1556,16 @@ grafico_analise_impacto_tipo_mortalidade <- function(dados,
 
   # vetores numericos
   fetal_st <- dados %>%
-    dplyr::filter(tipo_mortalidade == "fetal") %>%
-    return_ts(data_variable,inicio = c(2015,1), tipo = "mensal")
+    dplyr::filter(dimensao == "tipo", categoria == "fetal") %>%
+    serie_meses()
 
   neonatal_precoce_st <- dados %>%
-    dplyr::filter(tipo_mortalidade == "neonatal_precoce") %>%
-    return_ts(data_variable,inicio = c(2015,1), tipo = "mensal")
+    dplyr::filter(dimensao == "tipo", categoria == "neonatal_precoce") %>%
+    serie_meses()
 
   neonatal_tardia_st <- dados %>%
-    dplyr::filter(tipo_mortalidade == "neonatal_tardia") %>%
-    return_ts(data_variable,inicio = c(2015,1), tipo = "mensal")
+    dplyr::filter(dimensao == "tipo", categoria == "neonatal_tardia") %>%
+    serie_meses()
 
   #Se não há observações para os vetores numéricos acima, então plota gráfico vazio
   if(sum(fetal_st) == 0 |  sum(neonatal_precoce_st) == 0 |  sum(neonatal_tardia_st) == 0 ){
@@ -1957,23 +1957,23 @@ grafico_analise_impacto_idade_sif_c <- function(dados,
   # min_observacoes (numero) = quantidade  mínima de observações em cada série para retornar gráfico vazio
 
   #Se o vetor numérico dados não tiver informação, então plota gráfico vazio
-  if(nrow(dados) <= min_observacoes ){
+  if(total_casos_cat(dados, "idade") <= min_observacoes ){
     return(invisible())
     #Retorna gráfico tipo plotly vazio
     #return(empty_plot())
   }
 
   jovem_st <- dados %>%
-    dplyr::filter(idade == "Menos de 7 dias") %>%
-    return_ts(data_variable,inicio = c(2015,1), tipo = "mensal")
+    dplyr::filter(dimensao == "idade", categoria == "Menos de 7 dias") %>%
+    serie_meses()
 
   adulto_jovem_st <- dados %>%
-    dplyr::filter(idade  == "7 a 27 dias") %>%
-    return_ts(data_variable,inicio = c(2015,1), tipo = "mensal")
+    dplyr::filter(dimensao == "idade", categoria == "7 a 27 dias") %>%
+    serie_meses()
 
   adulto_st <- dados %>%
-    dplyr::filter(idade  == "28 dias a 1 ano") %>%
-    return_ts(data_variable,inicio = c(2015,1), tipo = "mensal")
+    dplyr::filter(dimensao == "idade", categoria == "28 dias a 1 ano") %>%
+    serie_meses()
 
   #Se não tiver observações para as series, então plota gráfico vazio
   if(sum(adulto_st) <= min_observacoes |  sum(adulto_jovem_st) <= min_observacoes |  sum(jovem_st) <= min_observacoes ){
