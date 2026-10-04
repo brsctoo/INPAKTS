@@ -21,7 +21,7 @@
 #'
 #' @noRd
 
-# Meses do calendário do SINASC 
+# Meses do calendário do SINASC
 # Mesma expressão que os gráficos e os modelos já usam para montar `st`: do
 # primeiro mês do SINASC até o último mês menos 1. Assim toda série do cubo
 # tem o mesmo tamanho que o calendário dos gráficos.
@@ -31,7 +31,7 @@ meses_sinasc <- function() {
            by   = "1 month")
 }
 
-# Alinha um data.frame (DATA, total_casos) aos meses do SINASC, com zero onde faltar 
+# Alinha um data.frame (DATA, total_casos) aos meses do SINASC, com zero onde faltar
 serie_meses <- function(x) {
   n <- x$total_casos[match(meses_sinasc(), x$DATA)]
   n[is.na(n)] <- 0
@@ -103,6 +103,18 @@ linhas_desc <- function(indicador, variavel, nivel, local) {
 contagem_desc <- function(indicador, variavel, nivel = "PR", local = "PR",
                           data_corte, data_inicio) {
   x <- linhas_desc(indicador, variavel, nivel, local)
+
+  # Local sem nenhum caso neste indicador: devolve uma tabela vazia. O gráfico fica em
+  # branco, como acontece com menos de 30 casos (ver `plot.col1_cubo`).
+  if (nrow(x) == 0) {
+    return(data.frame(
+      intervation_date = character(),
+      y = factor(),
+      n = numeric(),
+      freq = numeric(),
+      porcent = numeric())
+    )
+  }
 
   corte      <- as.Date(lubridate::floor_date(as.Date(data_corte), "month"))
   mes_corte  <- format(as.Date(data_corte), format = "%B/%Y")

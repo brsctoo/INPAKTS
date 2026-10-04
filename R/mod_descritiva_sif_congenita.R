@@ -94,24 +94,8 @@ mod_descritiva_sif_congenita_server <- function(id, opcoes_usuario){
     }
     )
 
-    #Alterando os dados que serão usados de acordo com as opções do usuário
-    data <- eventReactive(input$gerar_graficos, {
-      req(opcoes_usuario$date_intervention[1])
-      dados_sif_congenita %>%
-        data_prep_desc(nivel_geografico = opcoes_usuario$nivel_geografico,
-                       local= opcoes_usuario$escolha_usuario,
-                       intervention_date_user = input$data_selecionada,
-                       data_inicio = dados_sinasc_intervencao$data_variable)
-    })
-
-    # Se dataset escolhido tiver menos de 30 observações um shinyalert será enviado:
-    observeEvent(input$gerar_graficos, {
-      if(nrow(data())<30){
-        shinyalert::shinyalert(
-          title = "Banco de dados selecionado possui menos de 30 observações. Gráficos não serão gerados.", text = "Por favor, escolha novas opções.", type = "info",
-          size = "m")
-      }
-    })
+    # O que o usuário escolheu (nível geográfico, local e data), no momento em que clica em "Gerar gráficos"
+    escolha <- escolha_descritivo(input, opcoes_usuario)
 
     # Título de cabeçario da página altera-se de acordo com as opções selecionadas pelo user e após clicar em gerar gráfico
     titulo <- eventReactive(input$gerar_graficos, {
@@ -126,66 +110,23 @@ mod_descritiva_sif_congenita_server <- function(id, opcoes_usuario){
     output$caption <- renderText({ titulo() })
 
 
-    #Gerando Gráficos -------
-    output$idade <- renderPlot({
-      plot.col1(data(),
-                      idade1,
-                      legenda = "Idade do recém nascido",
-                      titulo = "SIFÍLIS (congenita)",
-                      posicao_legenda="top")
-    })%>%
-      bindCache(opcoes_usuario$nivel_geografico,
-                opcoes_usuario$escolha_usuario,
-                input$data_selecionada) %>%
-      bindEvent(input$gerar_graficos)
-
-    output$raca <- renderPlot({
-      plot.col1(data(),
-                      CS_RACA,
-                      legenda = "Raça/cor",
-                      titulo = "SIFÍLIS (congenita)",
-                      posicao_legenda="top")
-    })%>%
-      bindCache(opcoes_usuario$nivel_geografico,
-                opcoes_usuario$escolha_usuario,
-                input$data_selecionada) %>%
-      bindEvent(input$gerar_graficos)
-
-    output$caracteristicas_clinicas<- renderPlot({
-      plot.col1(data(),
-                      EVO_DIAG_N,
-                      legenda = "Características clínicas",
-                      titulo ="SIFÍLIS (congenita)")
-    })%>%
-      bindCache(opcoes_usuario$nivel_geografico,
-                opcoes_usuario$escolha_usuario,
-                input$data_selecionada) %>%
-      bindEvent(input$gerar_graficos)
-
-    output$diagnostico <- renderPlot({
-      plot.col1(data(),
-                      ANTSIFIL_N,
-                      legenda = "Momento de diagnóstico",
-                      titulo = "SIFÍLIS (congenita)")
-    })%>%
-      bindCache(opcoes_usuario$nivel_geografico,
-                opcoes_usuario$escolha_usuario,
-                input$data_selecionada) %>%
-      bindEvent(input$gerar_graficos)
-    #
-    # output$non_treponemal <- renderPlot({
-    #   plot.col1(data(),TPTESTE1, legenda = "Resultado do teste não treponêmico no pré-natal", titulo = "SIFÍLIS (gestacional)")
-    # })%>%
-    #   bindCache(input$radio,input$escolha_usuario) %>%
-    #   bindEvent(input$gerar_graficos)
-    #
-    # output$treponemal <- renderPlot({
-    #   plot.col1(data(),TPCONFIRMA, legenda = "Resultado do teste treponêmico no pré-natal", titulo = "SIFÍLIS (gestacional)")
-    # })%>%
-    #   bindCache(input$radio,input$escolha_usuario) %>%
-    #   bindEvent(input$gerar_graficos)
-  })
+    # Gráficos (ver R/utils_descritivo.R)
+    graficos_descritivo(
+      graficos = lista_graficos_desc(
+        grafico_desc("idade", "idade1", "Idade do recém nascido", topo = TRUE),
+        grafico_desc("raca", "CS_RACA", "Raça/cor", topo = TRUE),
+        grafico_desc("caracteristicas_clinicas", "EVO_DIAG_N", "Características clínicas"),
+        grafico_desc("diagnostico", "ANTSIFIL_N", "Momento de diagnóstico")
+      ),
+      indicador = "SIF_Congenita",
+      titulo = "SIFÍLIS (congenita)",
+      escolha = escolha,
+      input = input, output = output, session = session)
+  }
+  )
 }
+
+
 
 ## To be copied in the UI
 # mod_descritiva_sif_congenita_ui("descritiva_sif_congenita_1")

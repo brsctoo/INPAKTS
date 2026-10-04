@@ -192,6 +192,44 @@ bind_rows() %>%
 select(indicador, variavel, nivel, local, DATA, categoria, n = total_casos) %>%
 arrange(indicador, variavel, nivel, local, DATA, categoria)
 
+# 03. Padroniza o nome dos municípios
+# Os datasets do SIM trazem o município sem acento e em minúsculas ("abatia"), e a tela
+# (`municipios_PR`, na barra lateral) oferece o nome oficial ("Abatiá"). Aqui, no nível
+# "municipio", o `local` passa a ser sempre o nome oficial.
+
+oficiais <- as.character(municipios_PR$municipio)
+
+# Chave: minúscula e só letras e números
+chave_nome <- function(x) gsub("[^a-z0-9]", "", tolower(x))
+
+# chave -> nome oficial
+chave_para_oficial <- stats::setNames(
+  as.character(dengueControl::munic$MUNICIPIO),
+  chave_nome(dengueControl::munic$SEM_ACENTO))
+stopifnot(all(chave_para_oficial %in% oficiais), !anyDuplicated(names(chave_para_oficial)))
+
+# Nomes do SIM escritos de outro jeito (como o SIM escreve -> como dengueControl escreve)
+correcoes <- c(
+  "munhoz de melo" = "munhoz de mello",
+  "santa cruz de monte castelo" = "santa cruz monte castelo")
+correcoes <- stats::setNames(chave_nome(correcoes), chave_nome(names(correcoes)))
+
+padronizar_municipio <- function(local) {
+  chave <- chave_nome(local)
+  chave <- ifelse(chave %in% names(correcoes), correcoes[chave], chave)
+  novo <- unname(chave_para_oficial[chave])
+  ifelse(local %in% oficiais, local, novo)
+}
+
+antes <- dados_desc_painel
+
+dados_desc_painel <- dados_desc_painel %>%
+  mutate(local = if_else(nivel == "municipio", padronizar_municipio(local), local)) %>%
+  filter(nivel != "municipio" | !is.na(local)) %>%
+  group_by(indicador, variavel, nivel, local, DATA, categoria) %>%
+  summarise(n = sum(n), .groups = "drop") %>%
+  arrange(indicador, variavel, nivel, local, DATA, categoria)
+
 lista_niveis <- list()
 
 for (ind in names(indicadores_descritivo)) {
@@ -215,6 +253,6 @@ for (ind in names(indicadores_descritivo)) {
 
 dados_desc_niveis <- bind_rows(lista_niveis)
 
-# Salva em data/ ------------------------------------------------------------------
+# Salva em data/
 
 usethis::use_data(dados_desc_painel, dados_desc_niveis, overwrite = TRUE)

@@ -96,25 +96,8 @@ mod_descritiva_sim_neonatal_server <- function(id, opcoes_usuario){
     }
     )
 
-    #Alterando os dados que serão usados de acordo com as opções do usuário
-    data <- eventReactive(input$gerar_graficos, {
-      req(opcoes_usuario$date_intervention[1])
-      dados_sim_neonatal %>%
-        data_prep_desc(nivel_geografico = opcoes_usuario$nivel_geografico,
-                       local= opcoes_usuario$escolha_usuario,
-                       intervention_date_user = input$data_selecionada,
-                       data_inicio = dados_sinasc_intervencao$data_variable)
-    })
-
-
-    # Se dataset escolhido tiver menos de 30 observações um shinyalert será enviado:
-    observeEvent(input$gerar_graficos, {
-      if(nrow(data())<30){
-        shinyalert::shinyalert(
-          title = "Banco de dados selecionado possui menos de 30 observações. Gráficos não serão gerados.", text = "Por favor, escolha novas opções.", type = "info",
-          size = "m")
-      }
-    })
+    # O que o usuário escolheu (nível geográfico, local e data), no momento em que clica em "Gerar gráficos"
+    escolha <- escolha_descritivo(input, opcoes_usuario)
 
     # Título de cabeçario da página altera-se de acordo com as opções selecionadas pelo user e após clicar em gerar gráfico
     titulo <- eventReactive(input$gerar_graficos, {
@@ -130,92 +113,21 @@ mod_descritiva_sim_neonatal_server <- function(id, opcoes_usuario){
     output$caption <- renderText({ titulo() })
 
 
-    # Gerando Gráficos -------
-
-    output$duracao_gestacao <- renderPlot({
-      plot.col1(data(),
-                      tipo_gestacao,
-                      legenda = "Número de semanas de gestação",
-                      titulo = "SIM (Óbito neonatal)",
-                      posicao_legenda="top")
-    }) %>%
-      bindCache(opcoes_usuario$nivel_geografico,
-                opcoes_usuario$escolha_usuario,
-                input$data_selecionada) %>%
-      bindEvent(input$gerar_graficos)
-    # The cached, eventified reactive takes a reactive dependency on
-    # input$gerar_graficos, PORÉM NÃO USA ISTO PARA cache key. Usamos input$radio e
-    # input$escolha_usuario  para cache key, mas não tem dependência reativas sobre eles.
-    # porque a dependência reativa é suprimida por ..Event()
-
-    output$tipo_parto <- renderPlot({
-      plot.col1(data(),
-                      tipo_parto,
-                      legenda = "Tipo de parto",
-                      titulo = "SIM (Óbito neonatal)",
-                      posicao_legenda="top")
-    })%>%
-      bindCache(opcoes_usuario$nivel_geografico,
-                opcoes_usuario$escolha_usuario,
-                input$data_selecionada) %>%
-      bindEvent(input$gerar_graficos)
-
-    output$durante_parto<- renderPlot({
-      plot.col1(data(),
-                      tipo_morte_parto,
-                      legenda =  "Ocorrência do óbito em relação ao parto",
-                      titulo = "SIM (Óbito neonatal)")
-    })%>%
-      bindCache(opcoes_usuario$nivel_geografico,
-                opcoes_usuario$escolha_usuario,
-                input$data_selecionada) %>%
-      bindEvent(input$gerar_graficos)
-
-    output$tipo_obito <- renderPlot({
-      plot.col1(data(),
-                      tipo_obito,
-                      legenda =  "Ocorrência do óbito fetal (aborto) ou não fetal",
-                      titulo = "SIM (Óbito neonatal)")
-    })%>%
-      bindCache(opcoes_usuario$nivel_geografico,
-                opcoes_usuario$escolha_usuario,
-                input$data_selecionada) %>%
-      bindEvent(input$gerar_graficos)
-
-    output$local_ocorrencia <- renderPlot({
-      plot.col1(data(),
-                      local_ocorrencia,
-                      legenda = "Local de ocorrência",
-                      titulo="SIM (Óbito neonatal)")
-    })%>%
-      bindCache(opcoes_usuario$nivel_geografico,
-                opcoes_usuario$escolha_usuario,
-                input$data_selecionada) %>%
-      bindEvent(input$gerar_graficos)
-
-    output$raca_cor <- renderPlot({
-      plot.col1(data(),
-                      raca_cor,
-                      legenda = "Raça/cor",
-                      titulo = "SIM (Óbito neonatal)")
-    })%>%
-      bindCache(opcoes_usuario$nivel_geografico,
-                opcoes_usuario$escolha_usuario,
-                input$data_selecionada) %>%
-      bindEvent(input$gerar_graficos)
-
-
-    output$escolaridade_mae <- renderPlot({
-      plot.col1(data(),
-                      escolaridade_mae,
-                      legenda="Escolaridade da mãe",
-                      titulo = "SIM (Óbito neonatal)")
-    })%>%
-      bindCache(opcoes_usuario$nivel_geografico,
-                opcoes_usuario$escolha_usuario,
-                input$data_selecionada) %>%
-      bindEvent(input$gerar_graficos)
-
+    # Gráficos (ver R/utils_descritivo.R)
+    graficos_descritivo(
+      graficos = lista_graficos_desc(
+        grafico_desc("duracao_gestacao", "tipo_gestacao", "Número de semanas de gestação", topo = TRUE),
+        grafico_desc("tipo_parto", "tipo_parto", "Tipo de parto", topo = TRUE),
+        grafico_desc("durante_parto", "tipo_morte_parto", "Ocorrência do óbito em relação ao parto"),
+        grafico_desc("tipo_obito", "tipo_obito", "Ocorrência do óbito fetal (aborto) ou não fetal"),
+        grafico_desc("local_ocorrencia", "local_ocorrencia", "Local de ocorrência"),
+        grafico_desc("raca_cor", "raca_cor", "Raça/cor"),
+        grafico_desc("escolaridade_mae", "escolaridade_mae", "Escolaridade da mãe")
+      ),
+      indicador = "SIM_Neonatal",
+      titulo = "SIM (Óbito neonatal)",
+      escolha = escolha,
+      input = input, output = output, session = session)
   }
   )
 }

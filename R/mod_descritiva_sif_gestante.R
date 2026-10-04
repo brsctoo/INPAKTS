@@ -94,25 +94,8 @@ mod_descritiva_sif_gestante_server <- function(id, opcoes_usuario){
     }
     )
 
-    #Alterando os dados que serão usados de acordo com as opções do usuário
-    data <- eventReactive(input$gerar_graficos, {
-      req(opcoes_usuario$date_intervention[1])
-      dados_sif_gestante %>%
-        data_prep_desc(nivel_geografico = opcoes_usuario$nivel_geografico,
-                       local= opcoes_usuario$escolha_usuario,
-                       intervention_date_user = input$data_selecionada,
-                       data_inicio = dados_sinasc_intervencao$data_variable)
-    })
-
-
-    # Se dataset escolhido tiver menos de 30 observações um shinyalert será enviado:
-    observeEvent(input$gerar_graficos, {
-      if(nrow(data())<30){
-        shinyalert::shinyalert(
-          title = "Banco de dados selecionado possui menos de 30 observações. Gráficos não serão gerados.", text = "Por favor, escolha novas opções.", type = "info",
-          size = "m")
-      }
-    })
+    # O que o usuário escolheu (nível geográfico, local e data), no momento em que clica em "Gerar gráficos"
+    escolha <- escolha_descritivo(input, opcoes_usuario)
 
     # Título de cabeçario da página altera-se de acordo com as opções selecionadas pelo user e após clicar em gerar gráfico
     titulo <- eventReactive(input$gerar_graficos, {
@@ -127,74 +110,25 @@ mod_descritiva_sif_gestante_server <- function(id, opcoes_usuario){
     output$caption <- renderText({ titulo() })
 
 
-    # Gerando Gráficos -------
-    output$raca <- renderPlot({
-      plot.col1(data(),
-                      CS_RACA,
-                      legenda = "Raça/cor",
-                      titulo = "SIFÍLIS (gestacional)",
-                      posicao_legenda="top")
-    })%>%
-      bindCache(opcoes_usuario$nivel_geografico,
-                opcoes_usuario$escolha_usuario,
-                input$data_selecionada) %>%
-      bindEvent(input$gerar_graficos)
-
-    output$idade <- renderPlot({
-      plot.col1(data(),
-                      idade_mae1,
-                      legenda = "Idade materna",
-                      titulo = "SIFÍLIS (gestacional)",
-                      posicao_legenda="top")
-    })%>%
-      bindCache(opcoes_usuario$nivel_geografico,
-                opcoes_usuario$escolha_usuario,
-                input$data_selecionada) %>%
-      bindEvent(input$gerar_graficos)
-
-    output$classificacao_clinica<- renderPlot({
-      plot.col1(data(),TPEVIDENCI, legenda = "Classificação clínica", titulo ="SIFÍLIS (gestacional)")
-    })%>%
-      bindCache(opcoes_usuario$nivel_geografico,
-                opcoes_usuario$escolha_usuario,
-                input$data_selecionada) %>%
-      bindEvent(input$gerar_graficos)
-
-    output$escolaridade <- renderPlot({
-      plot.col1(data(),
-                      CS_ESCOL_N,
-                      legenda = "Escolaridade da gestante",
-                      titulo = "SIFÍLIS (gestacional)")
-    })%>%
-      bindCache(opcoes_usuario$nivel_geografico,
-                opcoes_usuario$escolha_usuario,
-                input$data_selecionada) %>%
-      bindEvent(input$gerar_graficos)
-
-    output$non_treponemal <- renderPlot({
-      plot.col1(data(),
-                      TPTESTE1,
-                      legenda = "Resultado do teste não treponêmico no pré-natal",
-                      titulo = "SIFÍLIS (gestacional)")
-    })%>%
-      bindCache(opcoes_usuario$nivel_geografico,
-                opcoes_usuario$escolha_usuario,
-                input$data_selecionada) %>%
-      bindEvent(input$gerar_graficos)
-
-    output$treponemal <- renderPlot({
-      plot.col1(data(),
-                      TPCONFIRMA,
-                      legenda = "Resultado do teste treponêmico no pré-natal",
-                      titulo = "SIFÍLIS (gestacional)")
-    })%>%
-      bindCache(opcoes_usuario$nivel_geografico,
-                opcoes_usuario$escolha_usuario,
-                input$data_selecionada) %>%
-      bindEvent(input$gerar_graficos)
+    # Gráficos (ver R/utils_descritivo.R)
+    graficos_descritivo(
+      graficos = lista_graficos_desc(
+        grafico_desc("raca", "CS_RACA", "Raça/cor", topo = TRUE),
+        grafico_desc("idade", "idade_mae1", "Idade materna", topo = TRUE),
+        grafico_desc("classificacao_clinica", "TPEVIDENCI", "Classificação clínica"),
+        grafico_desc("escolaridade", "CS_ESCOL_N", "Escolaridade da gestante"),
+        grafico_desc("non_treponemal", "TPTESTE1", "Resultado do teste não treponêmico no pré-natal"),
+        grafico_desc("treponemal", "TPCONFIRMA", "Resultado do teste treponêmico no pré-natal")
+      ),
+      indicador = "SIF_Gestante",
+      titulo = "SIFÍLIS (gestacional)",
+      escolha = escolha,
+      input = input, output = output, session = session)
   }
   )
 }
+
+
 
 ## To be copied in the UI
 # mod_descritiva_sif_gestante_ui("descritiva_sif_gestante_1")

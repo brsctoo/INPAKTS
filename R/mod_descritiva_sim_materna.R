@@ -110,25 +110,8 @@ mod_descritiva_sim_materna_server <- function(id, opcoes_usuario){
     }
     )
 
-    #Alterando os dados que serão usados de acordo com as opções do usuário
-    data <- eventReactive(input$gerar_graficos, {
-      req(opcoes_usuario$date_intervention[1])
-      dados_sim_materno %>%
-        data_prep_desc(nivel_geografico = opcoes_usuario$nivel_geografico,
-                       local= opcoes_usuario$escolha_usuario,
-                       intervention_date_user = input$data_selecionada,
-                       data_inicio = dados_sinasc_intervencao$data_variable)
-    })
-
-
-    # Se dataset escolhido tiver menos de 30 observações um shinyalert será enviado:
-    observeEvent(input$gerar_graficos, {
-      if(nrow(data())<30){
-        shinyalert::shinyalert(
-          title = "Banco de dados selecionado possui menos de 30 observações. Gráficos não serão gerados.", text = "Por favor, escolha novas opções.", type = "info",
-          size = "m")
-      }
-    })
+    # O que o usuário escolheu (nível geográfico, local e data), no momento em que clica em "Gerar gráficos"
+    escolha <- escolha_descritivo(input, opcoes_usuario)
 
     # Título de cabeçario da página altera-se de acordo com as opções selecionadas pelo user e após clicar em gerar gráfico
     titulo <- eventReactive(input$gerar_graficos, {
@@ -143,91 +126,26 @@ mod_descritiva_sim_materna_server <- function(id, opcoes_usuario){
     output$caption <- renderText({ titulo() })
 
 
-    # Gerando Gráficos -------
-    output$morte_puerperio <- renderPlot({
-      plot.col1(data(),
-                      morte_puerperio,
-                      legenda="Ocorrência de óbito durante o puerpério",
-                      titulo = "SIM (Óbito materno)",
-                      posicao_legenda="top")
-    })%>%
-      bindCache(opcoes_usuario$nivel_geografico,
-                opcoes_usuario$escolha_usuario,
-                input$data_selecionada) %>%
-      bindEvent(input$gerar_graficos)
-
-    output$local_ocorrencia <- renderPlot({
-      plot.col1(data(),
-                      local_ocorrencia,
-                      legenda = "Local de ocorrência",
-                      titulo="SIM (óbito materno)",
-                      posicao_legenda = "top")
-    })%>%
-      bindCache(opcoes_usuario$nivel_geografico,
-                opcoes_usuario$escolha_usuario,
-                input$data_selecionada) %>%
-      bindEvent(input$gerar_graficos)
-
-    output$morte_mulher <- renderPlot({
-      plot.col1(data(),
-                      morte_mulher,
-                      legenda = "Tipo de parto",
-                      titulo = "SIM (Óbito materno)")
-    })%>%
-      bindCache(opcoes_usuario$nivel_geografico,
-                opcoes_usuario$escolha_usuario,
-                input$data_selecionada) %>%
-      bindEvent(input$gerar_graficos)
-
-    output$momento_obito<- renderPlot({
-      plot.col1(data(),
-                      tp_morte_ocorreu,
-                      legenda = "Ocorrência de óbito durante gravidez, parto, aborto ou puerpério",
-                      titulo="SIM (óbito materno)")
-
-    })%>%
-      bindCache(opcoes_usuario$nivel_geografico,
-                opcoes_usuario$escolha_usuario,
-                input$data_selecionada) %>%
-      bindEvent(input$gerar_graficos)
-
-
-    output$escolaridade <- renderPlot({
-      plot.col1(data(),
-                      escolaridade,
-                      legenda="Escolaridade",
-                      titulo = "SIM (óbito materno)")
-    }) %>%
-      bindCache(opcoes_usuario$nivel_geografico,
-                opcoes_usuario$escolha_usuario,
-                input$data_selecionada) %>%
-      bindEvent(input$gerar_graficos)
-
-    output$raca_cor <- renderPlot({
-      plot.col1(data(),
-                      raca_cor,
-                      legenda = "Raça/cor",
-                      titulo = "SIM (óbito materno)")
-    })%>%
-      bindCache(opcoes_usuario$nivel_geografico,
-                opcoes_usuario$escolha_usuario,
-                input$data_selecionada) %>%
-      bindEvent(input$gerar_graficos)
-
-    output$estado_civil <- renderPlot({
-      plot.col1(data(),
-                      estado_civil,
-                      legenda = "Estado civil",
-                      titulo="SIM (óbito materno)")
-    })%>%
-      bindCache(opcoes_usuario$nivel_geografico,
-                opcoes_usuario$escolha_usuario,
-                input$data_selecionada) %>%
-      bindEvent(input$gerar_graficos)
-
+    # Gráficos (ver R/utils_descritivo.R)
+    graficos_descritivo(
+      graficos = lista_graficos_desc(
+        grafico_desc("morte_puerperio", "morte_puerperio", "Ocorrência de óbito durante o puerpério", topo = TRUE, titulo = "SIM (Óbito materno)"),
+        grafico_desc("local_ocorrencia", "local_ocorrencia", "Local de ocorrência", topo = TRUE),
+        grafico_desc("morte_mulher", "morte_mulher", "Tipo de parto", titulo = "SIM (Óbito materno)"),
+        grafico_desc("momento_obito", "tp_morte_ocorreu", "Ocorrência de óbito durante gravidez, parto, aborto ou puerpério"),
+        grafico_desc("escolaridade", "escolaridade", "Escolaridade"),
+        grafico_desc("raca_cor", "raca_cor", "Raça/cor"),
+        grafico_desc("estado_civil", "estado_civil", "Estado civil")
+      ),
+      indicador = "SIM_Materno",
+      titulo = "SIM (óbito materno)",
+      escolha = escolha,
+      input = input, output = output, session = session)
   }
   )
 }
+
+
 
 ## To be copied in the UI
 # mod_descritiva_sim_materna_ui("descritiva_sim_materna_1")

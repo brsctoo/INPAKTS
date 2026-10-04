@@ -95,24 +95,8 @@ mod_descritiva_sinasc_server <- function(id, opcoes_usuario){
     }
     )
 
-    data <- eventReactive(input$gerar_graficos, {
-      req(opcoes_usuario$date_intervention[1])
-      dados_sinasc %>%
-        data_prep_desc(nivel_geografico = opcoes_usuario$nivel_geografico,
-                       local= opcoes_usuario$escolha_usuario,
-                       intervention_date_user = input$data_selecionada,
-                       data_inicio = dados_sinasc_intervencao$data_variable)
-    })
-
-
-    # Se dataset escolhido tiver menos de 30 observações um shinyalert será enviado:
-    observeEvent(input$gerar_graficos, {
-      if(nrow(data())<30){
-        shinyalert::shinyalert(
-          title = "Banco de dados selecionado possui menos de 30 observações. Gráficos não serão gerados.", text = "Por favor, escolha novas opções.", type = "info",
-          size = "m")
-      }
-    })
+    # O que o usuário escolheu, no momento em que clica em "Gerar gráficos".
+    escolha <- escolha_descritivo(input, opcoes_usuario)
 
     # Título de cabeçario da página altera-se de acordo com as opções selecionadas pelo user e após clicar em gerar gráfico
     titulo <- eventReactive(input$gerar_graficos, {
@@ -126,72 +110,20 @@ mod_descritiva_sinasc_server <- function(id, opcoes_usuario){
     # Título de cabeçario da página
     output$caption <- renderText({ titulo() })
 
-
-    # Gerando Gráficos -------
-    output$pre_natal <- renderPlot({
-      plot.col1(data(),
-                      consulta_prenatal,
-                      legenda = "Número de consultas de pré-natal",
-                      titulo = "SINASC (Nascidos vivos)", posicao_legenda="top")
-    })#%>%
-    #bindCache(opcoes_usuario$nivel_geografico,
-    #          opcoes_usuario$escolha_usuario) %>%
-    #bindEvent(input$gerar_graficos)
-
-    output$cesarias <- renderPlot({
-      plot.col1(data(),
-                      parto_cesarea1,
-                      legenda = "Número de cesáreas anteriores",
-                      titulo = "SINASC (Nascidos vivos)",
-                      posicao_legenda="top")
-    })%>%
-      bindCache(opcoes_usuario$nivel_geografico,
-                opcoes_usuario$escolha_usuario,
-                input$data_selecionada) %>%
-      bindEvent(input$gerar_graficos)
-
-    output$trimestre_gestacao<- renderPlot({
-      plot.col1(data(),
-                      mes_gestacao_prenatal1,
-                      legenda = "Trimestre de gestação de início do pré-natal",
-                      titulo ="SINASC (Nascidos vivos)")
-    })%>%
-      bindCache(opcoes_usuario$nivel_geografico,
-                opcoes_usuario$escolha_usuario,
-                input$data_selecionada) %>%
-      bindEvent(input$gerar_graficos)
-
-    output$tipo_parto <- renderPlot({
-      plot.col1(data(),
-                      tipo_parto,
-                      legenda = "Tipo de parto",
-                      titulo = "SINASC (Nascidos vivos)")
-    })%>%
-      bindCache(opcoes_usuario$nivel_geografico,
-                opcoes_usuario$escolha_usuario,
-                input$data_selecionada) %>%
-      bindEvent(input$gerar_graficos)
-
-    output$ocorrencia_cesarea <- renderPlot({
-      plot.col1(data(),
-                      cesarea_anterior_parto,
-                      legenda = "Ocorrência de cesárea antes do trabalho de parto iniciar",
-                      titulo = "SINASC (Nascidos vivos)")
-    })%>%
-      bindCache(opcoes_usuario$nivel_geografico,
-                opcoes_usuario$escolha_usuario,
-                input$data_selecionada) %>%
-      bindEvent(input$gerar_graficos)
-
-    output$semana_gestacional <- renderPlot({
-      plot.col1(data(),
-                      semanas_de_gestacao,
-                      legenda = "Número de semanas de gestação no nascimento", "SINASC (Nascidos vivos)")
-    })%>%
-      bindCache(opcoes_usuario$nivel_geografico,
-                opcoes_usuario$escolha_usuario,
-                input$data_selecionada) %>%
-      bindEvent(input$gerar_graficos)
+    # Gráficos (ver R/utils_descritivo.R)
+    graficos_descritivo(
+      graficos = lista_graficos_desc(
+        grafico_desc("pre_natal", "consulta_prenatal", "Número de consultas de pré-natal", topo = TRUE, cache = FALSE),
+        grafico_desc("cesarias", "parto_cesarea1", "Número de cesáreas anteriores", topo = TRUE),
+        grafico_desc("trimestre_gestacao", "mes_gestacao_prenatal1", "Trimestre de gestação de início do pré-natal"),
+        grafico_desc("tipo_parto", "tipo_parto", "Tipo de parto"),
+        grafico_desc("ocorrencia_cesarea", "cesarea_anterior_parto", "Ocorrência de cesárea antes do trabalho de parto iniciar"),
+        grafico_desc("semana_gestacional", "semanas_de_gestacao", "Número de semanas de gestação no nascimento")
+      ),
+      indicador = "SINASC",
+      titulo = "SINASC (Nascidos vivos)",
+      escolha = escolha,
+      input = input, output = output, session = session)
   }
   )
 }
