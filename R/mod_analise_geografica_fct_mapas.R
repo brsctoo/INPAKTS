@@ -45,9 +45,7 @@ RSmapOrd <- function(
   plot.action = TRUE
 ){
 
-  # --------------------------------------------------------------------------
   # 1. PREPARAÇÃO DE DADOS GEOGRÁFICOS
-  # --------------------------------------------------------------------------
 
   # Junta os dados (Aumentou/Diminuiu) com a base de municípios para obter os códigos do IBGE
   data0 <- dplyr::left_join(
@@ -60,9 +58,7 @@ RSmapOrd <- function(
   data1=data0 %>% dplyr::rename(codigo_ibg = ID_MUNICIP) %>%
     dplyr::select(Freq,codigo_ibg)
 
-  # --------------------------------------------------------------------------
   # 2. CONVERSÃO
-  # --------------------------------------------------------------------------
 
   mapa_base_sf <- sf::st_as_sf(dengueControl::pr_mun)
   mapa1 <- dplyr::left_join(mapa_base_sf, data1, by = "codigo_ibg")
@@ -75,9 +71,7 @@ RSmapOrd <- function(
   # Filtra o mapa para exibir apenas os polígonos pertencentes à Regional de Saúde (RS) escolhida
   mapa2 <- mapa1[as.character(mapa1$NUMEROREGSAUDE)==RS,]
 
-  # --------------------------------------------------------------------------
   # 3. RENDERIZAÇÃO DO MAPA (ESTILIZAÇÃO E CORES)
-  # --------------------------------------------------------------------------
 
   myCol = c("#fc9272", "#6BAED6", "#FFFFCC") # Laranja, Azul, Amarelo
   myCol1 = c("#fc9272", "#FFFFCC") # Laranja, Amarelo
@@ -166,12 +160,10 @@ UFmapOrd <- function(
   legeName,
   mun,
   legeLabels,
-  plot.action=TRUE
+  plot.action=FALSE
 ) {
 
-  # --------------------------------------------------------------------------
   # 1. PREPARAÇÃO DE DADOS GEOGRÁFICOS
-  # --------------------------------------------------------------------------
 
   # Junta os dados categóricos com a base de municípios para obter os códigos do IBGE
   data0 <- dplyr::left_join(
@@ -184,9 +176,7 @@ UFmapOrd <- function(
   data1=data0 %>% dplyr::rename(codigo_ibg = ID_MUNICIP) %>%
     dplyr::select(Freq,codigo_ibg)
 
-  # --------------------------------------------------------------------------
   # 2. CONVERSÃO
-  # --------------------------------------------------------------------------
 
   mapa_base_sf <- sf::st_as_sf(dengueControl::pr_mun)
   mapa2 <- dplyr::left_join(mapa_base_sf, data1, by = "codigo_ibg")
@@ -196,9 +186,7 @@ UFmapOrd <- function(
     mapa2$nome,"<br>", "Cluster:",mapa2$Freq
   )
 
-  # --------------------------------------------------------------------------
   # 3. RENDERIZAÇÃO DO MAPA
-  # --------------------------------------------------------------------------
 
   myCol = c("#fc9272", "#6BAED6", "#FFFFCC")
   myCol1 = c("#fc9272", "#FFFFCC")
