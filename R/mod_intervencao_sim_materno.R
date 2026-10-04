@@ -35,7 +35,7 @@ mod_intervencao_sim_materno_ui <- function(id){
           column(2,
                  tableOutput((ns("info_modelo_ajustado")))),
           column(10,
-                 shinycssloaders::withSpinner(plotly::plotlyOutput(ns("plot_geral")))))),
+                 uiOutput(ns("area_plot_geral"))))),
       hr(),
       bs4Dash::bs4Card(
         title = textOutput(ns("info_user_idade")),#htmlOutput(ns("info_user")),
@@ -57,7 +57,7 @@ mod_intervencao_sim_materno_ui <- function(id){
                                          "Adultos: 31 a 59 anos")),
                  tableOutput((ns("info_modelo_ajustado_idade")))),
           column(10,
-                 shinycssloaders::withSpinner(plotly::plotlyOutput(ns("plot_idade")))))),
+                 uiOutput(ns("area_plot_idade"))))),
       hr(),
       bs4Dash::bs4Card(
         title = textOutput(ns("info_user_raca")),#htmlOutput(ns("info_user")),
@@ -77,7 +77,7 @@ mod_intervencao_sim_materno_ui <- function(id){
                              choices = levels(dados_sim_materno_intervention$raca_cor)[1:2]),
                  tableOutput((ns("info_modelo_ajustado_raca")))),
           column(10,
-                 shinycssloaders::withSpinner(plotly::plotlyOutput(ns("plot_raca"))))))
+                 uiOutput(ns("area_plot_raca")))))
     )
   )
 }
@@ -88,6 +88,22 @@ mod_intervencao_sim_materno_ui <- function(id){
 mod_intervencao_sim_materno_server <- function(id, opcoes_usuario){
   moduleServer( id, function(input, output, session){
     ns <- session$ns
+
+    # Área dos gráficos: o spinner só aparece depois do clique no botão
+    output$area_plot_geral <- renderUI({
+      req(input$gerar_graficos)
+      shinycssloaders::withSpinner(plotly::plotlyOutput(ns("plot_geral")))
+    })
+
+    output$area_plot_idade <- renderUI({
+      req(input$gerar_resultado_idade)
+      shinycssloaders::withSpinner(plotly::plotlyOutput(ns("plot_idade")))
+    })
+
+    output$area_plot_raca <- renderUI({
+      req(input$gerar_resultado_raca)
+      shinycssloaders::withSpinner(plotly::plotlyOutput(ns("plot_raca")))
+    })
 
     # Pop-ups -------
 
@@ -198,11 +214,23 @@ mod_intervencao_sim_materno_server <- function(id, opcoes_usuario){
     })
 
     # filtrando os dados de acordo com as opções do usuário
-    dataCategorica <- eventReactive(input$gerar_graficos, {
-      ts_categorias("SIM_Materno",
-                    nivel = opcoes_usuario$nivel_geografico,
-                    local = opcoes_usuario$escolha_usuario)
-    })
+    dataCategorica <- eventReactive(
+      {
+        # Soma dos cliques: muda a cada clique em qualquer botão e é 0 antes do primeiro
+        cliques <- sum(
+          input$gerar_graficos,
+          input$gerar_resultado_idade,
+          input$gerar_resultado_raca
+        )
+        if (cliques > 0) cliques
+      },
+      {
+        ts_categorias(
+          "SIM_Materno",
+          nivel = opcoes_usuario$nivel_geografico,
+          local = opcoes_usuario$escolha_usuario
+        )
+      })
 
     # Série temporal para dados da mortalidade materna
     data_sim_materno <- eventReactive(input$gerar_graficos, {
@@ -258,14 +286,14 @@ mod_intervencao_sim_materno_server <- function(id, opcoes_usuario){
                            paste("(SIM MATERNO) Análise de impacto na tendência no Município de", opcoes_usuario$escolha_usuario))))
     })
 
-    titulo_idade <- eventReactive(input$gerar_graficos, {
+    titulo_idade <- eventReactive(input$gerar_resultado_idade, {
       ifelse(opcoes_usuario$nivel_geografico=="PR","(SIM MATERNO) Análise de impacto na tendência por idade materna no Paraná",
              ifelse(opcoes_usuario$nivel_geografico=="macro",paste("(SIM MATERNO) Análise de impacto na tendência por idade materna  na Macrorregião",opcoes_usuario$escolha_usuario),
                     ifelse(opcoes_usuario$nivel_geografico=="micro",paste("(SIM MATERNO) Análise de impacto na tendência por idade materna  na Regional de Saúde",opcoes_usuario$escolha_usuario),
                            paste("(SIM MATERNO) Análise de impacto na tendência por idade materna  no Município de", opcoes_usuario$escolha_usuario))))
     })
 
-    titulo_raca <- eventReactive(input$gerar_graficos, {
+    titulo_raca <- eventReactive(input$gerar_resultado_raca, {
       ifelse(opcoes_usuario$nivel_geografico=="PR","(SIM MATERNO) Análise de impacto na tendência por raça do mortalidade materna no Paraná",
              ifelse(opcoes_usuario$nivel_geografico=="macro",paste("(SIM MATERNO) Análise de impacto na tendência por raça do mortalidade materna na Macrorregião",opcoes_usuario$escolha_usuario),
                     ifelse(opcoes_usuario$nivel_geografico=="micro",paste("(SIM MATERNO) Análise de impacto na tendência por raça do mortalidade materna  na Regional de Saúde",opcoes_usuario$escolha_usuario),

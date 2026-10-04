@@ -41,7 +41,7 @@ mod_intervencao_sim_neonatal_ui <- function(id){
           column(2,
                  tableOutput((ns("info_modelo_ajustado")))),
           column(10,
-                 shinycssloaders::withSpinner(plotly::plotlyOutput(ns("plot_geral")))))),
+                 uiOutput(ns("area_plot_geral"))))),
       hr(),
       bs4Dash::bs4Card(
         title = textOutput(ns("info_user_sexo")),#htmlOutput(ns("info_user")),
@@ -59,7 +59,7 @@ mod_intervencao_sim_neonatal_ui <- function(id){
                  selectInput(inputId = ns("sexo"), label = "Escolha o sexo", choices = c("Feminino","Masculino")),
                  tableOutput((ns("info_modelo_ajustado_sexo")))),
           column(10,
-                 shinycssloaders::withSpinner(plotly::plotlyOutput(ns("plot_sexo")))))),
+                 uiOutput(ns("area_plot_sexo"))))),
       hr(),
       bs4Dash::bs4Card(
         title = textOutput(ns("info_user_mortalidade")),#htmlOutput(ns("info_user")),
@@ -81,7 +81,7 @@ mod_intervencao_sim_neonatal_ui <- function(id){
                                          "Neonatal tardia" = "neonatal_tardia")),
                  tableOutput((ns("info_modelo_ajustado_tipo_mortalidade")))),
           column(10,
-                 shinycssloaders::withSpinner(plotly::plotlyOutput(ns("plot_idade")))))),
+                 uiOutput(ns("area_plot_idade"))))),
       hr(),
       bs4Dash::bs4Card(
         title = textOutput(ns("info_user_raca")),#htmlOutput(ns("info_user")),
@@ -101,7 +101,7 @@ mod_intervencao_sim_neonatal_ui <- function(id){
                              choices = levels(dados_sim_neonatal_intervention$raca_cor)[1:2]),
                  tableOutput((ns("info_modelo_ajustado_raca")))),
           column(10,
-                 shinycssloaders::withSpinner(plotly::plotlyOutput(ns("plot_raca"))))))
+                 uiOutput(ns("area_plot_raca")))))
     )
   )
 }
@@ -112,6 +112,27 @@ mod_intervencao_sim_neonatal_ui <- function(id){
 mod_intervencao_sim_neonatal_server <- function(id, opcoes_usuario){
   moduleServer( id, function(input, output, session){
     ns <- session$ns
+
+    # Área dos gráficos: o spinner só aparece depois do clique no botão
+    output$area_plot_geral <- renderUI({
+      req(input$gerar_graficos)
+      shinycssloaders::withSpinner(plotly::plotlyOutput(ns("plot_geral")))
+    })
+
+    output$area_plot_sexo <- renderUI({
+      req(input$gerar_resultado_sexo)
+      shinycssloaders::withSpinner(plotly::plotlyOutput(ns("plot_sexo")))
+    })
+
+    output$area_plot_idade <- renderUI({
+      req(input$gerar_resultado_tipo_mortalidade)
+      shinycssloaders::withSpinner(plotly::plotlyOutput(ns("plot_idade")))
+    })
+
+    output$area_plot_raca <- renderUI({
+      req(input$gerar_resultado_raca)
+      shinycssloaders::withSpinner(plotly::plotlyOutput(ns("plot_raca")))
+    })
 
     # Pop-ups -------
 
@@ -227,11 +248,24 @@ mod_intervencao_sim_neonatal_server <- function(id, opcoes_usuario){
 
 
 
-    dataCategorica <- eventReactive(input$gerar_graficos, {
-      ts_categorias("SIM_Neonatal",
-                    nivel = opcoes_usuario$nivel_geografico,
-                    local = opcoes_usuario$escolha_usuario)
-    })
+    dataCategorica <- eventReactive(
+      {
+        # Soma dos cliques: muda a cada clique em qualquer botão e é 0 antes do primeiro
+        cliques <- sum(
+          input$gerar_graficos,
+          input$gerar_resultado_sexo,
+          input$gerar_resultado_tipo_mortalidade,
+          input$gerar_resultado_raca
+        )
+        if (cliques > 0) cliques
+      },
+      {
+        ts_categorias(
+          "SIM_Neonatal",
+          nivel = opcoes_usuario$nivel_geografico,
+          local = opcoes_usuario$escolha_usuario
+        )
+      })
 
     # Série temporal para dados da mortalidade neonatal
     data_sim_neonatal <- eventReactive(input$gerar_graficos, {
@@ -286,21 +320,21 @@ mod_intervencao_sim_neonatal_server <- function(id, opcoes_usuario){
                     ifelse(opcoes_usuario$nivel_geografico=="micro",paste("(SIM NEONATAL) Análise de impacto com tendência na Regional de Saúde",opcoes_usuario$escolha_usuario),paste("(SIM NEONATAL) Análise de impacto com tendência no Município de", opcoes_usuario$escolha_usuario))))
     })
 
-    titulo_sexo <- eventReactive(input$gerar_graficos, {
+    titulo_sexo <- eventReactive(input$gerar_resultado_sexo, {
       ifelse(opcoes_usuario$nivel_geografico=="PR","(SIM NEONATAL) Análise de impacto na tendência por sexo no Paraná",
              ifelse(opcoes_usuario$nivel_geografico=="macro",paste("(SIM NEONATAL) Análise de impacto na tendência por sexo na Macrorregião",opcoes_usuario$escolha_usuario),
                     ifelse(opcoes_usuario$nivel_geografico=="micro",paste("(SIM NEONATAL) Análise de impacto na tendência por sexo na Regional de Saúde",opcoes_usuario$escolha_usuario),
                            paste("(SIM NEONATAL) Análise de impacto na tendência por sexo no Município de", opcoes_usuario$escolha_usuario))))
     })
 
-    titulo_tipo_mortalidade <- eventReactive(input$gerar_graficos, {
+    titulo_tipo_mortalidade <- eventReactive(input$gerar_resultado_tipo_mortalidade, {
       ifelse(opcoes_usuario$nivel_geografico=="PR","(SIM NEONATAL) Análise de impacto na tendência por tipo de mortalidade no Paraná",
              ifelse(opcoes_usuario$nivel_geografico=="macro",paste("(SIM NEONATAL) Análise de impacto na tendência por tipo de mortalidade  na Macrorregião",opcoes_usuario$escolha_usuario),
                     ifelse(opcoes_usuario$nivel_geografico=="micro",paste("(SIM NEONATAL) Análise de impacto na tendência por tipo de mortalidade  na Regional de Saúde",opcoes_usuario$escolha_usuario),
                            paste("(SIM NEONATAL) Análise de impacto na tendência por tipo de mortalidade  no Município de", opcoes_usuario$escolha_usuario))))
     })
 
-    titulo_raca <- eventReactive(input$gerar_graficos, {
+    titulo_raca <- eventReactive(input$gerar_resultado_raca, {
       ifelse(opcoes_usuario$nivel_geografico=="PR","(SIM NEONATAL) Análise de impacto na tendência por raça do recém-nascido no Paraná",
              ifelse(opcoes_usuario$nivel_geografico=="macro",paste("(SIM NEONATAL) Análise de impacto na tendência por raça do recém-nascido na Macrorregião",opcoes_usuario$escolha_usuario),
                     ifelse(opcoes_usuario$nivel_geografico=="micro",paste("(SIM NEONATAL) Análise de impacto na tendência por raça do recém-nascido  na Regional de Saúde",opcoes_usuario$escolha_usuario),
